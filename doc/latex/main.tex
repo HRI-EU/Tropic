@@ -1,0 +1,52 @@
+\documentclass[12pt]{article}
+\usepackage[german]{babel}
+\usepackage{rcs}
+
+\usepackage{cite} 
+\usepackage{textcomp}
+\usepackage{epsfig}
+\usepackage{exscale}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+\usepackage[cmyk]{xcolor}
+\definecolor{rltred}{rgb}{0.6,0,0}
+\definecolor{rltgreen}{rgb}{0,0.5,0}
+\definecolor{rltblue}{rgb}{0,0,0.75}
+\definecolor{Gray}{gray}{0.5}
+\definecolor{LightGray}{gray}{0.80}
+\usepackage[pdftex,
+       colorlinks=true,%        % true for colored links
+       urlcolor=rltblue,%       % \href{...}{...} external (URL)
+       filecolor=rltgreen,%     % \href{...} local file
+       linkcolor=rltred,%       % \ref{...} and \pageref{...}
+       citecolor=rltgreen,%
+       bookmarks=true,%
+       bookmarksopenlevel=1,%
+       bookmarksopen=true,%
+       bookmarksnumbered=true,%
+       hyperindex=true,% 
+       plainpages=false,% correct hyperlinks
+       pdfpagelabels=true% view TeX pagenumber in PDF reader
+      ]{hyperref}
+
+\pagestyle{headings}
+\setlength{\headsep}{10mm}
+\setlength{\textheight}{200mm}
+\setlength{\textwidth}{160mm}
+\evensidemargin0mm
+\oddsidemargin0mm
+
+\title{Trajectory Generation}
+\author{\emph{Authors}: Michael Gienger}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+\input{via.tex}
+%\input{linearAccelerationSequence.tex}
+\end{document}

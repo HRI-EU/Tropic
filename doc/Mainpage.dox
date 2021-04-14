@@ -1,0 +1,18 @@
+/*! \mainpage Introduction
+ *
+ *  This class provides methods for generating time-dependent trajectories.
+ * 
+ *   <h1> 1-dimensional trajectories </h1>
+ * 
+ *   <h1> n-dimensional trajectories </h1>
+ * 
+ *   <h1> Constraint sets </h1>
+ * 
+ *   <h1> TrajectoryController </h1>
+ *
+ *  \ref DevSection
+ */
+
+/*! \page DevSection Developer's section
+ */
+

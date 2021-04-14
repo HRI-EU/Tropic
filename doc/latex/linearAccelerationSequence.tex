@@ -1,0 +1,171 @@
+\section{Linear acceleration sequence}
+
+
+% Normal {\tiny tiny} \scalebox{.5}{supertiny}
+
+\subsection{Trajectory}
+
+The via point parameters are only calculated for $t>t_{v}$.
+
+
+\be
+%\resizebox{.99\hsize}{!}{$     
+\begin{array}{lll}
+\xpp(t) & = & a_1 + a_2 t + a_3 (t - \Delta t) + a_4  (t - 2 \Delta t) \\
+\xp(t) & = & b +  \\
+%x(t) & = & a_5 t^5 + a_4  t^4 + a_3 t^3 + a_2 t^2 + a_1 t + a_0 + \Sum_{i=0}^{n_{via}-1}  \pi_{a,i} (t-t_{v,i})^3 + \pi_{v,i}  (t-t_{v,i})^4 + \pi_{p,i} (t-t_{v,i})^5 \\
+%\xp(t) & = & 5 a_5 t^4 + 4 a_4  t^3 + 3 a_3 t^2 + 2 a_2 t + a_1 + \Sum_{i=0}^{n_{via}-1} 3  \pi_{a,i} (t-t_{v,i})^2 + 4 \pi_{v,i}  (t-t_{v,i})^3 + 5 \pi_{p,i} (t-t_{v,i})^4 \\
+\end{array}
+$}
+\ee
+%
+Lets make an example with two via points. Writing it in matrix form yields
+%
+\be
+\resizebox{.99\hsize}{!}{$                 
+%
+\underbrace{
+\left(
+\begin{array}{cccccccccccc}
+%
+% x0
+%
+ t_0^5 &  t_0^4 &  t_0^3 & t_0^2 & t_0 & 1 &0 & 0 & 0 & 0 & 0 & 0 \\ 
+5 t_0^4 & 4  t_0^3 & 3  t_0^2 & 2 t_0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\
+20 t_0^3 & 12  t_0^2 & 6  t_0 & 2 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
+%
+% x_0
+%
+ t_{v,0}^5 &  t_{v,0}^4 &  t_{v,0}^3 & t_{v,0}^2 & t_{v,0} & 1 & 0 & 0 & 0 & 0 & 0 & 0 \\ 
+5 t_{v,0}^4 & 4  t_{v,0}^3 & 3  t_{v,0}^2 & 2 t_{v,0} & 1 & 0 & 0 & 0 & 0 & 0 &0 & 0 \\
+20 t_{v,0}^3 & 12  t_{v,0}^2 & 6  t_{v,0} & 2 & 0 & 0 & 0 & 0 & 0  & 0 &0 & 0\\
+%
+% x_v,1
+%
+t_{v,1}^5 &  t_{v,1}^4 &  t_{v,1}^3 & t_{v,1}^2 & t_{v,1} & 1 &  (t_{v,1}-t_{v,0})^5 & (t_{v,1}-t_{v,0})^4 & (t_{v,1}-t_{v,0})^3 & 0 &0 & 0 \\ 
+5 t_1^4 & 4  t_1^3 & 3  t_1^2 & 2 t_1 & 1 & 0 & 5 (t_1-t_{v,0})^4 & 4 (t_1-t_{v,0})^3 & 3 (t_1-t_{v,0})^2 & 0 &0 & 0 \\
+20 t_1^3 & 12  t_1^2 & 6  t_1 & 2 & 0 & 0 & 20 (t_1-t_{v,0})^3 & 12 (t_1-t_{v,0})^2 & 6 (t_1-t_{v,0}) & 0 &0 & 0 \\
+%
+% x1
+%
+ t_1^5 &  t_1^4 &  t_1^3 & t_1^2 & t_1 & 1 & (t_1-t_{v,0})^5 & (t_1-t_{v,0})^4 & (t_1-t_{v,0})^3 & (t_1-t_{v,1})^5 & (t_1-t_{v,1})^4 & (t_1-t_{v,1})^3 \\ 
+5 t_1^4 & 4  t_1^3 & 3  t_1^2 & 2 t_1 & 1 & 0 & 5 (t_1-t_{v,0})^4 & 4 (t_1-t_{v,0})^3 & 3 (t_1-t_{v,0})^2 &  (t_1-t_{v,1})^4 & 4 (t_1-t_{v,1})^3 & 3 (t_1-t_{v,1})^2 \\
+20 t_1^3 & 12  t_1^2 & 6  t_1 & 2 & 0 & 0 & 20 (t_1-t_{v,0})^3 & 12 (t_1-t_{v,0})^2 & 6 (t_1-t_{v,0}) & 20 (t_1-t_{v,1})^3 & 12 (t_1-t_{v,1})^2 & 6 (t_1-t_{v,1})
+\end{array}
+\right)
+}_{\vB}
+%
+\underbrace{
+\left(
+\begin{array}{c}
+a_5 \\ a_4 \\ a_3 \\ a_2 \\ a_1 \\  a_0 \\ \pi_{p,0} \\ \pi_{v,0} \\ \pi_{a,0} \\ \pi_{p,1} \\ \pi_{v,1} \\ \pi_{a,1}
+\end{array}
+\right)
+}_{\vp}
+=
+\underbrace{
+\left(
+\begin{array}{c}
+x_0 \\ \xp_0 \\ \xpp_0 \\ x_{v,0} \\ \xp_{v,0} \\  \xpp_{v,0} \\ x_{v,1} \\ \xp_{v,1} \\  \xpp_{v,1} \\ x_1 \\ \xp_1 \\ \xpp_1 
+\end{array}
+\right)
+}_{\vx}
+%
+$}
+\ee
+%
+We can obtain the parameters by solving this linear equation system, for instance with a LU decomposition. Another possibility is to make use of the block structure, and the lower diagonal structure of the equations. This allows to invert the matrix $\vB$ block-wise from lower right to upper left, see appendix.
+%
+%
+%
+%
+%
+\subsection{Gradients}
+%
+%
+%
+%
+%
+The overal gradient of the via point representation with respect to a scalar cost depending on $\vq$ is
+%
+\be
+\Delta C = \Frac{\partial C}{\partial \vx_{via}} \Delta \vx_{via} + \Frac{\partial C}{\partial \vxp_{via}} \Delta \vxp_{via} + \Frac{\partial C}{\partial \vxpp_{via}} \Delta  \vxpp_{via}
+\ee
+%
+Lets first look at the first term of the above equation. Lets assume that the cost $C$ depends only on the configuration $\vq$, and not on its derivatives. Then, we can write
+%
+\be
+\Frac{\partial C}{\partial \vx_{via}} =
+\Frac{\partial C}{\partial \vx}
+\Frac{\partial \vx}{\partial \vx_{via}}
+=
+\Frac{\partial C}{\partial \vq}
+\Frac{\partial \vq}{\partial \vx}
+\Frac{\partial \vx}{\partial \vx_{via}}
+=
+\Frac{\partial C}{\partial \vq}
+\vJ^{\#}
+\Frac{\partial \vx}{\partial \vx_{via}}
+\ee
+%
+where $\vJ^{\#}$ is the pseudo-inverse of the task Jacobian. Similarly, we can write the gradients with respect to the via point velocities and accelerations:
+%
+\be
+\Frac{\partial C}{\partial \vx_{via}} =
+\Frac{\partial C}{\partial \vx}
+\Frac{\partial \vx}{\partial \vxp_{via}}\hspace{20mm}
+%
+\Frac{\partial C}{\partial \vx_{via}} =
+\Frac{\partial C}{\partial \vx}
+\Frac{\partial \vx}{\partial \vxpp_{via}}
+\ee
+%
+Now lets look at the last term. Vector $\vx$ is composed of the elements for each time step: $\vx = \left( x_0 \; x_1 ... x_{T-1} \right)^T$. We have $\vx = \vf(\vp)$ and $\vp = \vg(\vx_{via})$ so that the dependency is $\vx = \vf(\vg(\vx_{via}))$. Applying the chain rule leads to
+%
+\be
+\Frac{\partial \vx}{\partial \vx_{via}} =
+\Frac{\partial \vx}{\partial \vp}
+\Frac{\partial \vp}{\partial \vx_{via}}
+\ee
+%
+Since we have $\vx = \vB \vp$, we get
+%
+\be
+\Frac{\partial \vx}{\partial \vp} = 
+%
+\left(
+\begin{array}{c}
+\frac{\partial x_0}{\partial \vp} \\ \frac{\partial x_1}{\partial \vp} \\\vdots \\\frac{\partial x_{T-1}}{\partial \vp}
+\end{array}
+\right)
+%
+=
+%
+\left(
+\begin{array}{c}
+\vB_{pos}(t_0) \\ \vB_{pos}(t_1) \\ \vdots \\ \vB_{pos}(t_{T-1})
+\end{array}
+\right)
+\ee
+%
+where $\vB_{pos}$ is the row corrensponding to the position, and the interval containing t. The dimension of the gradient is $T \times \dim(\vp)$. I the general case, we can also apply the gradient to the initial and final condition, for instance if we want to shift the conditions inside an interval. Therefore we leave it in the gradient.
+%
+The dependency of the parameter vector with respect to the via points can be obtained from $\vp = \vB^{-1} \vx$:
+%
+\be
+\Frac{\partial \vp}{\partial \vx_{via}} = 
+%
+\left(
+\begin{array}{ccc}
+\frac{\partial a_0}{\partial x_{via,0}} & & \frac{\partial a_0}{\partial x_{via,n_{via}-1}} \\
+\vdots & \cdots & \vdots \\
+\frac{\partial \pi_{p,n_{via}-1}}{\partial x_{via,0}} & & \frac{\partial\pi_{p,n_{via}-1}}{\partial x_{via,n_{via}-1}}
+\end{array}
+\right)
+\label{eq_dpdxvia}
+\ee
+%
+The columns of eq.~(\ref{eq_dpdxvia}) correspond to the rows of $\vB^{-1}$ for the respective via points.
+%
+The dimension of the gradient is $dim(\vp) \times n_{via}$, which makes th overal gradient $\frac{\partial \vx}{\partial \vx_{via}}$ of dimension $T \times n_{via}$. The gradients with respect to the via point velocities and accelerations can be computed accordingly.
+

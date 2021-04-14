@@ -1,0 +1,722 @@
+% Eigene caption Umgebung. Ist die Bildunterschrift breiter als \lensoll
+% erfolgt eine mehrzeilige, eingerueckte Darstellung. Ueber \lensoll
+% kann prinzipiell die Schriftbreite eingestellt werden.
+
+\newlength{\lenlabel}
+\newlength{\lensoll}
+\newcommand{\mycaption}[1]{
+  \refstepcounter{figure}
+  \settowidth{\lenlabel}{\small #1}
+  \setlength{\lensoll}{100mm}
+  \ifdim \lenlabel < \lensoll
+  \begin{center}
+    {\small \bf Bild \thefigure:}
+    \parbox[t]{\lenlabel}{\small #1}
+  \end{center}
+  \else
+  \begin{center}
+    {\small \bf Bild \thefigure:}
+    \parbox[t]{\lensoll}{\small #1}
+  \end{center}
+  \fi
+  }
+
+\newcommand{\mytablecaption}[1]{
+  \refstepcounter{table}
+  \settowidth{\lenlabel}{\small #1}
+  \setlength{\lensoll}{100mm}
+  \ifdim \lenlabel < \lensoll
+  \begin{center}
+    {\small \bf Tabelle \thetable:}
+    \parbox[t]{\lenlabel}{\small #1}
+  \end{center}
+  \else
+  \begin{center}
+    {\small \bf Tabelle \thetable:}
+    \parbox[t]{\lensoll}{\small #1}
+  \end{center}
+  \fi
+  }
+
+\newcommand{\mysidewaystablecaption}[1]{
+  \refstepcounter{table}
+  \settowidth{\lenlabel}{\small #1}
+  \setlength{\lensoll}{160mm}
+  \ifdim \lenlabel < \lensoll
+  \begin{center}
+    {\small \bf Tabelle \thetable:}
+    \parbox[t]{\lenlabel}{\small #1}
+  \end{center}
+  \else
+  \begin{center}
+    {\small \bf Tabelle \thetable:}
+    \parbox[t]{\lensoll}{\small #1}
+  \end{center}
+  \fi
+  }
+
+% Bild mit Breitenskalierung als Argument
+
+\newcommand{\wbild}[4]{ 
+  \begin{figure}[htb!]
+    \vspace*{5mm}
+    \begin{center}
+      \psfig{file=Bilder/#1,width=#2mm,clip=}
+    \end{center}
+    \mycaption{#3}
+    \label{#4}
+  \end{figure} 
+  }
+
+% Bild mit Höhenskalierung als Argument
+
+\newcommand{\hbild}[4]{ 
+  \begin{figure}[htb!]
+    \vspace*{5mm}
+    \begin{center}
+      \psfig{file=Bilder/#1,height=#2mm,clip=}
+    \end{center}
+    \mycaption{#3}
+    \label{#4}
+  \end{figure} 
+  }
+
+% Bild ohne Skalierung 
+
+\newcommand{\bild}[3]{ 
+  \begin{figure}[htb!]
+    \vspace*{5mm}
+    \begin{center}
+      \psfig{file=Bilder/#1,clip=}
+    \end{center}
+    \mycaption{#2}
+    \label{#3}
+  \end{figure} 
+  }
+
+
+% Bild mit Drehung ohne Skalierung, mit Unterschrift und Label
+
+\newcommand{\drehbild}[4]{
+  \begin{figure}[htb!]
+    \vspace*{5mm}
+    \begin{center}
+      \psfig{file=Bilder/#1,angle=#2,clip=}
+      \end{center}
+    \mycaption{#3}
+    \label{#4}
+    \end{figure}
+    }
+
+% 2 Bilder nebeneinander mit Breitenskalierung
+%
+% Argumente:
+% 1.) Name des ersten Bildes
+% 2.) Breite des ersten Bildes
+% 3.) Name des zweiten Bildes
+% 4.) Breite des zweiten Bildes
+% 5.) Abstand zwischen den beiden Bildern
+% 6.) Unterschrift des gesamten Bildes
+% 7.) label des gesamten Bildes
+
+\newcommand{\zweiwbildhor}[7]{
+  \begin{figure}[htb]
+    \vspace*{5mm}
+    \begin{minipage}{#2mm}
+      \begin{center}
+        \psfig{file=../Bilder/#1,width=#2mm,clip=}
+      \end{center}
+    \end{minipage}
+    \hspace*{#5mm}
+    \begin{minipage}{#4mm}
+      \begin{center}
+        \psfig{file=../Bilder/#3,width=#4mm,clip=}
+      \end{center}
+    \end{minipage}
+    \mycaption{#6}
+    \label{#7}
+  \end{figure}
+  }
+
+
+% 2 Bilder nebeneinander ohne Breitenskalierung
+%
+% Argumente:
+% 1.) Name des ersten Bildes
+% 2.) Breite der ersten minipage
+% 3.) Name des zweiten Bildes
+% 4.) Breite der zweiten minipage
+% 5.) Abstand zwischen den beiden Bildern
+% 6.) Unterschrift des gesamten Bildes
+% 7.) label des gesamten Bildes
+
+\newcommand{\zweibildhor}[7]{
+  \begin{figure}[htb!]
+    \vspace*{5mm}
+    \begin{minipage}{#2mm}
+      \begin{center}
+        \psfig{file=Bilder/#1,clip=}
+      \end{center}
+    \end{minipage}
+    \hspace*{#5mm}
+    \begin{minipage}{#4mm}
+      \begin{center}
+        \psfig{file=Bilder/#3,clip=}
+      \end{center}
+    \end{minipage}
+    \mycaption{#6}
+    \label{#7}
+  \end{figure}
+  }
+
+
+% 2 Bilder untereinander ohne Breitenskallierung
+
+
+\newcommand{\zweibildver}[4]{
+  \begin{figure}[htb]
+    \vspace*{5mm}
+    \begin{minipage}{150mm}
+      \begin{center}
+        \psfig{file=../Bilder/#1,clip=}
+        \psfig{file=../Bilder/#2,clip=}
+      \end{center}
+    \end{minipage}
+    \mycaption{#3}
+    \label{#4}
+  \end{figure}
+  }
+
+
+% 2 Bilder untereinander ohne Breitenskallierung. Korrekturlinie
+% fuer einstellige Amplituden
+
+
+\newcommand{\zweibildvereins}[4]{
+  \begin{figure}[htb]
+    \unitlength1.0mm
+    \begin{center}
+      \begin{picture}(120,180)
+        \put(0,0){\psfig{file=../Bilder/#2,clip=}}
+        \put(0,90){\psfig{file=../Bilder/#1,clip=}}
+        \Thicklines
+        \drawline(10.1,23.7)(76.8,9.8)
+        \drawline(10.1,113.7)(76.8,99.8)        
+      \end{picture}
+    \end{center}
+    \mycaption{#3}
+    \label{#4}
+  \end{figure}
+  }
+
+
+
+% 2 Bilder untereinander ohne Breitenskallierung. Korrekturlinie
+% fuer zweistellige Amplituden
+
+
+\newcommand{\zweibildverzwei}[4]{
+  \begin{figure}[htb]
+    \unitlength1.0mm
+    \begin{center}
+      \begin{picture}(120,180)
+        \put(0,0){\psfig{file=../Bilder/#2,clip=}}
+        \put(0,90){\psfig{file=../Bilder/#1,clip=}}
+        \Thicklines
+        \drawline(11.9,23.8)(78.7,9.8)
+        \drawline(11.9,113.8)(78.7,99.8)        
+      \end{picture}
+    \end{center}
+    \mycaption{#3}
+    \label{#4}
+  \end{figure}
+  }
+
+
+
+% 2 Bilder untereinander ohne Breitenskallierung. Korrekturlinie
+% fuer dreistellige Amplituden
+
+\newcommand{\zweibildverdrei}[4]{
+  \begin{figure}[htb]
+    \unitlength1.0mm
+    \begin{center}
+      \begin{picture}(120,180)
+        \put(0,0){\psfig{file=../Bilder/#2,clip=}}
+        \put(0,90){\psfig{file=../Bilder/#1,clip=}}
+        \Thicklines
+        \drawline(14,23.7)(80.7,9.8)
+        \drawline(14,113.8)(80.7,99.8)        
+      \end{picture}
+    \end{center}
+    \mycaption{#3}
+    \label{#4}
+  \end{figure}
+  }
+
+% Bild mit Höhenskalierung und Drehung als Argument
+
+\newcommand{\habild}[5]{ 
+  \begin{figure}[htb]
+%    \vspace*{5mm}
+    \begin{center}
+      \psfig{file=Bilder/#1,height=#2mm,angle=#3,clip=}
+    \end{center}
+    \mycaption{#4}
+    \label{#5}
+  \end{figure} 
+  }
+
+
+% Bild mit Drehung ohne Skalierung, Unterschrift und Label
+
+\newcommand{\dbild}[2]{
+  \begin{figure}[htb]
+    \begin{center}
+      \psfig{file=../Bilder/#1,angle=#2,clip=}
+      \end{center}
+    \end{figure}
+    }
+
+
+% Bild mit Drehung und Höhenskalierung als Argument, ohne Label 
+% und Unterschrift
+
+\newcommand{\dbbild}[3]{ 
+  \begin{figure}[htb]
+    \begin{center}
+      \psfig{file=../Bilder/#1,height=#2mm,angle=#3,clip=}
+    \end{center}
+  \end{figure} 
+  }
+
+
+% Abbilden von Wasserfalldiagrammen im Format 120 mal 90
+% 1.) Filename
+% 2.) Caption
+% 3.) Label
+% 4.) x1-Koordinate für x-Achse
+% 5.) y1-Koordinate für x-Achse
+% 6.) x2-Koordinate für x-Achse
+% 7.) y2-Koordinate für x-Achse
+
+\newcommand{\wfp}[7]{ 
+  \begin{figure}[h]
+    \unitlength1.0mm
+    \begin{center}  
+      \begin{picture}(120,90)
+        \put(0,0){\psfig{file=../Bilder/#1,clip=}}
+        \Thicklines
+        \drawline(#4,#5)(#6,#7)
+      \end{picture}
+    \end{center}
+    \mycaption{#2}
+    \label{#3}
+  \end{figure}
+  }
+
+
+% mathematische Umgebung
+
+\font\mathbf=cmmib10  scaled \magstep1
+\newcommand{\bfm}[1] {\hbox{\(  \textfont1 = \mathbf #1 \)}}
+\newcommand{\bfn}[1] {{\bf #1}}
+\newcommand{\bold}[1] {{\bf #1}}
+
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\bd}{\begin{displaymath}}
+\newcommand{\ed}{\end{displaymath}}
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\benum}{\begin{enumerate}}
+\newcommand{\eenum}{\end{enumerate}}
+\newcommand{\bc}{\begin{center}}
+\newcommand{\ec}{\end{center}}
+% Mengenzeichen
+\def\RM{{\if mm {\rm I}\mkern -3mu{\rm R}\else \leavevmode
+\hbox{I}\kern -.17em \hbox{R} \fi}}
+\def\ZM{{\if mm {\sf Z}\mkern -8mu{\sf Z}\else \leavevmode
+\hbox{Z}\kern -.17em \hbox{Z} \fi}}
+\def\NM{{\if mm {\rm I}\mkern -3mu{\rm N}\else \leavevmode
+\hbox{I}\kern -.17em \hbox{N} \fi}}
+\newcommand{\Rdrei}{\RM^3}
+\newcommand{\Rdreidrei}{\RM^{3,3}}
+\newcommand{\Reins}{\RM}
+
+%fette kleine Griechen
+\newcommand{\val}{\mbox{\boldmath $\alpha$}}
+\newcommand{\vbe}{\mbox{\boldmath $\beta$}}
+\newcommand{\vga}{\mbox{\boldmath $\gamma$}}
+\newcommand{\vde}{\mbox{\boldmath $\delta$}}
+\newcommand{\vep}{\mbox{\boldmath $\epsilon$}}
+\newcommand{\vze}{\mbox{\boldmath $\zeta$}}
+\newcommand{\vet}{\mbox{\boldmath $\eta$}}
+\newcommand{\vth}{\mbox{\boldmath $\theta$}}
+\newcommand{\vio}{\mbox{\boldmath $\iota$}}
+\newcommand{\vka}{\mbox{\boldmath $\kappa$}}
+\newcommand{\vla}{\mbox{\boldmath $\lambda$}}
+\newcommand{\vmu}{\mbox{\boldmath $\mu$}}
+\newcommand{\vnu}{\mbox{\boldmath $\nu$}}
+\newcommand{\vxi}{\mbox{\boldmath $\xi$}}
+\newcommand{\vpi}{\mbox{\boldmath $\pi$}}
+\newcommand{\vrh}{\mbox{\boldmath $\rho$}}
+\newcommand{\vsi}{\mbox{\boldmath $\sigma$}}
+\newcommand{\vta}{\mbox{\boldmath $\tau$}}
+\newcommand{\vup}{\mbox{\boldmath $\upsilon$}}
+\newcommand{\vph}{\mbox{\boldmath $\varphi$}}
+\newcommand{\vch}{\mbox{\boldmath $\chi$}}
+\newcommand{\vps}{\mbox{\boldmath $\psi$}}
+\newcommand{\vom}{\mbox{\boldmath $\omega$}}
+
+\newcommand{\vvep}{\mbox{\boldmath $\varepsilon$}}
+\newcommand{\vvth}{\mbox{\boldmath $\vartheta$}}
+\newcommand{\vvrh}{\mbox{\boldmath $\varrho$}}
+\newcommand{\vvpi}{\mbox{\boldmath $\varpi$}}
+\newcommand{\vvsi}{\mbox{\boldmath $\varsigma$}}
+\newcommand{\vvph}{\mbox{\boldmath $\phi$}}
+
+\newcommand{\wep}{\mbox{\boldmath $\varepsilon$}}
+\newcommand{\wth}{\mbox{\boldmath $\vartheta$}}
+\newcommand{\wrh}{\mbox{\boldmath $\varrho$}}
+\newcommand{\wpi}{\mbox{\boldmath $\varpi$}}
+\newcommand{\wsi}{\mbox{\boldmath $\varsigma$}}
+\newcommand{\wph}{\mbox{\boldmath $\phi$}}
+
+%fette grosse Griechen
+\newcommand{\vGa}{\mbox{\boldmath $\Gamma$}}
+\newcommand{\vDe}{\mbox{\boldmath $\scriptstyle \Delta$}}
+\newcommand{\vTh}{\mbox{\boldmath $\Theta$}}
+\newcommand{\vLa}{\mbox{\boldmath $\Lambda$}}
+\newcommand{\vXi}{\mbox{\boldmath $\Xi$}}
+\newcommand{\vPi}{\mbox{\boldmath $\Pi$}}
+\newcommand{\vSi}{\mbox{\boldmath $\Sigma$}}
+\newcommand{\vUp}{\mbox{\boldmath $\Upsilon$}}
+\newcommand{\vPh}{\mbox{\boldmath $\Phi$}}
+\newcommand{\vPs}{\mbox{\boldmath $\Psi$}}
+\newcommand{\vOm}{\mbox{\boldmath $\Omega$}}
+
+%fette kleine Lateiner, math Modus
+\newcommand{\va}{\mbox{\boldmath $a$}}
+\newcommand{\vb}{\mbox{\boldmath $b$}}
+\newcommand{\vc}{\mbox{\boldmath $c$}}
+\newcommand{\vd}{\mbox{\boldmath $d$}}
+\newcommand{\ve}{\mbox{\boldmath $e$}}
+\newcommand{\vf}{\mbox{\boldmath $f$}}
+\newcommand{\vg}{\mbox{\boldmath $g$}}
+\newcommand{\vh}{\mbox{\boldmath $h$}}
+\newcommand{\vi}{\mbox{\boldmath $i$}}
+\newcommand{\vj}{\mbox{\boldmath $j$}}
+\newcommand{\vk}{\mbox{\boldmath $k$}}
+\newcommand{\vl}{\mbox{\boldmath $l$}}
+\newcommand{\vm}{\mbox{\boldmath $m$}}
+\newcommand{\vn}{\mbox{\boldmath $n$}}
+\newcommand{\vo}{\mbox{\boldmath $o$}}
+\newcommand{\vp}{\mbox{\boldmath $p$}}
+\newcommand{\vq}{\mbox{\boldmath $q$}}
+\newcommand{\vr}{\mbox{\boldmath $r$}}
+\newcommand{\vs}{\mbox{\boldmath $s$}}
+\newcommand{\vt}{\mbox{\boldmath $t$}}
+\newcommand{\vu}{\mbox{\boldmath $u$}}
+\newcommand{\vv}{\mbox{\boldmath $v$}}
+\newcommand{\vw}{\mbox{\boldmath $w$}}
+\newcommand{\vx}{\mbox{\boldmath $x$}}
+\newcommand{\vy}{\mbox{\boldmath $y$}}
+\newcommand{\vz}{\mbox{\boldmath $z$}}
+
+% kleine Lateiner Punkt, math Modus
+\newcommand{\ap}{\mbox{$\dot{a}$}}
+\newcommand{\bp}{\mbox{$\dot{b}$}}
+\newcommand{\cp}{\mbox{$\dot{c}$}}
+%\newcommand{\dp}{\mbox{$\dot{d}$}}
+\newcommand{\ep}{\mbox{$\dot{e}$}}
+\newcommand{\fp}{\mbox{$\dot{f}$}}
+\newcommand{\gp}{\mbox{$\dot{g}$}}
+\newcommand{\hp}{\mbox{$\dot{h}$}}
+\newcommand{\ip}{\mbox{$\dot{i}$}}
+\newcommand{\jp}{\mbox{$\dot{j}$}}
+\newcommand{\kp}{\mbox{$\dot{k}$}}
+\newcommand{\lp}{\mbox{$\dot{l}$}}
+%\newcommand{\mp}{\mbox{$\dot{m}$}}
+\newcommand{\np}{\mbox{$\dot{n}$}}
+\newcommand{\op}{\mbox{$\dot{o}$}}
+\newcommand{\pp}{\mbox{$\dot{p}$}}
+\newcommand{\qp}{\mbox{$\dot{q}$}}
+\newcommand{\rp}{\mbox{$\dot{r}$}}
+%\newcommand{\sp}{\mbox{$\dot{s}$}}
+\newcommand{\tp}{\mbox{$\dot{t}$}}
+\newcommand{\up}{\mbox{$\dot{u}$}}
+%\newcommand{\vp}{\mbox{$\dot{v}$}}
+%\newcommand{\wp}{\mbox{$\dot{w}$}}
+\newcommand{\xp}{\mbox{$\dot{x}$}}
+\newcommand{\yp}{\mbox{$\dot{y}$}}
+\newcommand{\zp}{\mbox{$\dot{z}$}}
+\newcommand{\alphap}{\mbox{$\dot{\alpha}$}}
+\newcommand{\gammap}{\mbox{$\dot{\gamma}$}}
+\newcommand{\betap}{\mbox{$\dot{\beta}$}}
+\newcommand{\alphapp}{\mbox{$\ddot{\alpha}$}}
+\newcommand{\gammapp}{\mbox{$\ddot{\gamma}$}}
+\newcommand{\betapp}{\mbox{$\ddot{\beta}$}}
+
+% kleine Lateiner Zweipunkt, math Modus
+\newcommand{\app}{\mbox{$\ddot{a}$}}
+\newcommand{\bpp}{\mbox{$\ddot{b}$}}
+\newcommand{\cpp}{\mbox{$\ddot{c}$}}
+\newcommand{\dpp}{\mbox{$\ddot{d}$}}
+\newcommand{\epp}{\mbox{$\ddot{e}$}}
+\newcommand{\fpp}{\mbox{$\ddot{f}$}}
+\newcommand{\gpp}{\mbox{$\ddot{g}$}}
+\newcommand{\hpp}{\mbox{$\ddot{h}$}}
+\newcommand{\ipp}{\mbox{$\ddot{i}$}}
+\newcommand{\jpp}{\mbox{$\ddot{j}$}}
+\newcommand{\kpp}{\mbox{$\ddot{k}$}}
+\newcommand{\lpp}{\mbox{$\ddot{l}$}}
+\newcommand{\mpp}{\mbox{$\ddot{m}$}}
+\newcommand{\npp}{\mbox{$\ddot{n}$}}
+\newcommand{\opp}{\mbox{$\ddot{o}$}}
+\newcommand{\ppp}{\mbox{$\ddot{p}$}}
+\newcommand{\qpp}{\mbox{$\ddot{q}$}}
+\newcommand{\rpp}{\mbox{$\ddot{r}$}}
+\newcommand{\spp}{\mbox{$\ddot{s}$}}
+\newcommand{\tpp}{\mbox{$\ddot{t}$}}
+\newcommand{\upp}{\mbox{$\ddot{u}$}}
+\newcommand{\vpp}{\mbox{$\ddot{v}$}}
+\newcommand{\wpp}{\mbox{$\ddot{w}$}}
+\newcommand{\xpp}{\mbox{$\ddot{x}$}}
+\newcommand{\ypp}{\mbox{$\ddot{y}$}}
+\newcommand{\zpp}{\mbox{$\ddot{z}$}}
+
+%fette kleine Lateiner Punkt, math Modus
+\newcommand{\vap}{\mbox{\boldmath $\dot{a}$}}
+\newcommand{\vbp}{\mbox{\boldmath $\dot{b}$}}
+\newcommand{\vcp}{\mbox{\boldmath $\dot{c}$}}
+\newcommand{\vdp}{\mbox{\boldmath $\dot{d}$}}
+%\newcommand{\vep}{\mbox{\boldmath $\dot{e}$}}
+\newcommand{\vfp}{\mbox{\boldmath $\dot{f}$}}
+\newcommand{\vgp}{\mbox{\boldmath $\dot{g}$}}
+\newcommand{\vhp}{\mbox{\boldmath $\dot{h}$}}
+\newcommand{\vip}{\mbox{\boldmath $\dot{i}$}}
+\newcommand{\vjp}{\mbox{\boldmath $\dot{j}$}}
+\newcommand{\vkp}{\mbox{\boldmath $\dot{k}$}}
+\newcommand{\vlp}{\mbox{\boldmath $\dot{l}$}}
+\newcommand{\vmp}{\mbox{\boldmath $\dot{m}$}}
+\newcommand{\vnp}{\mbox{\boldmath $\dot{n}$}}
+\newcommand{\vop}{\mbox{\boldmath $\dot{o}$}}
+%\newcommand{\vpp}{\mbox{\boldmath $\dot{p}$}}
+\newcommand{\vqp}{\mbox{\boldmath $\dot{q}$}}
+\newcommand{\vrp}{\mbox{\boldmath $\dot{r}$}}
+\newcommand{\vsp}{\mbox{\boldmath $\dot{s}$}}
+\newcommand{\vtp}{\mbox{\boldmath $\dot{t}$}}
+%\newcommand{\vup}{\mbox{\boldmath $\dot{u}$}}
+%\newcommand{\vvp}{\mbox{\boldmath $\dot{v}$}}
+\newcommand{\vwp}{\mbox{\boldmath $\dot{w}$}}
+\newcommand{\vxp}{\mbox{\boldmath $\dot{x}$}}
+\newcommand{\vyp}{\mbox{\boldmath $\dot{y}$}}
+\newcommand{\vzp}{\mbox{\boldmath $\dot{z}$}}
+
+%fette kleine Lateiner zwei Punkt, math Modus
+\newcommand{\vxpp}{\mbox{\boldmath $\ddot{x}$}}
+\newcommand{\vapp}{\mbox{\boldmath $\ddot{a}$}}
+
+%fette kleine Griechen Punkt, math Modus
+\newcommand{\vphp}{\mbox{\boldmath $\dot{\varphi}$}}
+\newcommand{\vomp}{\mbox{\boldmath $\dot{\omega}$}}
+
+%fette kleine Griechen zwei Punkt, math Modus
+\newcommand{\vphpp}{\mbox{\boldmath $\ddot{\varphi}$}}
+
+%fette grosse Lateiner, math. Modus
+\newcommand{\vA}{\mbox{\boldmath $A$}}
+\newcommand{\vB}{\mbox{\boldmath $B$}}
+\newcommand{\vC}{\mbox{\boldmath $C$}}
+\newcommand{\vD}{\mbox{\boldmath $D$}}
+\newcommand{\vE}{\mbox{\boldmath $E$}}
+\newcommand{\vF}{\mbox{\boldmath $F$}}
+\newcommand{\vG}{\mbox{\boldmath $G$}}
+\newcommand{\vH}{\mbox{\boldmath $H$}}
+\newcommand{\vI}{\mbox{\boldmath $I$}}
+\newcommand{\vJ}{\mbox{\boldmath $J$}}
+\newcommand{\vK}{\mbox{\boldmath $K$}}
+\newcommand{\vL}{\mbox{\boldmath $L$}}
+\newcommand{\vM}{\mbox{\boldmath $M$}}
+\newcommand{\vN}{\mbox{\boldmath $N$}}
+\newcommand{\vO}{\mbox{\boldmath $O$}}
+\newcommand{\vP}{\mbox{\boldmath $P$}}
+\newcommand{\vQ}{\mbox{\boldmath $Q$}}
+\newcommand{\vR}{\mbox{\boldmath $R$}}
+\newcommand{\vS}{\mbox{\boldmath $S$}}
+\newcommand{\vT}{\mbox{\boldmath $T$}}
+\newcommand{\vU}{\mbox{\boldmath $U$}}
+\newcommand{\vV}{\mbox{\boldmath $V$}}
+\newcommand{\vW}{\mbox{\boldmath $W$}}
+\newcommand{\vX}{\mbox{\boldmath $X$}}
+\newcommand{\vY}{\mbox{\boldmath $Y$}}
+\newcommand{\vZ}{\mbox{\boldmath $Z$}}
+
+%fette grosse Lateiner Punkt, math. Modus
+\newcommand{\vHp}{\mbox{\boldmath $\dot{H}$}}
+
+\newcommand{\otime}{\mbox{\boldmath $\otimes$}}
+
+\newcommand{\ot}{\bfm{\widetilde{\omega}}}
+\newcommand{\otn}{\bfm{\wt{\omega}_{0}}}
+\newcommand{\ote}{\bfm{\wt{\ol{\omega}}}}
+\newcommand{\opnn}{\bfm{\dot{\ul{\omega}}}_{0}}
+\newcommand{\opne}{\bfm{\dot{\ul{\ol{\omega}}}}}
+\newcommand{\optn}{\bfm{\dot{\wt{\omega}}_{0}}}
+\newcommand{\optnn}{\bfm{\dot{\wt{\ul{\omega}}}_{0}}}
+\newcommand{\optne}{\bfm{\dot{\wt{\ul{{\ol\omega}}}}}}
+\newcommand{\xgn}{\vx_{G_{0}}}
+\newcommand{\xge}{\ol{\vx}_{G}}
+\newcommand{\xgtn}{\wt{\vx}_{G_{0}}}
+\newcommand{\xgte}{\wt{\ol{\vx}}_{G}}
+\newcommand{\xpge}{\dot{\ol{\vx}}_{G}}
+\newcommand{\xftn}{\wt{\vx}_{F_{0}}}
+\newcommand{\xfte}{\wt{\ol{\vx}}_{F}}
+\newcommand{\no}[1]{{#1}_{0}}             % Groesse nullter Ordnung
+\newcommand{\eo}[1]{\overline{#1}}        % Groesse erster Ordnung 
+
+\newcommand{\wq}{\vW \vq_{el,i}}
+\newcommand{\wqp}{\vW \dot{\vq}_{el,i}}
+\newcommand{\twqa}{\left(\wq\right)^{\sim}}
+\newcommand{\twqta}{\left( \twqa \right)^{T}}
+\newcommand{\twqpta}{\left( \wt{\wqp} \right)^{T}}
+\newcommand{\twqb}{\wt{\vW}\vQ_{el}}
+\newcommand{\twqtb}{\left( \twqb \right)^{T}}
+\newcommand{\twqpb}{\wt{\vW} \dot{\vQ}_{el}}
+\newcommand{\twqptb}{\left( \wt{\vW} \dot{\vQ}_{el} \right)^{T}}
+
+% fette null
+\newcommand{\vnull}{\mbox{\boldmath $0$}}
+
+
+% Bruch vergroessert:
+\newcommand{\Frac} [2] {\frac{\mbox{${#1}$}}{\mbox{${#2}$}}}
+
+%Vektoren aus R2, R3, R6 : vzwei, vdrei, vsechs
+\newcommand{\vzwei}[2]{\mbox{$\left( \begin{array}{c}
+                      {#1}\\[0.15em]
+                      {#2}
+                      \end{array} \right)$}}
+\newcommand{\vdrei}[3]{\mbox{$\left( \begin{array}{c}
+                      {#1}\\[0.15em]
+                      {#2}\\[0.15em]
+                      {#3}
+                      \end{array} \right)$}}
+\newcommand{\vvier}[4]{\mbox{$\left( \begin{array}{c}
+                       {#1}\\[0.15em]
+                       {#2}\\[0.15em]
+                       {#3}\\[0.15em]
+                       {#4}
+                       \end{array} \right)$}}
+\newcommand{\vfuenf}[5]{\mbox{$\left( \begin{array}{c}
+                       {#1}\\[0.15em]
+                       {#2}\\[0.15em]
+                       {#3}\\[0.15em]
+                       {#4}\\[0.15em]
+                       {#5}
+                       \end{array} \right)$}}
+\newcommand{\vsechs}[6]{\mbox{$\left( \begin{array}{c}
+                       {#1}\\[0.15em]
+                       {#2}\\[0.15em]
+                       {#3}\\[0.15em]
+                       {#4}\\[0.15em]
+                       {#5}\\[0.15em]
+                       {#6}
+                       \end{array} \right)$}}
+
+%1x3-Matrix, 2x2 bzw 3x3-Matrix: meinsdrei mzwei bzw mdrei
+\newcommand{\meinszwei}[2]{\mbox{$\left( \begin{array}{cc}
+                        {#1} \; & \; {#2}
+                        \end{array} \right)$}}
+
+\newcommand{\meinsdrei}[3]{\mbox{$\left[ \begin{array}{c|c|c}
+                        {#1} & {#2} & {#3}
+                        \end{array} \right]$}}
+
+\newcommand{\mzwei}[4]{\mbox{$\left( \begin{array}{cc}
+                        {#1} & {#2} \\[0.2em]
+                        {#3} & {#4}
+                        \end{array} \right)$}}
+\newcommand{\mdrei}[9]{\mbox{$\left( \begin{array}{ccc}
+                        {#1} & {#2} & {#3}\\[0.2em]
+                        {#4} & {#5} & {#6}\\[0.2em]
+                        {#7} & {#8} & {#9}
+                        \end{array} \right)$}}
+\newcommand{\mzweidrei}[6]{\mbox{$\left( \begin{array}{ccc}
+                        {#1} & {#2} & {#3}\\[0.2em]
+                        {#4} & {#5} & {#6}
+                        \end{array} \right)$}}
+\newcommand{\mdreizwei}[6]{\mbox{$\left( \hspace{-2mm} \begin{array}{cc}
+                        {#1} \hspace{-1mm} & \hspace{-1mm}{#2} \\[0.2em]
+                        {#3} \hspace{-1mm} & \hspace{-1mm}{#4} \\[0.2em]
+                        {#5} \hspace{-1mm} & \hspace{-1mm}{#6} 
+                        \end{array} \hspace{-2mm} \right)$}}
+% Schwarzes Rechteck mit 3mm Kantenlänge
+\newcommand{\bl}{\rule{2mm}{2mm}}
+% partielle Ableitungen
+\newcommand{\pab}[2]{ \frac{ \partial {#1}}{ \partial {#2}} }
+\newcommand{\Pab}[2]{ \Frac{ \partial {#1}}{ \partial {#2}} }
+\newcommand{\abl}[2]{ \frac{ d {#1}}{ d {#2}} }
+\newcommand{\Abl}[2]{ \Frac{ d {#1}}{ d {#2}} }
+\newcommand{\pabk}[2]{\left( \frac{ \partial {#1}}{ \partial {#2}} \right)}
+\newcommand{\Pabk}[2]{\left( \Frac{ \partial {#1}}{ \partial {#2}}\right) }
+\newcommand{\ablk}[2]{\left( \frac{ d {#1}}{ d {#2}}\right) }
+\newcommand{\Ablk}[2]{\left( \Frac{ d {#1}}{ d {#2}}\right) }
+
+% Integral, Summe mit Grenzen ueber den Symbolen, sonst: \int, \sum
+\newcommand{\Int} {\int \limits}
+\newcommand{\Sum} {\sum \limits}
+
+\def\t{\tilde}
+\def\wt{\widetilde}
+\def\ol{\overline}
+\def\ul{\underline}
+
+% Funktionen
+
+\newcommand{\atan}{\mbox{atan}}
+\newcommand{\dive}{\mbox{div}}
+
+\newcommand{\pg}{\dot{=}}
+
+
+% eigene \sc Umgebumg
+\def\mysc{\sc}
+
+
+\newcommand{\rb}[1]{\raisebox{1.5ex}[-1.5ex]{#1}}
+
+% Worttrennungen
+
+\hyphenation{Dis-ser-ta-tion}
+\hyphenation{pa-ra-me-ters}
+
+
+\newcommand{\hoch}[1]{\raisebox{0.7ex}{\scriptsize #1}}
+% Zeilenvektoren
+\newcommand{\vrzwei}[2]{\mbox{$\left[ \begin{array}{c}
+                      {#1}\\[0.15em]
+                      {#2}
+                      \end{array} \right]$}}
+\newcommand{\vrdrei}[3]{\mbox{$\left[ \begin{array}{c}
+                      {#1}\\[0.15em]
+                      {#2}\\[0.15em]
+                      {#3}
+                      \end{array} \right]$}}
+
+%2x2 bzw 3x3-Matrix: mzwei bzw mdrei
+\newcommand{\mrzwei}[4]{\mbox{$\left( \begin{array}{cc}
+                        {#1} & {#2} \\[0.2em]
+                        {#3} & {#4}
+                        \end{array} \right)$}}
+\newcommand{\mrdrei}[9]{\mbox{$\left( \begin{array}{ccc}
+                        {#1} & {#2} & {#3}\\[0.2em]
+                        {#4} & {#5} & {#6}\\[0.2em]
+                        {#7} & {#8} & {#9}
+                        \end{array} \right)$}}
+
+% u Dreipunkt
+\newcommand {\tdu}{\stackrel{\textstyle  .\hspace*{-0.2mm}.\hspace*{-0.2mm}.}{u}}
