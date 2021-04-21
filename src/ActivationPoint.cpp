@@ -32,9 +32,7 @@
 
 #include "ActivationPoint.h"
 
-#include <Rcs_basicMath.h>
-#include <Rcs_macros.h>
-
+#include <cstdio>
 #include <cmath>
 
 
@@ -90,17 +88,27 @@ double ActivationPoint::computeBlending() const
   }
 
   // Triangular blending
-  double blending = Math_clip(fabs(this->t) / this->horizon, 0.0, 1.0);
+  double blending = fabs(this->t) / this->horizon;
 
   // Bassin-style blending - to do
+
+  // Clip to range [0 ... 1]
+  if (blending < 0.0)
+  {
+    blending = 0.0;
+  }
+  else if (blending > 1.0)
+  {
+    blending = 1.0;
+  }
 
   return blending;
 }
 
 void ActivationPoint::print() const
 {
-  RLOG(0, "Activation ppint at t=%f with horizon %f switches %s",
-       t, horizon, switchOn ? "ON" : "OFF");
+  printf("Activation point at t=%f with horizon %f switches %s\n",
+         t, horizon, switchOn ? "ON" : "OFF");
 }
 
 void ActivationPoint::setSwitchOn(bool newSwitchOn)
