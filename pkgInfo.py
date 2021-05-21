@@ -44,7 +44,7 @@ SQ_12 = [ 'build/${MAKEFILE_PLATFORM}/TestSimpleTrajectory']
 
 copyright        = 'Copyright (c) Honda Research Institute Europe GmbH'
 
-gitOriginForCIA  = 'git@dmz-gitlab.honda-ri.de:GeneralRobotics/Tropic.git'
+gitOriginForCIA  = 'git@dmz-gitlab.honda-ri.de:GenRob/Tropic.git'
 
 gitBranchForCIA = 'develop'
 
