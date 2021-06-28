@@ -1477,8 +1477,10 @@ static void testIK()
                    "Null space scaling factor (default is %f)", alpha);
   argP.getArgument("-lambda", &lambda, "Regularization (default is %f)",
                    lambda);
-  argP.getArgument("-f", xmlFileName);
-  argP.getArgument("-dir", directory);
+  argP.getArgument("-f", xmlFileName, "Configuration file name (default "
+                   "is \"%s\")", xmlFileName);
+  argP.getArgument("-dir", directory, "Configuration file directory "
+                   "(default is \"%s\")", directory);
   argP.getArgument("-dt", &dt, "Sampling time interval");
   argP.getArgument("-staticEffort", effortBdyName,
                    "Body to map static effort");
@@ -1596,7 +1598,6 @@ static void testIK()
       v->add(cn);
     }
 
-
     RCHECK(tc->getController());
     for (size_t i=0; i<tc->getController()->getNumberOfTasks(); ++i)
     {
@@ -1608,7 +1609,6 @@ static void testIK()
         v->add(pn);
       }
     }
-
 
 
 

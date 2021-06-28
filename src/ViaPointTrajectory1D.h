@@ -62,7 +62,7 @@ public:
   virtual double getPosition(double t) const;
   virtual void computeTrajectoryPoint(double& xt, double& xt_dot,
                                       double& xt_ddot, double t) const;
-  virtual void initFromConstraints();
+  virtual bool initFromConstraints();
   virtual const char* getClassName() const;
   virtual const Rcs::ViaPointSequence* getViaSequence() const;
   virtual Rcs::ViaPointSequence* getViaSequence();
@@ -70,7 +70,8 @@ public:
 protected:
 
   virtual ViaPointTrajectory1D* clone() const;
-  virtual bool dxdPosConstraint(MatNd* grad, const std::shared_ptr<Constraint1D> c,
+  virtual bool dxdPosConstraint(MatNd* grad,
+                                const std::shared_ptr<Constraint1D> c,
                                 double t0, double t1, double dt) const;
   virtual int getPosRow(unsigned int constraintID) const;
 

@@ -35,6 +35,8 @@
 
 #include "Constraint1D.h"
 
+#include <Rcs_MatNd.h>
+
 #define TRAJECTORY1D_ALMOST_ZERO (1.0e-6)
 
 /*!
@@ -289,7 +291,7 @@ public:
    *         when using polynomial trajectories, this function must calculate
    *         the polyynomial parameters.
    */
-  virtual void initFromConstraints() = 0;
+  virtual bool initFromConstraints() = 0;
 
   /*! \brief Computes the gradient of the constraint c between t0 and t1,
    *         spaced with dt. The dimension of the gradient is m x n, where

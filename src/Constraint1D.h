@@ -33,8 +33,6 @@
 #ifndef TROPIC_CONSTRAINT1D_H
 #define TROPIC_CONSTRAINT1D_H
 
-#include <Rcs_MatNd.h>
-
 #include <vector>
 #include <ostream>
 #include <memory>
@@ -84,8 +82,7 @@ public:
   /*! \brief Constructs a constraint with the given flag, time and values. Also
    *         does some statistics (decreases global constraint count).
    */
-  Constraint1D(double t, double x, double x_dot, double x_ddot,
-               int flag);
+  Constraint1D(double t, double x, double x_dot, double x_ddot, int flag);
 
   /*! \brief Constructs a constraint with the given time and position. The
    *         velocity and acceleration are set to 0. All constraints are set
@@ -117,12 +114,6 @@ public:
   /*! \brief Checks if the constraint's numbers are all finite.
    */
   bool check() const;
-
-  /*! \brief Writes the constraint to the given row of the via point descriptor.
-   *         The function performs bounds checking and will exit fatally if the
-   *         viaDesc is not of appropriate dimensions (5 columns at least).
-   */
-  void toDescriptor(MatNd* viaDesc, unsigned int row);
 
   /*! \brief Get and set methods for all member variables.
    */

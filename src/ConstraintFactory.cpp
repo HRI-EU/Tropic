@@ -90,7 +90,8 @@ std::shared_ptr<ConstraintSet> ConstraintFactory::create(xmlNode* node)
     return nullptr;
   }
 
-  std::map<std::string, ConstraintMaker>::iterator it = constructorMap().find(className);
+  std::map<std::string, ConstraintMaker>::iterator it;
+  it = constructorMap().find(className);
 
   if (it != constructorMap().end())
   {
@@ -107,16 +108,14 @@ std::shared_ptr<ConstraintSet> ConstraintFactory::create(xmlNode* node)
 /*******************************************************************************
  * Creates the constraint for className and the given graph and xml content
  ******************************************************************************/
-std::shared_ptr<ConstraintSet> ConstraintFactory::create(std::string xmlFileName)
+std::shared_ptr<ConstraintSet> ConstraintFactory::create(std::string xmlFile)
 {
   xmlDocPtr xmlDoc;
-  xmlNodePtr node = parseXMLFile(xmlFileName.c_str(),
-                                 "ConstraintSet", &xmlDoc);
+  xmlNodePtr node = parseXMLFile(xmlFile.c_str(), "ConstraintSet", &xmlDoc);
 
   if (!node)
   {
-    RLOG(1, "Failed to parse ConstraintSet from file \"%s\"",
-         xmlFileName.c_str());
+    RLOG(1, "Failed to parse ConstraintSet from file \"%s\"", xmlFile.c_str());
     return nullptr;
   }
 

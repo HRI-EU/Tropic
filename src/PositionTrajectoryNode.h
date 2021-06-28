@@ -74,7 +74,7 @@ public:
     this->currNd = new Rcs::CapsuleNode(NULL, NULL, 0.5*goalSphereRadius, 0.0);
     currNd->setWireframe(false);
     currNd->hide();
-    currNd->setMaterial("BLACK_RUBBER");
+    currNd->setMaterial("GREEN");
     addChild(currNd.get());
   }
 

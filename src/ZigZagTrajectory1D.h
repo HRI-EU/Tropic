@@ -59,7 +59,7 @@ public:
   ZigZagTrajectory1D& operator=(const ZigZagTrajectory1D& rhs);
   virtual ~ZigZagTrajectory1D();
   virtual ZigZagTrajectory1D* clone() const;
-  virtual void initFromConstraints();
+  virtual bool initFromConstraints();
   virtual double getPosition(double t) const;
   virtual void computeTrajectoryPoint(double& xt, double& xt_dot,
                                       double& xt_ddot, double t) const;

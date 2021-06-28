@@ -32,14 +32,10 @@
 
 #include "Constraint1D.h"
 
-#include <Rcs_basicMath.h>
-#include <Rcs_Vec3d.h>
-#include <Rcs_macros.h>
-#include <Rcs_utils.h>
-
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <cmath>
 
 
 namespace tropic
@@ -55,8 +51,9 @@ static void myExit(void)
 {
   if (constraintStats != 0)
   {
-    RLOG_CPP(0, "Error: " << constraintStats
-             << " constraints on exit - should be 0");
+    std::cerr << "[" << __FILE__ << ": " << __FUNCTION__
+              << "(" << __LINE__ << ")]: " << constraintStats
+              << " constraints on exit - should be 0" << std::endl;
   }
 }
 
@@ -196,31 +193,14 @@ std::ostream& operator<<(std::ostream& output,
 /*******************************************************************************
  *
  ******************************************************************************/
-void Constraint1D::toDescriptor(MatNd* viaDesc, unsigned int row)
-{
-  MatNd_set(viaDesc, row, 0, this->t);
-  MatNd_set(viaDesc, row, 1, this->x);
-  MatNd_set(viaDesc, row, 2, this->x_dot);
-  MatNd_set(viaDesc, row, 3, this->x_ddot);
-  MatNd_set(viaDesc, row, 4, this->flag & 0x07); // Mask first 3 bits only
-
-  if (viaDesc->n > 5)
-  {
-    MatNd_set(viaDesc, row, 5, round(this->id));
-  }
-}
-
-/*******************************************************************************
- *
- ******************************************************************************/
 bool Constraint1D::check() const
 {
   bool success = true;
 
-  success = Math_isFinite(t) && success;
-  success = Math_isFinite(x) && success;
-  success = Math_isFinite(x_dot) && success;
-  success = Math_isFinite(x_ddot) && success;
+  success = std::isfinite(t) && success;
+  success = std::isfinite(x) && success;
+  success = std::isfinite(x_dot) && success;
+  success = std::isfinite(x_ddot) && success;
 
   return success;
 }

@@ -32,16 +32,34 @@
 
 #include "ViaPointTrajectory1D.h"
 #include "Rcs_macros.h"
-#include "Rcs_basicMath.h"
-#include "Rcs_Vec3d.h"
 
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <cmath>
 
 
 namespace tropic
 {
+
+/*******************************************************************************
+ * Writes the constraint to the given row of the via point descriptor.
+ * The function performs bounds checking and will exit fatally if the
+ * viaDesc is not of appropriate dimensions (5 columns at least).
+ ******************************************************************************/
+static inline void toDesc(Constraint1D* c1d, MatNd* viaDesc, unsigned int row)
+{
+  MatNd_set(viaDesc, row, 0, c1d->getTime());
+  MatNd_set(viaDesc, row, 1, c1d->getPosition());
+  MatNd_set(viaDesc, row, 2, c1d->getVelocity());
+  MatNd_set(viaDesc, row, 3, c1d->getAcceleration());
+  MatNd_set(viaDesc, row, 4, c1d->getFlag() & 0x07); // Mask first 3 bits only
+
+  if (viaDesc->n > 5)
+  {
+    MatNd_set(viaDesc, row, 5, round(c1d->getID()));
+  }
+}
 
 /*******************************************************************************
  *
@@ -69,7 +87,6 @@ ViaPointTrajectory1D::ViaPointTrajectory1D(double x0, double horizon_) :
  ******************************************************************************/
 ViaPointTrajectory1D::ViaPointTrajectory1D(const ViaPointTrajectory1D& copyFromMe): Trajectory1D(copyFromMe)
 {
-  RLOG(5, "Copy-Constructor ViaPointTrajectory1D");
   this->viaSeq = copyFromMe.viaSeq->clone();
 }
 
@@ -123,7 +140,7 @@ bool ViaPointTrajectory1D::check() const
  * Updates the via descriptor from the set of TrajectoryConstraint1D. The
  * init() function sorts the array to ensure an increasing time.
  ******************************************************************************/
-void ViaPointTrajectory1D::initFromConstraints()
+bool ViaPointTrajectory1D::initFromConstraints()
 {
   // If no goal point comes after the horizon, we will add or update a horizon
   // point with the coordinates of the most previous goal point within the
@@ -162,24 +179,24 @@ void ViaPointTrajectory1D::initFromConstraints()
   size_t numRows = 1+(viaHorizon ? 1 : 0)+intermediate.size()+viaGoal.size();
   MatNd* viaDescr = MatNd_create(numRows, 6);
 
-  viaNow.toDescriptor(viaDescr, 0);
+  toDesc(&viaNow, viaDescr, 0);
   size_t offset = 1;
 
   if (viaHorizon != NULL)
   {
-    viaHorizon->toDescriptor(viaDescr, offset);
+    toDesc(viaHorizon, viaDescr, offset);
     offset++;
   }
 
   for (size_t i=0; i<intermediate.size(); ++i)
   {
-    intermediate[i]->toDescriptor(viaDescr, i+offset);
+    toDesc(intermediate[i].get(), viaDescr, i+offset);
   }
 
   offset += intermediate.size();
   for (size_t i=0; i<viaGoal.size(); ++i)
   {
-    viaGoal[i]->toDescriptor(viaDescr, i+offset);
+    toDesc(viaGoal[i].get(), viaDescr, i+offset);
   }
 
   bool success = viaSeq->init(viaDescr);
@@ -193,6 +210,8 @@ void ViaPointTrajectory1D::initFromConstraints()
   }
 
   MatNd_destroy(viaDescr);
+
+  return success;
 }
 
 /*******************************************************************************
@@ -256,7 +275,6 @@ int ViaPointTrajectory1D::getPosRow(unsigned int constraintID) const
 {
   if (viaSeq->viaDescr->n < 6)
   {
-    RLOG(0, "Constraint id not contained in via descriptor");
     return -1;
   }
 
@@ -268,13 +286,12 @@ int ViaPointTrajectory1D::getPosRow(unsigned int constraintID) const
     {
       unsigned int flag = lround(MatNd_get(viaSeq->viaDescr, i, 4));
 
-      if (Math_isBitSet(flag, VIA_POS))
+      if (((flag>>VIA_POS)&0x01) == 0x01)
       {
         return i;
       }
       else
       {
-        RLOG(0, "Constraint has no position component");
         return -1;
       }
     }

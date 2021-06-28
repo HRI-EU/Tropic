@@ -31,7 +31,6 @@
 *******************************************************************************/
 
 #include "ZigZagTrajectory1D.h"
-#include "Rcs_macros.h"
 
 #include <algorithm>
 #include <functional>
@@ -66,7 +65,6 @@ ZigZagTrajectory1D::ZigZagTrajectory1D(const ZigZagTrajectory1D& copyFromMe): Tr
  ******************************************************************************/
 ZigZagTrajectory1D& ZigZagTrajectory1D::operator=(const ZigZagTrajectory1D& copyFromMe)
 {
-  RLOG(0, "=== ZigZagTrajectory1D");
   if (this == &copyFromMe)
   {
     return *this;
@@ -95,8 +93,9 @@ ZigZagTrajectory1D::~ZigZagTrajectory1D()
 /*******************************************************************************
  *
  ******************************************************************************/
-void ZigZagTrajectory1D::initFromConstraints()
+bool ZigZagTrajectory1D::initFromConstraints()
 {
+  return true;
 }
 
 /*******************************************************************************
@@ -291,7 +290,7 @@ const Constraint1D* ZigZagTrajectory1D::getGoalConstraintPtrBefore(double t) con
     return &viaNow;
   }
 
-  for (int i=viaGoal.size()-1; i>=0; i--)
+  for (int i=(int)viaGoal.size()-1; i>=0; i--)
   {
     if (viaGoal[i]->getTime() < t)
     {
@@ -321,7 +320,7 @@ const Constraint1D* ZigZagTrajectory1D::getViaConstraintPtrBefore(double t) cons
     return NULL;
   }
 
-  for (int i=intermediate.size()-1; i>=0; i--)
+  for (int i=(int)intermediate.size()-1; i>=0; i--)
   {
     if (intermediate[i]->getTime() < t)
     {

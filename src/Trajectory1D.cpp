@@ -68,7 +68,6 @@ Trajectory1D::Trajectory1D(const Trajectory1D& copyFromMe) :
   horizon(copyFromMe.horizon), viaNow(copyFromMe.viaNow), viaHorizon(NULL),
   name(copyFromMe.name)
 {
-  //RLOG(1, "Copy-Constructor Trajectory1D");
   clearConstraints();
 
   if (copyFromMe.viaHorizon != NULL)
@@ -92,7 +91,6 @@ Trajectory1D::Trajectory1D(const Trajectory1D& copyFromMe) :
  ******************************************************************************/
 Trajectory1D& Trajectory1D::operator=(const Trajectory1D& copyFromMe)
 {
-  RLOG(0, "Copying Trajectory1D");
   if (this == &copyFromMe)
   {
     return *this;
