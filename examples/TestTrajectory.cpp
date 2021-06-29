@@ -1448,20 +1448,20 @@ static void testIK()
   Rcs::KeyCatcherBase::registerKey("T", "Run controller test");
   Rcs::KeyCatcherBase::registerKey("p", "Toggle pause");
   Rcs::KeyCatcherBase::registerKey("a", "Change IK algorithm");
-  Rcs::KeyCatcherBase::registerKey("d", "Write q-vector to q.dat");
-  Rcs::KeyCatcherBase::registerKey("D", "Set q-vector from file q.dat");
+  Rcs::KeyCatcherBase::registerKey("D", "Write trajectory to file traj_out.xml");
+  Rcs::KeyCatcherBase::registerKey("d", "Read trajectory from file traj.xml");
   Rcs::KeyCatcherBase::registerKey("n", "Reset to default state");
   Rcs::KeyCatcherBase::registerKey("C", "Toggle closest point lines");
   Rcs::KeyCatcherBase::registerKey("o", "Toggle distance calculation");
   Rcs::KeyCatcherBase::registerKey("m", "Manipulability null space");
-  Rcs::KeyCatcherBase::registerKey("v", "Write current q to model_state");
+  Rcs::KeyCatcherBase::registerKey("v", "Write current model_state to console");
 
   int algo = 1;
   double alpha = 0.05, lambda = 0.0, dt = 0.01, dt_calc = 0.0;
   double jlCost = 0.0, dJlCost = 0.0, horizon = 2.0;
   bool calcDistance = true;
-  char xmlFileName[128] = "cAction.xml";
-  char directory[128] = "config/xml/DexBot";
+  char xmlFileName[128] = "cDualArmScitos7.xml";
+  char directory[128] = "config/xml/Kinova";
   char effortBdyName[256] = "";
 
   // Initialize GUI and OSG mutex
@@ -1818,18 +1818,21 @@ static void testIK()
     }
     else if (kc && kc->getAndResetKey('d'))
     {
-      RMSG("Writing q to file \"q.dat\"");
-      MatNd* q_deg = MatNd_clone(controller.getGraph()->q);
-      VecNd_constMulSelf(q_deg->ele,180.0/M_PI,q_deg->m);
-      MatNd_toFile(q_deg, "q.dat");
-      MatNd_destroy(q_deg);
+      auto ts = tropic::ConstraintFactory::create("traj.xml");
+
+      if (!ts)
+      {
+        RMSG("Failed to load trajectory from file \"traj.xml\"");
+      }
+      else
+      {
+        tc->addAndApply(ts, false);
+      }
     }
     else if (kc && kc->getAndResetKey('D'))
     {
-      bool success = MatNd_fromFile(controller.getGraph()->q, "q.dat");
-      RMSG("%s read q from file \"q.dat\"",
-           success ? "Successfully" : "Failed to");
-      RcsGraph_setState(controller.getGraph(), NULL, NULL);
+      RMSG("Writing trajectory to \"traj_out.dat\"");
+      tc->toXML("traj_out.xml");
     }
     else if (kc && kc->getAndResetKey('n'))
     {
