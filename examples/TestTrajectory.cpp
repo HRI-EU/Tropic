@@ -1499,6 +1499,7 @@ static void testIK()
   bool simpleGraphics = argP.hasArgument("-simpleGraphics", "OpenGL without fan"
                                          "cy stuff (shadows, anti-aliasing)");
   bool zigzag = argP.hasArgument("-zigzag", "ZigZag trajectory");
+  bool showOnly = argP.hasArgument("-passiveGui", "Gui shows values but is not active");
 
   // Option without mutex for viewer
   pthread_mutex_t* mtx = &graphLock;
@@ -1556,7 +1557,7 @@ static void testIK()
     tc = std::make_shared<tropic::TrajectoryController<tropic::ViaPointTrajectory1D>>(&controller, horizon);
   }
 
-  tc->setActivation(true);
+  // tc->setActivation(true);
   tc->setTurboMode(false);
 
 
@@ -1602,7 +1603,8 @@ static void testIK()
     for (size_t i=0; i<tc->getController()->getNumberOfTasks(); ++i)
     {
       RCHECK(tc->getTrajectory(i));
-      if (STREQ(tc->getTrajectory(i)->getClassName(), "TrajectoryPos3D"))
+      if (STREQ(tc->getTrajectory(i)->getClassName(), "TrajectoryPos3D") &&
+          (!tc->getController()->getTask(i)->getRefBody()))
       {
         tropic::PositionTrajectoryNode* pn = new tropic::PositionTrajectoryNode(tc->getTrajectory(i));
         //pn->setPointSize(10.0);
@@ -1615,9 +1617,16 @@ static void testIK()
     v->runInThread(mtx);
 
     // Launch the task widget
-    Rcs::ControllerWidgetBase::create(&controller, a_des, x_des,
-                                      x_curr, mtx);
-
+    if (showOnly)
+    {
+      Rcs::ControllerWidgetBase::create(&controller, (MatNd*)tc->getActivationPtr(), x_des_f,
+                                        x_curr, mtx, true);
+    }
+    else
+    {
+      Rcs::ControllerWidgetBase::create(&controller, a_des, x_des,
+                                        x_curr, mtx, false);
+    }
 
     if (launchJointWidget==true)
     {
@@ -1662,7 +1671,7 @@ static void testIK()
     MatNd_destroy(h1);
     MatNd_destroy(h2);
 
-    if (guiChanged)
+    if (guiChanged && (!showOnly))
     {
       // tc->clear();
 
@@ -1682,7 +1691,10 @@ static void testIK()
     tc->step(dt);
     tc->getPosition(0.0, x_des_f);
 
-
+    if (showOnly)
+    {
+      tc->getActivation(a_des);
+    }
 
     controller.computeDX(dx_des, x_des_f);
     double clipLimit = 0.1;
@@ -1826,7 +1838,9 @@ static void testIK()
       }
       else
       {
-        tc->addAndApply(ts, false);
+        bool success = tc->addAndApply(ts, true);
+        RMSG("%s loading trajectory from file \"traj.xml\"", success ? "Success" : "Failure");
+        ts->print();
       }
     }
     else if (kc && kc->getAndResetKey('D'))
