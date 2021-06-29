@@ -1518,7 +1518,7 @@ static void testIK()
   Rcs_addResourcePath(directory);
 
   // Create controller
-  Rcs::ControllerBase controller(xmlFileName, true);
+  Rcs::ControllerBase controller(xmlFileName);
   Rcs::IkSolverRMR* ikSolver = NULL;
 
   if (constraintIK==true)
@@ -1852,6 +1852,13 @@ static void testIK()
     {
       RMSG("Resetting");
       RcsGraph_setDefaultState(controller.getGraph());
+      tc->clear(true);
+      tc->setActivation(false);
+      MatNd_setZero(a_des);
+      controller.computeX(x_curr);
+      MatNd_copy(x_des, x_curr);
+      MatNd_copy(x_des_f, x_curr);
+      MatNd_copy(x_des_prev, x_curr);
     }
     else if (kc && kc->getAndResetKey('C') && cn)
     {
