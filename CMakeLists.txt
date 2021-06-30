@@ -90,6 +90,7 @@ src/PolarConstraint.cpp
 src/MultiGoalConstraint.cpp
 src/ConstraintFactory.cpp
 src/GraphConstraint.cpp
+src/ConnectBodyConstraint.cpp
 )
 
 ADD_LIBRARY(Tropic ${LIBRARY_LINKING_TYPE} ${TROPIC_SRCS})

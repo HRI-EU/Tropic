@@ -148,6 +148,19 @@ This constraint combines a 3d-position constraint with a Euler angles constraint
     <ConstraintSet type="PoseConstraint" t="2" pos="0 1 2 30 40 50" trajectory="MyTrajectory" />
 ```
 
+### Connecting bodies constraints
+
+This constraint is not really related to trajectory generation, but allows to change the kinematic
+structure of the underlying graph.
+
+```
+    <ConstraintSet type="ConnectBodyConstraint" t="2" parent="Hand" child="Object" />
+```
+
+In the above example, the body with name "Object" will be made the kinematic child of the
+body "Hand" at time t=2. Both parent and child must be valid names of bodies within the
+underlying graph.
+
 ## License
 
 This project is licensed under the BSD 3-clause license - see the [LICENSE.md](LICENSE.md) file for details

@@ -1559,6 +1559,7 @@ static void testIK()
 
   // tc->setActivation(true);
   tc->setTurboMode(false);
+  tc->takeControllerOwnership(true);
 
 
   // Body for static effort null space gradient
@@ -1934,6 +1935,8 @@ static void testIK()
     delete v;
     RcsGuiFactory_shutdown();
   }
+
+  tc->takeControllerOwnership(false);
 
   MatNd_destroy(dq_des);
   MatNd_destroy(q_dot_des);
