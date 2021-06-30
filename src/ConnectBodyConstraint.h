@@ -57,14 +57,14 @@ public:
   virtual double compute(double dt);
 
   virtual bool inUse() const;
-
-  virtual double getStartTimeRecurse() const;
   virtual double getEndTime() const;
   virtual void fromXML(xmlNode* node);
   virtual void toXML(std::ostream& out, size_t indent = 0) const;
 
 
 protected:
+
+  virtual double getStartTimeRecurse() const;
 
   std::string childName, parentName;
   double attachTime;
