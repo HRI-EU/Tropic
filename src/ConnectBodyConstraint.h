@@ -57,8 +57,11 @@ public:
   virtual double compute(double dt);
 
   virtual bool inUse() const;
+
   virtual double getEndTime() const;
+
   virtual void fromXML(xmlNode* node);
+
   virtual void toXML(std::ostream& out, size_t indent = 0) const;
 
 
