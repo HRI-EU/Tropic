@@ -70,7 +70,7 @@ ActivationSet::~ActivationSet()
 {
 }
 
-ActivationSet* ActivationSet::clone()
+ActivationSet* ActivationSet::clone() const
 {
   //return new ActivationSet(*this);
   ActivationSet* tSet = new ActivationSet();

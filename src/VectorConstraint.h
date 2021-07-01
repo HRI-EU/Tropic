@@ -30,40 +30,41 @@
 
 *******************************************************************************/
 
-#ifndef TROPIC_POLARCONSTRAINT_H
-#define TROPIC_POLARCONSTRAINT_H
+#ifndef TROPIC_VECTORCONSTRAINT_H
+#define TROPIC_VECTORCONSTRAINT_H
 
 #include "ConstraintSet.h"
+
+#include <string>
+
 
 
 namespace tropic
 {
 
 /*! \ingroup Tropic
- *  \brief Class for computing 2d orientation trajectories
- *
- *         The PolarConstraint class is a 3-dimensinal constraint to create
- *         trajectories between Polar axes. Internally, it maintains three
- *         constraints that represent a Polar axis. Interpolation between
- *         two rotations is performed with a linear interpolation (LERP) of
- *         the axis components. To extract the interpolated rotations,
- *         the LERPed values are converted to the Polar angles. Therefore the
- *         interface to the class is the only place where Polar angles are used.
+ *  \brief Class for computing n-dimensional trajectories.
  */
-class PolarConstraint : public ConstraintSet
+class VectorConstraint : public ConstraintSet
 {
 public:
 
-  PolarConstraint();
-  PolarConstraint(xmlNode* node);
-  PolarConstraint(double t, double polarPhi, double polarTheta,
-                  const std::string& trajNameND);
-  virtual ~PolarConstraint();
-  virtual PolarConstraint* clone() const;
+  VectorConstraint();
+
+  VectorConstraint(xmlNode* node);
+
+  VectorConstraint(double t, const std::vector<double>& pos,
+                   const std::string& trajNameND, int flag=7);
+
+  virtual VectorConstraint* clone() const;
+
+  virtual ~VectorConstraint();
+  std::vector<double> getPosition() const;
   virtual void fromXML(xmlNode* node);
   virtual void toXML(std::ostream& out, size_t indent = 0) const;
 };
 
 }   // namespace tropic
 
-#endif   // TROPIC_POLARCONSTRAINT_H
+
+#endif   // TROPIC_VECTORCONSTRAINT_H

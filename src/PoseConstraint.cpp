@@ -117,7 +117,7 @@ PoseConstraint::~PoseConstraint()
 {
 }
 
-PoseConstraint* PoseConstraint::clone()
+PoseConstraint* PoseConstraint::clone() const
 {
   PoseConstraint* tSet = new PoseConstraint();
   tSet->constraint = constraint;

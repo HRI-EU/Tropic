@@ -66,7 +66,7 @@ public:
 
   virtual ~PoseConstraint();
 
-  virtual PoseConstraint* clone();
+  virtual PoseConstraint* clone() const;
 
   void print() const;
 

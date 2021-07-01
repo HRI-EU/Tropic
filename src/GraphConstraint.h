@@ -62,7 +62,7 @@ public:
 
   GraphConstraint(xmlNode* node);
 
-  virtual GraphConstraint* clone();
+  virtual GraphConstraint* clone() const;
 
   virtual ~GraphConstraint();
 

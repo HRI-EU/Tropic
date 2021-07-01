@@ -54,7 +54,7 @@ public:
   ActivationSet(const ActivationSet& other);
   ActivationSet(xmlNode* node);
   virtual ~ActivationSet();
-  virtual ActivationSet* clone();
+  virtual ActivationSet* clone() const;
 
   virtual void apply(std::vector<TrajectoryND*>& trajectory,
                      std::map<std::string, Trajectory1D*>& tMap,

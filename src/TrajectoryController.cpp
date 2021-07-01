@@ -440,7 +440,7 @@ void TrajectoryControllerBase::stepTrajectoryND(TrajectoryND* tnd,
     // If an activation point falls out of time, we delete it.
     if (tnd->activation[j]->getTime()<=-tnd->activation[j]->getHorizon()-1.0e-6)
     {
-      std::shared_ptr<ActivationPoint> iPtr = *(tnd->activation.begin()+j);
+      // std::shared_ptr<ActivationPoint> iPtr = *(tnd->activation.begin()+j);
       tnd->activation.erase(tnd->activation.begin()+j);
     }
 
@@ -549,7 +549,6 @@ double TrajectoryControllerBase::step(double dt)
     stepTrajectoryND(trajectory[i], task_i, dt);
     this->activation->ele[i] = trajectory[i]->isActive();
   }
-
 
   return endTime;
 }

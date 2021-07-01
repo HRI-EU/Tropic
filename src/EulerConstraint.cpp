@@ -102,7 +102,7 @@ EulerConstraint::~EulerConstraint()
 {
 }
 
-EulerConstraint* EulerConstraint::clone()
+EulerConstraint* EulerConstraint::clone() const
 {
   RCHECK_MSG(A_BI==NULL, "This does not yet work due to the A_BI pointer");
   EulerConstraint* tSet = new EulerConstraint();
@@ -110,7 +110,7 @@ EulerConstraint* EulerConstraint::clone()
   tSet->className = className;
   tSet->oriTrj = NULL;
   tSet->oriTrjName = oriTrjName;
-  Mat3d_copy(tSet->A_PB, A_PB);
+  Mat3d_copy(tSet->A_PB, (double (*)[3])A_PB);
 
   for (size_t i = 0; i < set.size(); ++i)
   {

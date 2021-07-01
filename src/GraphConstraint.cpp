@@ -71,7 +71,7 @@ void GraphConstraint::setGraph(RcsGraph* newGraph)
   this->graph = newGraph;
 }
 
-GraphConstraint* GraphConstraint::clone()
+GraphConstraint* GraphConstraint::clone() const
 {
   GraphConstraint* tSet = new GraphConstraint();
   tSet->constraint = constraint;

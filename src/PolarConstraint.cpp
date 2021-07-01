@@ -73,7 +73,7 @@ PolarConstraint::~PolarConstraint()
 {
 }
 
-PolarConstraint* PolarConstraint::clone()
+PolarConstraint* PolarConstraint::clone() const
 {
   PolarConstraint* tSet = new PolarConstraint();
   tSet->constraint = constraint;

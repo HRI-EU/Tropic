@@ -50,7 +50,7 @@ public:
 
   ConnectBodyConstraint(const ConnectBodyConstraint& other);
 
-  virtual ConnectBodyConstraint* clone();
+  virtual ConnectBodyConstraint* clone() const;
 
   virtual ~ConnectBodyConstraint();
 

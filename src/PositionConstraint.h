@@ -66,7 +66,7 @@ public:
   PositionConstraint(double t, const HTr* A_BI_, const double I_r_IP[3],
                      const std::string& trajNameND, int flag=7);
 
-  virtual PositionConstraint* clone();
+  virtual PositionConstraint* clone() const;
 
   virtual ~PositionConstraint();
   virtual double compute(double dt);

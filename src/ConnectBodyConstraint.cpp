@@ -68,7 +68,7 @@ ConnectBodyConstraint::ConnectBodyConstraint(const ConnectBodyConstraint& other)
 {
 }
 
-ConnectBodyConstraint* ConnectBodyConstraint::clone()
+ConnectBodyConstraint* ConnectBodyConstraint::clone() const
 {
   ConnectBodyConstraint* tSet = new ConnectBodyConstraint(attachTime, childName, parentName);
   tSet->constraint = constraint;

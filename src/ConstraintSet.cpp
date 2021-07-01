@@ -95,7 +95,7 @@ ConstraintSet::ConstraintSet(const ConstraintSet& other) :
  * For correct polymorphism, the clone method must be implemented in each
  * derived class.
  ******************************************************************************/
-ConstraintSet* ConstraintSet::clone()
+ConstraintSet* ConstraintSet::clone() const
 {
   //return new ConstraintSet(*this);
   ConstraintSet* tSet = new ConstraintSet();

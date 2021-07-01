@@ -98,7 +98,7 @@ public:
   /*! \brief We apply the clone idiom to realize polymorphism. Unfortunately,
    *         this doesn't work using copy constructors.
    */
-  virtual ConstraintSet* clone();
+  virtual ConstraintSet* clone() const;
 
   /*! \brief Recursive comparison. This includes all members, including the
    *         constraint ids. This function is used during the recursion.

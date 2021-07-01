@@ -88,6 +88,7 @@ src/EulerConstraint.cpp
 src/PoseConstraint.cpp
 src/PolarConstraint.cpp
 src/MultiGoalConstraint.cpp
+src/VectorConstraint.cpp
 src/ConstraintFactory.cpp
 src/GraphConstraint.cpp
 src/ConnectBodyConstraint.cpp

@@ -85,7 +85,7 @@ public:
 
   EulerConstraint(const EulerConstraint& other);
 
-  virtual EulerConstraint* clone();
+  virtual EulerConstraint* clone() const;
 
   virtual ~EulerConstraint();
 

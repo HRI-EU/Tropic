@@ -30,13 +30,14 @@
 
 *******************************************************************************/
 
-#include "PositionConstraint.h"
+#include "VectorConstraint.h"
 #include "ConstraintFactory.h"
 
 #include <Rcs_macros.h>
 #include <Rcs_parser.h>
 #include <Rcs_stlParser.h>
 #include <Rcs_utils.h>
+#include <Rcs_basicMath.h>
 
 #include <string>
 
@@ -44,70 +45,40 @@
 
 namespace tropic
 {
-REGISTER_CONSTRAINT(PositionConstraint);
+REGISTER_CONSTRAINT(VectorConstraint);
 
-PositionConstraint::PositionConstraint() : ConstraintSet(), A_BI(NULL)
+VectorConstraint::VectorConstraint() : ConstraintSet()
 {
-  setClassName("PositionConstraint");
-  Vec3d_setZero(this->B_r_BP);
+  setClassName("VectorConstraint");
 }
 
-PositionConstraint::PositionConstraint(xmlNode* node) :
-  ConstraintSet(node), A_BI(NULL)
+VectorConstraint::VectorConstraint(xmlNode* node) : ConstraintSet(node)
 {
-  setClassName("PositionConstraint");
-  Vec3d_setZero(this->B_r_BP);
+  setClassName("VectorConstraint");
   fromXML(node);
 }
 
-PositionConstraint::PositionConstraint(double t, double x, double y, double z,
-                                       const std::string& trajNameND,
-                                       int flag) :
-  ConstraintSet(), A_BI(NULL)
+VectorConstraint::VectorConstraint(double t, const std::vector<double>& pos,
+                                   const std::string& trajNameND, int flag) :
+  ConstraintSet()
 {
-  setClassName("PositionConstraint");
-  Vec3d_setZero(this->B_r_BP);
-  add(t, x, 0.0, 0.0, flag, trajNameND + " 0");
-  add(t, y, 0.0, 0.0, flag, trajNameND + " 1");
-  add(t, z, 0.0, 0.0, flag, trajNameND + " 2");
+  setClassName("VectorConstraint");
+
+  for (size_t i=0; i<pos.size(); ++i)
+  {
+    add(t, pos[i], 0.0, 0.0, flag, trajNameND + " " + std::to_string(i));
+  }
 }
 
-PositionConstraint::PositionConstraint(double t, const double I_r_IP[3],
-                                       const std::string& trajNameND,
-                                       int flag) :
-  ConstraintSet(), A_BI(NULL)
-{
-  setClassName("PositionConstraint");
-  Vec3d_setZero(this->B_r_BP);
-  add(t, I_r_IP[0], 0.0, 0.0, flag, trajNameND + " 0");
-  add(t, I_r_IP[1], 0.0, 0.0, flag, trajNameND + " 1");
-  add(t, I_r_IP[2], 0.0, 0.0, flag, trajNameND + " 2");
-}
-
-PositionConstraint::PositionConstraint(double t, const HTr* A_BI_,
-                                       const double I_r_IP[3],
-                                       const std::string& trajNameND,
-                                       int flag) :
-  ConstraintSet(), A_BI(A_BI_)
-{
-  setClassName("PositionConstraint");
-  Vec3d_invTransform(this->B_r_BP, A_BI, I_r_IP);
-  add(t, I_r_IP[0], 0.0, 0.0, flag, trajNameND + " 0");
-  add(t, I_r_IP[1], 0.0, 0.0, flag, trajNameND + " 1");
-  add(t, I_r_IP[2], 0.0, 0.0, flag, trajNameND + " 2");
-}
-
-PositionConstraint::~PositionConstraint()
+VectorConstraint::~VectorConstraint()
 {
 }
 
-PositionConstraint* PositionConstraint::clone() const
+VectorConstraint* VectorConstraint::clone() const
 {
-  RCHECK_MSG(A_BI==NULL, "This does not yet work due to the A_BI pointer");
-  PositionConstraint* tSet = new PositionConstraint();
+  VectorConstraint* tSet = new VectorConstraint();
   tSet->constraint = constraint;
   tSet->className = className;
-  Vec3d_copy(tSet->B_r_BP, B_r_BP);
 
   for (size_t i = 0; i < set.size(); ++i)
   {
@@ -118,51 +89,82 @@ PositionConstraint* PositionConstraint::clone() const
   return tSet;
 }
 
-double PositionConstraint::compute(double dt)
+std::vector<double> VectorConstraint::getPosition() const
 {
-  if (this->A_BI)
-  {
-    double I_r_IP[3];
-    Vec3d_transform(I_r_IP, this->A_BI, this->B_r_BP);
+  std::vector<double> pos;
 
-    getConstraint(0)->setPosition(I_r_IP[0]);
-    getConstraint(1)->setPosition(I_r_IP[1]);
-    getConstraint(2)->setPosition(I_r_IP[2]);
-  }
-
-  return ConstraintSet::compute(dt);
-}
-
-void PositionConstraint::getPosition(double I_pt[3])
-{
   for (size_t i=0; i<numConstraints(false); ++i)
   {
-    I_pt[i] = getConstraint(i)->getPosition();
+    pos.push_back(getConstraint(i)->getPosition());
   }
+
+  return pos;
 }
 
-void PositionConstraint::fromXML(xmlNode* node)
+void VectorConstraint::fromXML(xmlNode* node)
 {
   if (isXMLNodeName(node, "ConstraintSet") == false)
   {
     throw ("XML node is not a \"ConstraintSet\" - giving up");
   }
 
-  double t, pos[3];
+  double t;
+  size_t flag = 0, dim = 0;
   std::string tName;
   bool success = Rcs::getXMLNodePropertySTLString(node, "trajectory", tName);
   success = getXMLNodePropertyDouble(node, "t", &t) && success;
-  success = getXMLNodePropertyVec3(node, "pos", pos) && success;
 
-  // If the flag is not given, we set it to the default (7: fully specified)
-  int flag = 7;
-  getXMLNodePropertyInt(node, "flag", &flag);
+  std::vector<double> pos = Rcs::getXMLNodePropertyVecSTLDouble(node, "pos");
+  if (!pos.empty())
+  {
+    flag += 1;
+    dim = pos.size();
+  }
+
+  std::vector<double> vel = Rcs::getXMLNodePropertyVecSTLDouble(node, "vel");
+  if (!vel.empty())
+  {
+    flag += 2;
+    dim = vel.size();
+
+    if ((!pos.empty()) && (vel.size()!=pos.size()))
+    {
+      success = false;
+    }
+  }
+
+  std::vector<double> acc = Rcs::getXMLNodePropertyVecSTLDouble(node, "acc");
+  if (!acc.empty())
+  {
+    flag += 4;
+    dim = acc.size();
+
+    if ((!pos.empty()) && (acc.size()!=pos.size()))
+    {
+      success = false;
+    }
+    if ((!vel.empty()) && (acc.size()!=vel.size()))
+    {
+      success = false;
+    }
+  }
+
+  // If none of pos, vel or acc are given, there's no information on the vector
+  // dimensionality and we treat it as an error.
+  if (flag==0)
+  {
+    success = false;
+  }
 
   if (success)
   {
-    add(t, pos[0], 0.0, 0.0, flag, tName + " 0");
-    add(t, pos[1], 0.0, 0.0, flag, tName + " 1");
-    add(t, pos[2], 0.0, 0.0, flag, tName + " 2");
+    for (size_t i=0; i<dim; ++i)
+    {
+      add(t, pos.empty() ? 0.0 : pos[i],
+          vel.empty() ? 0.0 : vel[i],
+          acc.empty() ? 0.0 : acc[i],
+          flag, tName + " " + std::to_string(i));
+    }
   }
   else
   {
@@ -179,29 +181,74 @@ void PositionConstraint::fromXML(xmlNode* node)
 
 }
 
-void PositionConstraint::toXML(std::ostream& outStream, size_t indent) const
+void VectorConstraint::toXML(std::ostream& outStream, size_t indent) const
 {
   // Prepare indentation string so that hierarchy levels are indented nicely
   std::string indStr(indent, ' ');
 
   // Open set's xml description. The class name is polymorphic
-  outStream << indStr << "<ConstraintSet type=\""
-            << getClassName() << "\" ";
+  outStream << indStr << "<ConstraintSet type=\"" << getClassName() << "\" ";
 
-  // Check that we have only 3 constraints
-  RCHECK_MSG(constraint.size()==3, "Size is %zu", constraint.size());
+  // Check that we have constraints
+  RCHECK_MSG(!constraint.empty(), "VectorConstraint has no constraints");
 
   // Write out information to top-level tag
   outStream << "t=\"" << constraint[0].c->getTime() << "\" ";
-  outStream << "pos=\""
-            << constraint[0].c->getPosition() << " "
-            << constraint[1].c->getPosition() << " "
-            << constraint[2].c->getPosition() << "\" ";
 
-  // Only write out flag if constraint is not fully specified
-  if (constraint[0].c->getFlag() != 7)
+  // Write positions if corresponding flag is set
+  const int flag = constraint[0].c->getFlag();
+
+  if (Math_isBitSet(flag, 0))
   {
-    outStream << "flag=\"" << constraint[0].c->getFlag() << "\" ";
+    outStream << "pos=\"";
+
+    for (size_t i=0; i<constraint.size(); ++i)
+    {
+      outStream << constraint[i].c->getPosition() << " ";
+
+      if (i!=constraint.size()-1)
+      {
+        outStream << " ";
+      }
+    }
+
+    outStream << "\" ";
+  }
+
+  // Write velocities if corresponding flag is set
+  if (Math_isBitSet(flag, 1))
+  {
+    outStream << "vel=\"";
+
+    for (size_t i=0; i<constraint.size(); ++i)
+    {
+      outStream << constraint[i].c->getVelocity() << " ";
+
+      if (i!=constraint.size()-1)
+      {
+        outStream << " ";
+      }
+    }
+
+    outStream << "\" ";
+  }
+
+  // Write accelerations if corresponding flag is set
+  if (Math_isBitSet(flag, 2))
+  {
+    outStream << "acc=\"";
+
+    for (size_t i=0; i<constraint.size(); ++i)
+    {
+      outStream << constraint[i].c->getAcceleration() << " ";
+
+      if (i!=constraint.size()-1)
+      {
+        outStream << " ";
+      }
+    }
+
+    outStream << "\" ";
   }
 
   char tmp[256];
