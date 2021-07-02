@@ -33,11 +33,66 @@ research projects, such as for instance this one: https://www.honda-ri.de/human-
 
 ## Getting Started
 
-Tropic can be compiled with the cmake build system. To compile it, just type:
+Tropic depends on the Rcs libraries that you can also get via GitHub. The develop branch
+is required for Tropic:
 
-    cd <build-directory>
-    cmake <source-directory>
-    make 
+```
+git clone https://github.com/HRI-EU/Rcs.git -b develop
+```
+
+To configure Rcs, just type
+
+```
+cd <Rcs build-directory>
+cmake <Rcs source-directory>
+```
+
+Then, select an install location:
+
+```
+    ccmake .
+```
+
+In the ccmake mask, enter your desired build location, for instance
+
+```
+CMAKE_INSTALL_PREFIX             /home/myself/Software/install/Rcs/1.0 
+```
+
+Then, build and install Rcs with
+
+```
+    make
+    make install
+```
+
+This should add libraries, headers and other installation files into the given
+installation folder.
+
+Then configure Tropic:
+
+```
+    cd <Tropic build-directory>
+    cmake <Tropic source-directory>
+```
+
+Then, set the Rcs install location with ccmake:
+
+```
+ccmake .
+```
+
+In the ccmake mask, enter the Rcs build location into the variable Rcs_DIR, for instance
+
+```
+Rcs_DIR                          /home/myself/Software/install/Rcs/1.0/share/cmake/Rcs 
+```
+
+Then, build Tropic with
+
+```
+    make
+```
 
 To build the doxygen documentation, just type:
 
