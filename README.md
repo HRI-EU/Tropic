@@ -50,7 +50,7 @@ cmake <Rcs source-directory>
 Then, select an install location:
 
 ```
-    ccmake .
+ccmake .
 ```
 
 In the ccmake mask, enter your desired build location, for instance
@@ -62,18 +62,16 @@ CMAKE_INSTALL_PREFIX             /home/myself/Software/install/Rcs/1.0
 Then, build and install Rcs with
 
 ```
-    make
-    make install
+make
+make install
 ```
 
 This should add libraries, headers and other installation files into the given
-installation folder.
-
-Then configure Tropic:
+installation folder. Then configure Tropic:
 
 ```
-    cd <Tropic build-directory>
-    cmake <Tropic source-directory>
+cd <Tropic build-directory>
+cmake <Tropic source-directory>
 ```
 
 Then, set the Rcs install location with ccmake:
@@ -91,12 +89,14 @@ Rcs_DIR                          /home/myself/Software/install/Rcs/1.0/share/cma
 Then, build Tropic with
 
 ```
-    make
+make
 ```
 
 To build the doxygen documentation, just type:
 
-    make TrajectoryDoc
+```
+make TrajectoryDoc
+```
 
 ## Examples
 
@@ -115,10 +115,10 @@ key interactions.
 This constraint allows to set per-element positions for individual trajectories.
 
 ```
-  <ConstraintSet type="ConstraintSet" >
-    <Constraint t="1" pos="1" vel="0" acc="0" flag="1" trajectory="MyTrajectory 0"  />
-    <Constraint t="2" pos="0" vel="0" acc="0" flag="7" trajectory="MyTrajectory 1"  />
-  </ConstraintSet>
+<ConstraintSet type="ConstraintSet" >
+  <Constraint t="1" pos="1" vel="0" acc="0" flag="1" trajectory="MyTrajectory 0"  />
+  <Constraint t="2" pos="0" vel="0" acc="0" flag="7" trajectory="MyTrajectory 1"  />
+</ConstraintSet>
 ```
 
 In the above example, the position pos=1 is set to be reached at time t=1 seconds for
@@ -137,17 +137,37 @@ This is what the flags mean:
  - 6 vel + acc
  - 7 pos + vel + acc
 
+### Vector constraints
+
+This is a convenience constraint to define general constraints for trajectories
+with several components more compactly. Here is an example:
+
+```
+<ConstraintSet type="VectorConstraint" t="5" pos="0 1 2" trajectory="MyTrajectory1" />
+<ConstraintSet type="VectorConstraint" t="5" pos="1 2" vel="0 0" acc="0 0" trajectory="MyTrajectory2" />
+```
+
+The first line is a constraint to reach the coordinate [0 1 2] of the trajectory
+MyTrajectory1 at t=5 seconds. It corresponds to flag 1, which means that velocity and
+acceleration are unspecified.
+
+The second line is a constraint on position, velocity and acceleration level with two
+dimensions for the trajectory MyTrajectory2.
+
+It is important that the number of elements in the pos, vel and acc attribute match the
+dimension of the trajectory.
+
 ### Activation constraints
 
 These constraints can activate and deactivate individual tasks that correspond to
 trajectories.
 
 ```
-   <ConstraintSet type="ActivationSet" >
-      <Activation t="1" switchesOn="true"  horizon="1"   trajectory="MyTrajectory" />
-      <Activation t="2" switchesOn="false" horizon="1"   trajectory="MyTrajectory" />
-      <Activation t="3" switchesOn="true"  horizon="0.5" trajectory="MyOtherTrajectory" />
-    </ConstraintSet>
+ConstraintSet type="ActivationSet" >
+  <Activation t="1" switchesOn="true"  horizon="1"   trajectory="MyTrajectory" />
+  <Activation t="2" switchesOn="false" horizon="1"   trajectory="MyTrajectory" />
+  <Activation t="3" switchesOn="true"  horizon="0.5" trajectory="MyOtherTrajectory" />
+</ConstraintSet>
 ```
 
 In the above example, the the task corresponding to MyTrajectory is switched on at
@@ -166,7 +186,7 @@ time t=5 seconds. The velocity and acceleration are enforced to be zero if the c
 flag ist set.
 
 ```
-    <ConstraintSet type="PositionConstraint" t="5" pos="0 1 2" flag="7" trajectory="MyTrajectory" />
+<ConstraintSet type="PositionConstraint" t="5" pos="0 1 2" flag="7" trajectory="MyTrajectory" />
 ```
 
 ### Polar angles constraints
@@ -178,7 +198,7 @@ are reached at time t=2 seconds. The velocity and acceleration are enforced to b
 corresponsing flag ist set. In the XML description, the angular units are expected to be degrees.
 
 ```
-    <ConstraintSet type="PolarConstraint" t="2" pos="90 0" trajectory="MyTrajectory" />
+<ConstraintSet type="PolarConstraint" t="2" pos="90 0" trajectory="MyTrajectory" />
 ```
 
 ### Euler angles constraints
@@ -191,7 +211,7 @@ are reached at time t=2 seconds. The velocity and acceleration are enforced to b
 corresponsing flag ist set. In the XML description, the angular units are expected to be degrees.
 
 ```
-    <ConstraintSet type="EulerConstraint" t="2" pos="90 0 60" trajectory="MyTrajectory" />
+<ConstraintSet type="EulerConstraint" t="2" pos="90 0 60" trajectory="MyTrajectory" />
 ```
 
 ### Pose constraints
@@ -200,7 +220,7 @@ This constraint combines a 3d-position constraint with a Euler angles constraint
 6d poses can be specified. In the XML description, the angular units are expected to be degrees.
 
 ```
-    <ConstraintSet type="PoseConstraint" t="2" pos="0 1 2 30 40 50" trajectory="MyTrajectory" />
+<ConstraintSet type="PoseConstraint" t="2" pos="0 1 2 30 40 50" trajectory="MyTrajectory" />
 ```
 
 ### Connecting bodies constraints
@@ -209,7 +229,7 @@ This constraint is not really related to trajectory generation, but allows to ch
 structure of the underlying graph.
 
 ```
-    <ConstraintSet type="ConnectBodyConstraint" t="2" parent="Hand" child="Object" />
+<ConstraintSet type="ConnectBodyConstraint" t="2" parent="Hand" child="Object" />
 ```
 
 In the above example, the body with name "Object" will be made the kinematic child of the
