@@ -30,14 +30,18 @@
 
 *******************************************************************************/
 
-#include <TrajectoryController.h>
-#include <ActivationSet.h>
-#include <PositionTrajectoryNode.h>
-#include <MultiGoalConstraint.h>
-#include <ConstraintFactory.h>
-#include <IkSolverConstraintRMR.h>
-#include <TrajectoryPlotter1D.h>
-#include <PoseConstraint.h>
+#include "TrajectoryController.h"
+#include "ActivationSet.h"
+#include "PositionTrajectoryNode.h"
+#include "MultiGoalConstraint.h"
+#include "ConstraintFactory.h"
+#include "IkSolverConstraintRMR.h"
+#include "TrajectoryPlotter1D.h"
+#include "PoseConstraint.h"
+#include "PolarConstraint.h"
+#include "ConnectBodyConstraint.h"
+#include "PouringConstraint.h"
+
 #include <ControllerWidgetBase.h>
 #include <MatNdWidget.h>
 #include <JointWidget.h>
@@ -74,6 +78,208 @@ bool runLoop = true;
 
 typedef Rcs::StackVec<double, 8> VecNd;
 
+
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
+static void testIK2()
+{
+  RLOG(0, "This example requires some improvements when changing activations");
+
+  Rcs::KeyCatcherBase::registerKey("q", "Quit");
+  Rcs::KeyCatcherBase::registerKey("T", "Run controller test");
+  Rcs::KeyCatcherBase::registerKey("p", "Toggle pause");
+  Rcs::KeyCatcherBase::registerKey("a", "Change IK algorithm");
+  Rcs::KeyCatcherBase::registerKey("D", "Write trajectory to file traj_out.xml");
+  Rcs::KeyCatcherBase::registerKey("d", "Read trajectory from file traj.xml");
+  Rcs::KeyCatcherBase::registerKey("n", "Reset to default state");
+  Rcs::KeyCatcherBase::registerKey("C", "Toggle closest point lines");
+  Rcs::KeyCatcherBase::registerKey("o", "Toggle distance calculation");
+  Rcs::KeyCatcherBase::registerKey("m", "Manipulability null space");
+  Rcs::KeyCatcherBase::registerKey("v", "Write current model_state to console");
+  Rcs::KeyCatcherBase::registerKey("t", "Test ConnectBodyConstraint");
+
+  int algo = 1;
+  double alpha = 0.05, lambda = 0.0, dt = 0.01, dt_calc = 0.0;
+  double jlCost = 0.0, horizon = 2.0;
+  char xmlFileName[128] = "cDualArmScitos7.xml";
+  char directory[128] = "config/xml/Kinova";
+
+  // Initialize GUI and OSG mutex
+  pthread_mutex_t graphLock;
+  pthread_mutex_init(&graphLock, NULL);
+
+  Rcs::CmdLineParser argP;
+  argP.getArgument("-horizon", &horizon, "Trajectory horizon (default is %f)",
+                   horizon);
+  argP.getArgument("-algo", &algo, "IK algorithm: 0: left inverse, 1: "
+                   "right inverse (default is %d)", algo);
+  argP.getArgument("-alpha", &alpha,
+                   "Null space scaling factor (default is %f)", alpha);
+  argP.getArgument("-lambda", &lambda, "Regularization (default is %f)",
+                   lambda);
+  argP.getArgument("-f", xmlFileName, "Configuration file name (default "
+                   "is \"%s\")", xmlFileName);
+  argP.getArgument("-dir", directory, "Configuration file directory "
+                   "(default is \"%s\")", directory);
+  argP.getArgument("-dt", &dt, "Sampling time interval");
+  bool zigzag = argP.hasArgument("-zigzag", "ZigZag trajectory");
+
+  // Option without mutex for viewer
+  pthread_mutex_t* mtx = &graphLock;
+  if (argP.hasArgument("-nomutex", "Graphics without mutex"))
+  {
+    mtx = NULL;
+  }
+
+  if (argP.hasArgument("-h"))
+  {
+    printf("Resolved motion rate control test\n\n");
+    pthread_mutex_destroy(&graphLock);
+    return;
+  }
+
+  Rcs_addResourcePath(directory);
+
+  // Create controller
+  Rcs::ControllerBase controller(xmlFileName);
+  Rcs::IkSolverRMR* ikSolver = new Rcs::IkSolverRMR(&controller);
+
+  MatNd* dq_des     = MatNd_create(controller.getGraph()->dof, 1);
+  MatNd* q_dot_des  = MatNd_create(controller.getGraph()->dof, 1);
+  MatNd* a_des      = MatNd_create(controller.getNumberOfTasks(), 1);
+  MatNd* x_curr     = MatNd_create(controller.getTaskDim(), 1);
+  MatNd* x_des      = MatNd_create(controller.getTaskDim(), 1);
+  MatNd* x_des_prev = MatNd_create(controller.getTaskDim(), 1);
+  MatNd* x_des_f    = MatNd_create(controller.getTaskDim(), 1);
+  MatNd* dx_des     = MatNd_create(controller.getTaskDim(), 1);
+  MatNd* dH         = MatNd_create(1, controller.getGraph()->nJ);
+
+  controller.readActivationsFromXML(a_des);
+  controller.computeX(x_curr);
+  MatNd_copy(x_des, x_curr);
+  MatNd_copy(x_des_f, x_curr);
+  MatNd_copy(x_des_prev, x_curr);
+
+  std::shared_ptr<tropic::TrajectoryControllerBase> tc;
+
+  if (zigzag)
+  {
+    tc = std::make_shared<tropic::TrajectoryController<tropic::ZigZagTrajectory1D>>(&controller, horizon);
+  }
+  else
+  {
+    tc = std::make_shared<tropic::TrajectoryController<tropic::ViaPointTrajectory1D>>(&controller, horizon);
+  }
+
+  // tc->setActivation(true);
+  tc->setTurboMode(false);
+  tc->takeControllerOwnership(true);
+
+
+  // Create visualization
+  char hudText[2056] = "";
+  Rcs::Viewer* v           = new Rcs::Viewer();
+  Rcs::KeyCatcher* kc      = new Rcs::KeyCatcher();
+  Rcs::GraphNode* gn       = new Rcs::GraphNode(controller.getGraph());
+  Rcs::HUD* hud            = new Rcs::HUD();
+  v->add(gn);
+  v->add(hud);
+  v->add(kc);
+  v->runInThread(mtx);
+
+
+
+
+  // Endless loop
+  while (runLoop == true)
+  {
+    pthread_mutex_lock(&graphLock);
+
+    dt_calc = Timer_getTime();
+
+    //////////////////////////////////////////////////////////////////
+    // Step trajectories
+    //////////////////////////////////////////////////////////////////
+    tc->step(dt);
+    tc->getPosition(0.0, x_des_f);
+    tc->getActivation(a_des);
+
+    controller.computeDX(dx_des, x_des_f);
+    double clipLimit = 0.1;
+    MatNd clipArr = MatNd_fromPtr(1, 1, &clipLimit);
+    MatNd_saturateSelf(dx_des, &clipArr);
+    controller.computeJointlimitGradient(dH);
+    MatNd_constMulSelf(dH, alpha);
+    ikSolver->solveRightInverse(dq_des, dx_des, dH, a_des, lambda);
+    MatNd_constMul(q_dot_des, dq_des, 1.0/dt);
+
+    MatNd_addSelf(controller.getGraph()->q, dq_des);
+    RcsGraph_setState(controller.getGraph(), NULL, q_dot_des);
+    bool poseOK = controller.checkLimits();
+    controller.computeX(x_curr);
+
+    dt_calc = Timer_getTime() - dt_calc;
+
+    pthread_mutex_unlock(&graphLock);
+
+    if (kc && kc->getAndResetKey('q'))
+    {
+      runLoop = false;
+    }
+    else if (kc && kc->getAndResetKey('t'))
+    {
+      RMSG("Loading Johannes's class");
+      auto ts = std::make_shared<tropic::PouringConstraint>();
+      tc->addAndApply(ts, true);
+      ts->print();
+      RMSG("Done loading Johannes's class");
+    }
+
+
+    sprintf(hudText, "IK calculation: %.1f us\ndof: %d nJ: %d "
+            "nqr: %d nx: %d\nJL-cost: %.6f"
+            "\nlambda:%g alpha: %g constraints: %d",
+            1.0e6*dt_calc, controller.getGraph()->dof,
+            controller.getGraph()->nJ, ikSolver->getInternalDof(),
+            (int) controller.getActiveTaskDim(a_des),
+            jlCost, lambda, alpha,
+            (int) tc->getNumberOfSetConstraints());
+
+    if (hud != NULL)
+    {
+      hud->setText(hudText);
+    }
+    else
+    {
+      std::cout << hudText;
+    }
+
+    Timer_waitDT(dt);
+  }
+
+
+
+  // Clean up
+  delete v;
+
+  tc->takeControllerOwnership(false);
+
+  MatNd_destroy(dq_des);
+  MatNd_destroy(q_dot_des);
+  MatNd_destroy(a_des);
+  MatNd_destroy(x_curr);
+  MatNd_destroy(x_des);
+  MatNd_destroy(x_des_f);
+  MatNd_destroy(x_des_prev);
+  MatNd_destroy(dx_des);
+  MatNd_destroy(dH);
+
+  pthread_mutex_destroy(&graphLock);
+
+  delete ikSolver;
+}
 
 static void testLinearAccelerationTrajectory(int argc, char** argv)
 {
@@ -1455,6 +1661,8 @@ static void testIK()
   Rcs::KeyCatcherBase::registerKey("o", "Toggle distance calculation");
   Rcs::KeyCatcherBase::registerKey("m", "Manipulability null space");
   Rcs::KeyCatcherBase::registerKey("v", "Write current model_state to console");
+  Rcs::KeyCatcherBase::registerKey("t", "Test ConnectBodyConstraint");
+  Rcs::KeyCatcherBase::registerKey("t", "Load trajectory from Johannes's cool class");
 
   int algo = 1;
   double alpha = 0.05, lambda = 0.0, dt = 0.01, dt_calc = 0.0;
@@ -1683,13 +1891,12 @@ static void testIK()
       }
 
       auto guiConstraint = std::make_shared<tropic::MultiGoalConstraint>(horizon, x_des, tc->getTrajectories());
-      guiConstraint->apply(tc->getTrajectoriesRef());
-      tc->add(guiConstraint);
+      tc->addAndApply(guiConstraint);
     }
 
     MatNd_copy(x_des_prev, x_des);
 
-    tc->step(dt);
+    double endTime = tc->step(dt);
     tc->getPosition(0.0, x_des_f);
 
     if (showOnly)
@@ -1760,29 +1967,31 @@ static void testIK()
 
       case 1:
       {
-        MatNd* lambdaA = MatNd_create(controller.getTaskDim(), 1);
-        const double reg = 2.0;
+        // MatNd* lambdaA = MatNd_create(controller.getTaskDim(), 1);
+        // const double reg = 2.0;
 
-        int tix = controller.getTaskIndex("Left Elbow");
-        if (tix != -1)
-        {
-          size_t xIdx = controller.getTaskArrayIndex(tix);
-          double* Wx_i = &lambdaA->ele[xIdx];
-          VecNd_setElementsTo(Wx_i, reg, controller.getTaskDim(tix));
-        }
+        // int tix = controller.getTaskIndex("Left Elbow");
+        // if (tix != -1)
+        // {
+        //   size_t xIdx = controller.getTaskArrayIndex(tix);
+        //   double* Wx_i = &lambdaA->ele[xIdx];
+        //   VecNd_setElementsTo(Wx_i, reg, controller.getTaskDim(tix));
+        // }
 
-        tix = controller.getTaskIndex("Left ABC");
-        if (tix != -1)
-        {
-          size_t xIdx = controller.getTaskArrayIndex(tix);
-          double* Wx_i = &lambdaA->ele[xIdx];
-          VecNd_setElementsTo(Wx_i, reg, controller.getTaskDim(tix));
-        }
+        // tix = controller.getTaskIndex("Left ABC");
+        // if (tix != -1)
+        // {
+        //   size_t xIdx = controller.getTaskArrayIndex(tix);
+        //   double* Wx_i = &lambdaA->ele[xIdx];
+        //   VecNd_setElementsTo(Wx_i, reg, controller.getTaskDim(tix));
+        // }
 
-        controller.compressToActiveSelf(lambdaA, a_des);
+        // controller.compressToActiveSelf(lambdaA, a_des);
 
-        ikSolver->solveRightInverse(dq_des, dx_des, dH, a_des, lambdaA);
-        MatNd_destroy(lambdaA);
+        // ikSolver->solveRightInverse(dq_des, dx_des, dH, a_des, lambdaA);
+        // MatNd_destroy(lambdaA);
+
+        ikSolver->solveRightInverse(dq_des, dx_des, dH, a_des, lambda);
       }
       break;
 
@@ -1849,6 +2058,14 @@ static void testIK()
       RMSG("Writing trajectory to \"traj_out.dat\"");
       tc->toXML("traj_out.xml");
     }
+    else if (kc && kc->getAndResetKey('t'))
+    {
+      RMSG("Loading Johannes's class");
+      auto ts = std::make_shared<tropic::PouringConstraint>();
+      tc->addAndApply(ts, true);
+      ts->print();
+      RMSG("Done loading Johannes's class");
+    }
     else if (kc && kc->getAndResetKey('n'))
     {
       RMSG("Resetting");
@@ -1882,6 +2099,46 @@ static void testIK()
       RcsGraph_fprintModelState(stdout, controller.getGraph(),
                                 controller.getGraph()->q);
     }
+    else if (kc && kc->getAndResetKey('t'))
+    {
+      // auto set1 = std::make_shared<tropic::ConstraintSet>();
+      // auto set2 = std::make_shared<tropic::ActivationSet>();
+      // auto ts = std::make_shared<tropic::ConnectBodyConstraint>(2.0, "Glas", "PowerGrasp_L");
+      // set1->add(set2);
+      // set2->add(ts);
+      // tc->addAndApply(set1, true);
+
+      // RLOG(0, "Adding Polar constraint in 2 seconds");
+      // auto ts = std::make_shared<tropic::PolarConstraint>(2.0, 0.0, 0.0, "Polar_L");
+      // tc->addAndApply(ts, true);
+
+      // RLOG(0, "Adding PositionConstraint in 2 seconds");
+      // auto ts = std::make_shared<tropic::PositionConstraint>(2.0, 0.0, 0.0, 0.0, "XYZ_L");
+      // tc->addAndApply(ts, true);
+
+
+
+      {
+        RLOG(0, "Adding Polar constraint in 2 seconds");
+        auto as = std::make_shared<tropic::ActivationSet>();
+        as->addActivation(0.5, true, 0.5, "Polar_L");
+        auto ts = std::make_shared<tropic::PolarConstraint>(2.0, 0.0, 0.0, "Polar_L");
+        as->add(ts);
+        tc->addAndApply(as, true);
+      }
+
+      {
+        RLOG(0, "Adding PositionConstraint in 2 seconds");
+        auto as = std::make_shared<tropic::ActivationSet>();
+        as->addActivation(0.5, true, 0.5, "XYZ_L");
+        auto ts = std::make_shared<tropic::PositionConstraint>(2.0, 0.55, 0.2, 1.0, "XYZ_L");
+        as->add(ts);
+        tc->addAndApply(as, true);
+        as->print();
+      }
+
+
+    }
 
 
     sprintf(hudText, "IK calculation: %.1f us\ndof: %d nJ: %d "
@@ -1889,7 +2146,7 @@ static void testIK()
             "\nalgo: %d lambda:%g alpha: %g\n"
             "Manipulability index: %.6f\n"
             "Static effort: %.6f\n"
-            "Robot pose %s   Constraints: %d",
+            "Robot pose %s   Constraints: %d\nend time: %.3f",
             1.0e6*dt_calc, controller.getGraph()->dof,
             controller.getGraph()->nJ, ikSolver->getInternalDof(),
             (int) controller.getActiveTaskDim(a_des),
@@ -1902,7 +2159,7 @@ static void testIK()
             RcsGraph_staticEffort(controller.getGraph(),
                                   effortBdy, &F_effort3, NULL, NULL),
             poseOK ? "VALID" : "VIOLATES LIMITS",
-            (int) tc->getNumberOfSetConstraints());
+            (int) tc->getNumberOfSetConstraints(), endTime);
 
     if (hud != NULL)
     {
@@ -1918,7 +2175,7 @@ static void testIK()
       runLoop = false;
     }
 
-    if (pause==true)
+    if (pause==true || ikSolver->getDeterminant()==0.0)
     {
       RPAUSE();
     }
@@ -2583,6 +2840,10 @@ int main(int argc, char** argv)
 
     case 11:
       testDynamicActivation(argc, argv);
+      break;
+
+    case 12:
+      testIK2();
       break;
 
     default:
