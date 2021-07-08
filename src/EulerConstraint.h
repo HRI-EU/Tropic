@@ -80,6 +80,9 @@ public:
   EulerConstraint(double t, const double I_eulerXYZ[3],
                   const std::string& trajNameND);
 
+  EulerConstraint(double t, double thx, double thy, double thz,
+                  const std::string& trajNameND);
+
   EulerConstraint(double t, const HTr* A_BI_, const double I_eulerXYZ[3],
                   const std::string& trajNameND);
 

@@ -58,6 +58,22 @@ EulerConstraint::EulerConstraint(xmlNode* node) :
   fromXML(node);
 }
 
+EulerConstraint::EulerConstraint(double t, double thx, double thy, double thz,
+                                 const std::string& trajNameND) :
+  ConstraintSet(), A_BI(NULL), oriTrj(NULL), oriTrjName(trajNameND)
+{
+  setClassName("EulerConstraint");
+  double quat[4], I_eulerXYZ[3];
+  Vec3d_set(I_eulerXYZ, thx, thy, thz);
+  Mat3d_setIdentity(this->A_PB);
+  Quat_fromEulerAngles(quat, I_eulerXYZ);
+
+  add(t, quat[0], trajNameND + " 0");
+  add(t, quat[1], trajNameND + " 1");
+  add(t, quat[2], trajNameND + " 2");
+  add(t, quat[3], trajNameND + " 3");
+}
+
 EulerConstraint::EulerConstraint(double t, const double I_eulerXYZ[3],
                                  const std::string& trajNameND) :
   ConstraintSet(), A_BI(NULL), oriTrj(NULL), oriTrjName(trajNameND)
