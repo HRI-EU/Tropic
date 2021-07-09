@@ -30,33 +30,6 @@
 
 *******************************************************************************/
 
-/*
-Composite pattern Beispiel Klasse:
-
-class Person
-{
-std::vector<Person> children;
-bool is18()
-{
-if (age<18) return false;
-else
-return true;
-}
-
-int age;
-}
-
-class Teenager : public Person
-{
-bool is18()
-{
-return false;
-}
-}
-
-
-*/
-
 #ifndef TROPIC_POURINGCONSTRAINT_H
 #define TROPIC_POURINGCONSTRAINT_H
 
@@ -66,11 +39,15 @@ return false;
 #include "ConnectBodyConstraint.h"
 #include "VectorConstraint.h"
 #include "EulerConstraint.h"
+#include "ActivationSet.h"
 
 #include <Rcs_macros.h>
 
 namespace tropic
 {
+
+
+const double leftFingerClose = 0.7;
 
 /*! \ingroup Tropic
  *  \brief Class for pouring a bottle into a glas
@@ -122,8 +99,8 @@ public:
     //       add(Gazing(4.5, 5.0, "Gaze BottleTip"));
     add(liftGlas(8.0, 3.5, 3.5));
     add(Pouring(11.5, pouringDuration));
-    add(placeBottle(14.5 + pouringDuration, 6.5));
-    add(placeGlas(14.5 + pouringDuration, 7.0));
+    add(placeBottle(21.5 + pouringDuration, 12.0));
+    add(placeGlas(21.5 + pouringDuration, 12.0));
     //       add(Gazing(9.5 + pouringDuration, 2.5, "Gaze Glas"));
     //add(placeGlas(2.0*duration/3.0, duration/3.0));
 
@@ -251,15 +228,15 @@ public:
     a1->addActivation(t_end + 1.0, false, 0.5, "XYZ_L Glas");
 
     a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.67*duration - 1.0, 0.15, 0.0015, -0.15, "XYZ_L Glas", 5));
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_end, -0.009, -0.00009, -0.11, "XYZ_L Glas"));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_end, -0.009, -0.00009, -0.08, "XYZ_L Glas"));
 
     a1->addActivation(t_start, true, 0.5, "Polar_L");
 
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 0.5*duration, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_L"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 0.75*duration, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_L"));
 
     a1->add(std::make_shared<tropic::ConnectBodyConstraint>(t_end + 1.0, "Glas", "PowerGrasp_L"));
 
-    a1->add(Grasp(t_end, "FingerJoints_L"));
+    a1->add(Grasp(t_end, "FingerJoints_L", leftFingerClose));
 
     return a1;
 
@@ -346,32 +323,31 @@ public:
     //double t_end = t_start + duration;
 
     a1->addActivation(t_start, true, 0.5, "XYZ_GlasBottle");
-    a1->addActivation(t_start + 3.0 + duration, false, 0.5, "XYZ_GlasBottle");   // 11.5 -> 16.5
+    a1->addActivation(t_start + 10.0 + duration, false, 0.5, "XYZ_GlasBottle");
 
     // Keep right hand at its current x-location so that it does not bump into the screen
     a1->addActivation(t_start, true, 0.5, "X_R");
-    a1->addActivation(t_start + 3.0 + duration, false, 0.5, "X_R");   // 11.5 -> 16.5
+    a1->addActivation(t_start + 10.0 + duration, false, 0.5, "X_R");
 
 
-    //a1->add(std::make_shared<tropic::PositionConstraint>(6.5, 0.09, -0.15, 0.01, "XYZ_GlasBottle"));
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 2.05, 0, 0, 0.01, "XYZ_GlasBottle"));
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 2.5, 0, 0, 0.01, "XYZ_GlasBottle"));
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 2.5 + duration, 0, 0, 0.01, "XYZ_GlasBottle"));
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 3.0 + duration, 0, 0, 0.01, "XYZ_GlasBottle"));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 3.0, 0, -0.0, 0.01, "XYZ_GlasBottle"));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 7.0 + duration, 0, 0, 0.01, "XYZ_GlasBottle"));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 8.5 + duration, 0, -0.15, 0.01, "XYZ_GlasBottle"));
+    //a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 10.0 + duration, 0, -0.15, 0.01, "XYZ_GlasBottle"));
 
     a1->addActivation(t_start, true, 0.5, "Polar_R");
 
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 1.0, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_R"));
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 2.5, RCS_DEG2RAD(90.0), RCS_DEG2RAD(90.0), "Polar_R"));
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 2.5 + duration, RCS_DEG2RAD(110.0), RCS_DEG2RAD(90.0), "Polar_R"));
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 4.0 + duration, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_R"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 0.0, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_R"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 5.0, RCS_DEG2RAD(90.0), RCS_DEG2RAD(90.0), "Polar_R"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 5.0 + duration, RCS_DEG2RAD(130.0), RCS_DEG2RAD(90.0), "Polar_R"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 10.0 + duration, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_R"));
 
     a1->addActivation(t_start, true, 0.5, "Polar_L");
 
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 1.0, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_L"));
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 2.5, RCS_DEG2RAD(15.0), RCS_DEG2RAD(-90.0), "Polar_L"));
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 2.5 + duration, RCS_DEG2RAD(5.0), RCS_DEG2RAD(-90.0), "Polar_L"));
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 4.0 + duration, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_L"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 0.0, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_L"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 5.0, RCS_DEG2RAD(15.0), RCS_DEG2RAD(-90.0), "Polar_L"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 5.0 + duration, RCS_DEG2RAD(5.0), RCS_DEG2RAD(-90.0), "Polar_L"));
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 10.0 + duration, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_L"));
 
     return a1;
 
@@ -412,14 +388,14 @@ public:
     a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.34*duration, 0.06, 0.2, -0.11, "XYZ_R Table"));
 
     a1->addActivation(t_start, true, 0.5, "Polar_R");
-    a1->addActivation(t_start + 0.67*duration, false, 0.5, "Polar_R");
+    a1->addActivation(t_start + duration, false, 2.0, "Polar_R");
 
     a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 0.5*duration, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_R"));
 
     a1->add(std::make_shared<tropic::ConnectBodyConstraint>(t_start + 0.34*duration, "Bottle", "Table"));
 
     a1->addActivation(t_start + 0.34*duration, true, 0.5, "XYZ_R Bottle");
-    a1->addActivation(t_end, false, 0.5, "XYZ_R Bottle");   // 16 -> 16.68
+    a1->addActivation(t_end, false, 2.0, "XYZ_R Bottle");   // 16 -> 16.68
 
     a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.9*duration, 0.15, 0.0015, -0.11, "XYZ_R Bottle"));
 
@@ -476,25 +452,26 @@ public:
     std::shared_ptr<tropic::ActivationSet> a1 = std::make_shared<tropic::ActivationSet>();
 
     double t_end = t_start + duration;
+    double t_switch = 0.5*duration;
 
     a1->addActivation(t_start, true, 0.5, "XYZ_L Table");
-    a1->addActivation(t_start + 0.34*duration, false, 0.5, "XYZ_L Table");
+    a1->addActivation(t_start + t_switch, false, 0.5, "XYZ_L Table");
 
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.34*duration, 0.1, -0.2, -0.11, "XYZ_L Table"));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + t_switch, 0.1, -0.2, -0.08, "XYZ_L Table"));
 
     a1->addActivation(t_start, true, 0.5, "Polar_L");
-    a1->addActivation(t_start + 0.67*duration, false, 0.5, "Polar_L");
+    a1->addActivation(t_start + duration, false, 2.0, "Polar_L");
 
     a1->add(std::make_shared<tropic::PolarConstraint>(t_start + 0.5*duration, RCS_DEG2RAD(0.0), RCS_DEG2RAD(0.0), "Polar_L"));
 
-    a1->add(std::make_shared<tropic::ConnectBodyConstraint>(t_start + 0.34*duration, "Glas", "Table"));
+    a1->add(std::make_shared<tropic::ConnectBodyConstraint>(t_start + t_switch, "Glas", "Table"));
 
-    a1->addActivation(t_start + 0.34*duration, true, 0.5, "XYZ_L Glas");
-    a1->addActivation(t_end, false, 0.5, "XYZ_L Glas");
+    a1->addActivation(t_start + t_switch, true, 0.5, "XYZ_L Glas");
+    a1->addActivation(t_end, false, 2.0, "XYZ_L Glas");
 
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.9*duration, 0.15, 0.0015, -0.11, "XYZ_L Glas"));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.9*duration, 0.15, 0.0015, -0.08, "XYZ_L Glas"));
 
-    a1->add(Unhand(t_start + 0.38*duration, "FingerJoints_L"));
+    a1->add(Unhand(t_start + 0.4*duration, "FingerJoints_L", leftFingerClose));
 
     return a1;
 
@@ -531,14 +508,14 @@ public:
 
   }
 
-  std::shared_ptr<tropic::ConstraintSet> Grasp(double t_start, std::string Hand) const /////////////////////////////////////////////////////
+  std::shared_ptr<tropic::ConstraintSet> Grasp(double t_start, std::string Hand, double closingValue=0.5) const /////////////////////////////////////////////////////
   {
     std::shared_ptr<tropic::ActivationSet> a1 = std::make_shared<tropic::ActivationSet>();
 
     a1->addActivation(t_start, true, 0.5, Hand);
 
     a1->add(std::make_shared<tropic::VectorConstraint>(t_start, std::vector<double> {0.01, 0.01, 0.01}, Hand));
-    a1->add(std::make_shared<tropic::VectorConstraint>(t_start + 1.0, std::vector<double> {0.5, 0.5, 0.5}, Hand));
+    a1->add(std::make_shared<tropic::VectorConstraint>(t_start + 1.0, std::vector<double> {closingValue, closingValue, closingValue}, Hand));
 
     return a1;
 
@@ -548,13 +525,13 @@ public:
 
   }
 
-  std::shared_ptr<tropic::ConstraintSet> Unhand(double t_start, std::string Hand) const /////////////////////////////////////////////////////
+  std::shared_ptr<tropic::ConstraintSet> Unhand(double t_start, std::string Hand, double closingValue=0.5) const /////////////////////////////////////////////////////
   {
     std::shared_ptr<tropic::ActivationSet> a1 = std::make_shared<tropic::ActivationSet>();
 
     //a1->addActivation(t_start, false, 0.5, Hand);
 
-    a1->add(std::make_shared<tropic::VectorConstraint>(t_start, std::vector<double> {0.5, 0.5, 0.5}, Hand));
+    a1->add(std::make_shared<tropic::VectorConstraint>(t_start, std::vector<double> {closingValue, closingValue, closingValue}, Hand));
     a1->add(std::make_shared<tropic::VectorConstraint>(t_start + 1.5, std::vector<double> {0.01, 0.01, 0.01}, Hand));
 
     return a1;
@@ -696,10 +673,6 @@ public:
 protected:
 
   virtual void fromXML(xmlNode* node)
-  {
-  }
-
-  virtual void toXML(std::ostream& out, size_t indent = 0) const
   {
   }
 

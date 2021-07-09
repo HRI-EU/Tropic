@@ -1952,7 +1952,7 @@ static void testIK()
       MatNd_destroy(effortGrad);
     }
 
-    MatNd_constMulSelf(dH, alpha);
+    MatNd_constMulSelf(dH, alpha*tc->computeBlending());
 
     if (valgrind==false)
     {
@@ -2064,6 +2064,7 @@ static void testIK()
       auto ts = std::make_shared<tropic::PouringConstraint>();
       tc->addAndApply(ts, true);
       ts->print();
+      tc->toXML("traj_out.xml");
       RMSG("Done loading Johannes's class");
     }
     else if (kc && kc->getAndResetKey('n'))
