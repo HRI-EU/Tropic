@@ -26,9 +26,7 @@ ELSE()
 ENDIF()
 
 ################################################################################
-#
 # Setup exported target collection
-#
 ################################################################################
 # Setup TROPIC_EXPORT_LIBRARIES so that CMakeLists.txt can modify it
 SET(TROPIC_EXPORT_LIBRARIES "" CACHE INTERNAL "")
@@ -36,7 +34,6 @@ SET(TROPIC_EXPORT_LIBRARIES "" CACHE INTERNAL "")
 FUNCTION(TROPIC_ADD_EXPORT_LIBRARY library)
   SET(TROPIC_EXPORT_LIBRARIES ${TROPIC_EXPORT_LIBRARIES} ${library} CACHE INTERNAL "")
 ENDFUNCTION()
-
 
 IF (WIN32)
   ADD_DEFINITIONS(-D_USE_MATH_DEFINES)   # M_PI etc. for windows
@@ -68,9 +65,7 @@ IF("${isSystemDir}" STREQUAL "-1")
 ENDIF("${isSystemDir}" STREQUAL "-1")
 
 ###############################################################################
-#
-# CMakeLists file for the Tropic library
-#
+# Library
 ###############################################################################
 SET(TROPIC_SRCS
 src/ActivationSet.cpp
@@ -105,20 +100,28 @@ TARGET_INCLUDE_DIRECTORIES(Tropic PUBLIC
 
 TARGET_LINK_LIBRARIES(Tropic RcsCore)
 
+###############################################################################
 # Install the libraries
+###############################################################################
 INSTALL(TARGETS Tropic EXPORT TropicExport DESTINATION lib/$ENV{MAKEFILE_PLATFORM})
 
+###############################################################################
 # Install the headers
+###############################################################################
 INSTALL(
   DIRECTORY src/ 
   DESTINATION include
   FILES_MATCHING PATTERN "*.h"
 )
 
+###############################################################################
 # Mark for export
+###############################################################################
 TROPIC_ADD_EXPORT_LIBRARY(Tropic)
 
+###############################################################################
 # copy the .dll file to the same folder as the executable
+###############################################################################
 IF (WIN32)
 ADD_CUSTOM_COMMAND(
     TARGET Tropic POST_BUILD
@@ -127,6 +130,9 @@ ADD_CUSTOM_COMMAND(
     ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/Tropic.dll)
 ENDIF()
 
+###############################################################################
+# Executables
+###############################################################################
 IF(NOT HEADLESS_BUILD)
 
   ADD_EXECUTABLE(TestTrajectory examples/TestTrajectory.cpp)
@@ -143,11 +149,49 @@ IF(NOT HEADLESS_BUILD)
     TARGET_LINK_LIBRARIES(TestSimpleTrajectory Qt5::Core Qt5::Gui Qt5::Widgets)
   ENDIF()
 
+  ###############################################################################
   # Install the binaries
+  ###############################################################################
   INSTALL(TARGETS TestTrajectory TestSimpleTrajectory RUNTIME DESTINATION bin/$ENV{MAKEFILE_PLATFORM} LIBRARY DESTINATION lib/$ENV{MAKEFILE_PLATFORM})
 
 ENDIF(NOT HEADLESS_BUILD)
 
+
+################################################################################
+# Copy config directory
+# Deep copy of the config directory for windows
+################################################################################
+SET(CFG_FROM ${CMAKE_CURRENT_SOURCE_DIR}/config)
+SET(CFG_TO ${PROJECT_BINARY_DIR}/config/xml/Tropic)
+
+IF (WIN32 AND (NOT IS_DIRECTORY "${CFG_TO}") AND (EXISTS "${CFG_TO}"))
+  MESSAGE(STATUS "Removing non-directory ${CONFIG_DST_DIR}")
+  FILE(REMOVE ${CONFIG_DST_DIR})
+ENDIF()
+
+IF(NOT EXISTS "${CFG_TO}")
+
+  IF (NOT EXISTS ${PROJECT_BINARY_DIR}/config/xml)
+    FILE(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/config/xml)
+  ENDIF()
+  
+  IF(UNIX)
+    SET(CONFIGDIR_COPY_COMMAND create_symlink)
+    MESSAGE(STATUS "Linking config directory from ${CFG_FROM} to ${CFG_TO}")
+  ELSE()
+    SET(CONFIGDIR_COPY_COMMAND copy_directory)
+    MESSAGE(STATUS "Copying config directory from ${CFG_FROM} to ${CFG_TO}")
+  ENDIF()
+
+  EXECUTE_PROCESS (COMMAND
+   ${CMAKE_COMMAND} -E ${CONFIGDIR_COPY_COMMAND} ${CFG_FROM} ${CFG_TO})
+ELSE()
+  MESSAGE(STATUS "Config directory ${CFG_TO} already exists - skipping")
+ENDIF()
+
+################################################################################
+# Target for Doxygen documentation
+################################################################################
 ADD_SUBDIRECTORY(doc)
 
 INCLUDE(ExportTropic)
