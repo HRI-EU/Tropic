@@ -1,0 +1,12 @@
+# Emacs backup files
+*~
+
+.idea
+.vscode
+
+# Artistic style indentation backup files
+*.before_astyle
+
+klocwork
+
+build*
