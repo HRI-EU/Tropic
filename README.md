@@ -108,6 +108,15 @@ examples can be started with the command-line option "-h", which will display
 a help message on all available command line options and graphics window
 key interactions.
 
+The following command will show an example of how a bi-manual robot is pouring
+a bottle into a glas:
+
+```
+bin/TestTrajectory -m 5 -dir config/xml/Tropic/ -f cDualArmScitos7.xml -passiveGui
+```
+
+  
+
 ## XML trajectory constraint descriptions
 
 ### Standard trajectory position constraint
