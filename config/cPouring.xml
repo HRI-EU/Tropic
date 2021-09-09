@@ -1,6 +1,8 @@
 <Controller graph="gDualArmScitos7.xml" >
 
-  <Task name="Bottle-RH XYZ" controlVariable="XYZ" effector="Bottle" refBdy="PowerGrasp_R" />
+  <Task name="Bottle-RH XYZ" controlVariable="XYZ" effector="Bottle" refBdy="PowerGrasp_R" >
+    <TaskRegion type="BoxInterval" min="0 0 -0.02" max="0 0 0.05" /> 
+  </Task>
   <Task name="Bottle-Table Z" controlVariable="Z" effector="Bottle" refBdy="Table" />
   <Task name="Bottle Polar" controlVariable="POLAR" effector="Bottle" />
   <Task name="RH-Bottle Polar" controlVariable="POLAR" effector="PowerGrasp_R" refBdy="Bottle" />
