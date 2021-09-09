@@ -41,6 +41,7 @@
 #include "PolarConstraint.h"
 #include "ConnectBodyConstraint.h"
 #include "PouringConstraint.h"
+#include "LiftObject.h"
 
 #include <ControllerWidgetBase.h>
 #include <MatNdWidget.h>
@@ -1661,15 +1662,15 @@ static void testIK()
   Rcs::KeyCatcherBase::registerKey("o", "Toggle distance calculation");
   Rcs::KeyCatcherBase::registerKey("m", "Manipulability null space");
   Rcs::KeyCatcherBase::registerKey("v", "Write current model_state to console");
-  Rcs::KeyCatcherBase::registerKey("t", "Test ConnectBodyConstraint");
   Rcs::KeyCatcherBase::registerKey("t", "Load trajectory from Johannes's cool class");
+  Rcs::KeyCatcherBase::registerKey("l", "Load trajectory from LiftObject class");
 
   int algo = 1;
   double alpha = 0.05, lambda = 0.0, dt = 0.01, dt_calc = 0.0;
   double jlCost = 0.0, dJlCost = 0.0, horizon = 2.0;
   bool calcDistance = true;
   char xmlFileName[128] = "cDualArmScitos7.xml";
-  char directory[128] = "config/xml/Kinova";
+  char directory[128] = "config/xml/Tropic";
   char effortBdyName[256] = "";
 
   // Initialize GUI and OSG mutex
@@ -1689,7 +1690,7 @@ static void testIK()
                    "is \"%s\")", xmlFileName);
   argP.getArgument("-dir", directory, "Configuration file directory "
                    "(default is \"%s\")", directory);
-  argP.getArgument("-dt", &dt, "Sampling time interval");
+  argP.getArgument("-dt", &dt, "Sampling time interval (default is %f)", dt);
   argP.getArgument("-staticEffort", effortBdyName,
                    "Body to map static effort");
   bool pause = argP.hasArgument("-pause", "Pause after each iteration");
@@ -2066,6 +2067,19 @@ static void testIK()
       ts->print();
       tc->toXML("traj_out.xml");
       RMSG("Done loading Johannes's class");
+    }
+    else if (kc && kc->getAndResetKey('l'))
+    {
+      RMSG("Loading LiftObject class");
+      auto ts = std::make_shared<tropic::LiftObjectConstraint>(tc->getController(), "PowerGrasp_R", "Bottle", "Table", 1.0, 4.0, 7.0);
+      tc->addAndApply(ts, true);
+
+      auto ts2 = std::make_shared<tropic::LiftObjectConstraint>(tc->getController(), "PowerGrasp_L", "Glas", "Table", 1.0, 3.0, 6.0);
+      tc->addAndApply(ts2, true);
+
+      ts->print();
+      tc->toXML("traj_out.xml");
+      RMSG("Done loading LiftObject class");
     }
     else if (kc && kc->getAndResetKey('n'))
     {

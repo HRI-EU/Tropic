@@ -1,0 +1,18 @@
+<Controller graph="gDualArmScitos7.xml" >
+
+  <Task name="Bottle-RH XYZ" controlVariable="XYZ" effector="Bottle" refBdy="PowerGrasp_R" />
+  <Task name="Bottle-Table Z" controlVariable="Z" effector="Bottle" refBdy="Table" />
+  <Task name="Bottle Polar" controlVariable="POLAR" effector="Bottle" />
+  <Task name="RH-Bottle Polar" controlVariable="POLAR" effector="PowerGrasp_R" refBdy="Bottle" />
+
+  <Task name="Glas-RH XYZ" controlVariable="XYZ" effector="Glas" refBdy="PowerGrasp_L" />
+  <Task name="Glas-Table Z" controlVariable="Z" effector="Glas" refBdy="Table" />
+  <Task name="Glas Polar" controlVariable="POLAR" effector="Glas" />
+  <Task name="RH-Glas Polar" controlVariable="POLAR" effector="PowerGrasp_L" refBdy="Glas" />
+
+  
+  
+
+
+  
+</Controller>
