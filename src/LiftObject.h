@@ -58,13 +58,46 @@ public:
                        double t_start,
                        double duration_grasp,
                        double duration_lift,
-                       double graspHeight=0.1) : ConstraintSet(),
-    objectName(objectName_), handName(handName_), surfaceName(surfaceName_)
+                       double graspHeight=0.1) : ConstraintSet()
   {
+    RLOG_CPP(0, "handName is " << handName_);
+    RLOG_CPP(0, "objectName is " << objectName_);
+    RLOG_CPP(0, "surfaceName is " << surfaceName_);
+
+    const RcsBody* bdy;
+    bdy = RcsGraph_getBodyByName(controller->getGraph(), handName_.c_str());
+    if (!bdy)
+    {
+      throw (std::string("Failed to find body for " + handName_));
+    }
+
+    handName = std::string(bdy->name);
+
+    bdy = RcsGraph_getBodyByName(controller->getGraph(), objectName_.c_str());
+    if (!bdy)
+    {
+      throw (std::string("Failed to find body for " + objectName_));
+    }
+    objectName = std::string(bdy->name);
+
+    bdy = RcsGraph_getBodyByName(controller->getGraph(), surfaceName_.c_str());
+    if (!bdy)
+    {
+      throw (std::string("Failed to find body for " + surfaceName_));
+    }
+    surfaceName = std::string(bdy->name);
+
+    RLOG_CPP(0, "handName is " << handName);
+    RLOG_CPP(0, "objectName is " << objectName);
+    RLOG_CPP(0, "surfaceName is " << surfaceName);
 
     for (size_t i=0; i<controller->getNumberOfTasks(); ++i)
     {
       const Rcs::Task* ti = controller->getTask(i);
+
+      RLOG_CPP(0, "Task: " << ti->getName() << ": effector: "
+               << getEffectorName(ti) << " refBdy: "
+               << getRefBodyName(ti));
 
       // taskObjHandPos
       if ((getEffectorName(ti)==objectName) &&
@@ -104,7 +137,9 @@ public:
       }
     }
     // Check that all tasks have been found
-    RCHECK(!taskObjHandPos.empty());
+    RCHECK_MSG(!taskObjHandPos.empty(),
+               "Didn't find task with effector=\"%s\" and refBdy=\"%s\"",
+               objectName.c_str(), handName.c_str());
     RCHECK_MSG(!taskObjSurfacePos.empty(),
                "Didn't find task with effector=\"%s\" and refBdy=\"%s\"",
                objectName.c_str(), surfaceName.c_str());
@@ -228,4 +263,3 @@ protected:
 
 
 #endif   // TROPIC_LIFTOBJECTCONSTRAINT_H
-

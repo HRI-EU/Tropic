@@ -2071,11 +2071,26 @@ static void testIK()
     else if (kc && kc->getAndResetKey('l'))
     {
       RMSG("Loading LiftObject class");
-      auto ts = std::make_shared<tropic::LiftObjectConstraint>(tc->getController(), "PowerGrasp_R", "Bottle", "Table", 1.0, 4.0, 7.0);
-      tc->addAndApply(ts, true);
+      std::shared_ptr<tropic::ConstraintSet> ts;
+      try
+      {
+        ts = std::make_shared<tropic::LiftObjectConstraint>(tc->getController(), "GenericBody0", "GenericBody3", "GenericBody5", 1.0, 4.0, 7.0);
+        tc->addAndApply(ts, true);
+      }
+      catch (std::string caught)
+      {
+        RFATAL("Failed to create : LiftObjectConstraint 1: \"%s\"", caught.c_str());
+      }
 
-      auto ts2 = std::make_shared<tropic::LiftObjectConstraint>(tc->getController(), "PowerGrasp_L", "Glas", "Table", 1.0, 3.0, 6.0);
-      tc->addAndApply(ts2, true);
+      try
+      {
+        ts = std::make_shared<tropic::LiftObjectConstraint>(tc->getController(), "GenericBody1", "GenericBody4", "GenericBody5", 1.0, 3.0, 6.0);
+        tc->addAndApply(ts, true);
+      }
+      catch (std::string caught)
+      {
+        RFATAL("Failed to create : LiftObjectConstraint 2: \"%s\"", caught.c_str());
+      }
 
       ts->print();
       tc->toXML("traj_out.xml");

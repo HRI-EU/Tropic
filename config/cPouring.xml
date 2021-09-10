@@ -1,16 +1,26 @@
 <Controller graph="gDualArmScitos7.xml" >
 
-  <Task name="Bottle-RH XYZ" controlVariable="XYZ" effector="Bottle" refBdy="PowerGrasp_R" >
+<!-- 
+
+       GenericBody0="PowerGrasp_R"
+       GenericBody1="PowerGrasp_L"
+       GenericBody3="Bottle"
+       GenericBody4="Glas"
+       GenericBody5="Table"
+
+-->
+
+  <Task name="Bottle-RH XYZ" controlVariable="XYZ" effector="GenericBody3" refBdy="GenericBody0" >
     <TaskRegion type="BoxInterval" min="0 0 -0.02" max="0 0 0.05" /> 
   </Task>
-  <Task name="Bottle-Table Z" controlVariable="Z" effector="Bottle" refBdy="Table" />
-  <Task name="Bottle Polar" controlVariable="POLAR" effector="Bottle" />
-  <Task name="RH-Bottle Polar" controlVariable="POLAR" effector="PowerGrasp_R" refBdy="Bottle" />
+  <Task name="Bottle-Table Z" controlVariable="Z" effector="GenericBody3" refBdy="GenericBody5" />
+  <Task name="Bottle Polar" controlVariable="POLAR" effector="GenericBody3" />
+  <Task name="RH-Bottle Polar" controlVariable="POLAR" effector="GenericBody0" refBdy="GenericBody3" />
 
-  <Task name="Glas-RH XYZ" controlVariable="XYZ" effector="Glas" refBdy="PowerGrasp_L" />
-  <Task name="Glas-Table Z" controlVariable="Z" effector="Glas" refBdy="Table" />
-  <Task name="Glas Polar" controlVariable="POLAR" effector="Glas" />
-  <Task name="RH-Glas Polar" controlVariable="POLAR" effector="PowerGrasp_L" refBdy="Glas" />
+  <Task name="Glas-RH XYZ" controlVariable="XYZ" effector="GenericBody4" refBdy="GenericBody1" />
+  <Task name="Glas-Table Z" controlVariable="Z" effector="GenericBody4" refBdy="GenericBody5" />
+  <Task name="Glas Polar" controlVariable="POLAR" effector="GenericBody4" />
+  <Task name="RH-Glas Polar" controlVariable="POLAR" effector="GenericBody1" refBdy="GenericBody4" />
 
   
   
