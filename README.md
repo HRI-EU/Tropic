@@ -113,6 +113,7 @@ a bottle into a glas:
 
 ```
 bin/TestTrajectory -m 5 -dir config/xml/Tropic/ -f cDualArmScitos7.xml -passiveGui
+bin/TestTrajectory -m 5 -dir config/xml/Tropic/ -f cPouring.xml -passiveGui
 ```
 
   
@@ -244,6 +245,14 @@ structure of the underlying graph.
 In the above example, the body with name "Object" will be made the kinematic child of the
 body "Hand" at time t=2. Both parent and child must be valid names of bodies within the
 underlying graph.
+
+### Complex composite constraint for pouring
+
+<p float="left">
+<img src="doc/images/PouringConstraint.png" width="100%" > 
+</p>
+
+
 
 ## License
 
