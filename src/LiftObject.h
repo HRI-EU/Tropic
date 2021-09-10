@@ -64,13 +64,14 @@ public:
     RLOG_CPP(0, "objectName is " << objectName_);
     RLOG_CPP(0, "surfaceName is " << surfaceName_);
 
+    // We go through the following lookups to resolve the names of possible
+    // generic bodies.
     const RcsBody* bdy;
     bdy = RcsGraph_getBodyByName(controller->getGraph(), handName_.c_str());
     if (!bdy)
     {
       throw (std::string("Failed to find body for " + handName_));
     }
-
     handName = std::string(bdy->name);
 
     bdy = RcsGraph_getBodyByName(controller->getGraph(), objectName_.c_str());
