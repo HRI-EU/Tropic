@@ -7,6 +7,8 @@
        GenericBody3="Bottle"
        GenericBody4="Glas"
        GenericBody5="Table"
+       GenericBody6="BottleTip"
+       GenericBody7="GlasTip" 
 
 -->
 
@@ -14,14 +16,23 @@
     <TaskRegion type="BoxInterval" min="0 0 -0.02" max="0 0 0.05" /> 
   </Task>
   <Task name="Bottle-Table Z" controlVariable="Z" effector="GenericBody3" refBdy="GenericBody5" />
+  <Task name="Bottle-Table VelX" controlVariable="X" effector="GenericBody3" refBdy="GenericBody5" />
+  <Task name="Bottle-Table VelY" controlVariable="Y" effector="GenericBody3" refBdy="GenericBody5" />
   <Task name="Bottle Polar" controlVariable="POLAR" effector="GenericBody3" />
   <Task name="RH-Bottle Polar" controlVariable="POLAR" effector="GenericBody0" refBdy="GenericBody3" />
 
   <Task name="Glas-RH XYZ" controlVariable="XYZ" effector="GenericBody4" refBdy="GenericBody1" />
   <Task name="Glas-Table Z" controlVariable="Z" effector="GenericBody4" refBdy="GenericBody5" />
+  <Task name="Glas-Table X" controlVariable="X" effector="GenericBody4" refBdy="GenericBody5" />
+  <Task name="Glas-Table Y" controlVariable="Y" effector="GenericBody4" refBdy="GenericBody5" />
+
+  
   <Task name="Glas Polar" controlVariable="POLAR" effector="GenericBody4" />
+  <Task name="GlasTip Polar" controlVariable="POLAR" effector="GenericBody7" />
   <Task name="RH-Glas Polar" controlVariable="POLAR" effector="GenericBody1" refBdy="GenericBody4" />
 
+  <Task name="Bottle-Glas XYZ" controlVariable="XYZ" effector="GenericBody6" refBdy="GenericBody7" refFrame="base_footprint" />
+  <Task name="Bottle-Glas Polar" controlVariable="Inclination" xxaxisDirection="Y" effector="GenericBody6" refBdy="GenericBody7" />
   
   
 

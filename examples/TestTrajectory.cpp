@@ -1709,6 +1709,7 @@ static void testIK()
                                          "cy stuff (shadows, anti-aliasing)");
   bool zigzag = argP.hasArgument("-zigzag", "ZigZag trajectory");
   bool showOnly = argP.hasArgument("-passiveGui", "Gui shows values but is not active");
+  bool noTaskGui = argP.hasArgument("-noGui", "No task Gui");
 
   // Option without mutex for viewer
   pthread_mutex_t* mtx = &graphLock;
@@ -1827,15 +1828,18 @@ static void testIK()
     v->runInThread(mtx);
 
     // Launch the task widget
-    if (showOnly)
+    if (!noTaskGui)
     {
-      Rcs::ControllerWidgetBase::create(&controller, (MatNd*)tc->getActivationPtr(), x_des_f,
-                                        x_curr, mtx, true);
-    }
-    else
-    {
-      Rcs::ControllerWidgetBase::create(&controller, a_des, x_des,
-                                        x_curr, mtx, false);
+      if (showOnly)
+      {
+        Rcs::ControllerWidgetBase::create(&controller, (MatNd*)tc->getActivationPtr(), x_des_f,
+                                          x_curr, mtx, true);
+      }
+      else
+      {
+        Rcs::ControllerWidgetBase::create(&controller, a_des, x_des,
+                                          x_curr, mtx, false);
+      }
     }
 
     if (launchJointWidget==true)
@@ -1900,7 +1904,7 @@ static void testIK()
     double endTime = tc->step(dt);
     tc->getPosition(0.0, x_des_f);
 
-    if (showOnly)
+    if (showOnly || noTaskGui)
     {
       tc->getActivation(a_des);
     }
@@ -2070,29 +2074,29 @@ static void testIK()
     }
     else if (kc && kc->getAndResetKey('l'))
     {
+      auto tSet = tropic::LiftObjectConstraint::pourWithTwoHands(tc->getController(), "GenericBody0", "GenericBody1", "GenericBody3", "GenericBody4", "GenericBody5", "GenericBody6", "GenericBody7", 1.0, 8.0);
+      tc->addAndApply(tSet, true);
+    }
+    else if (kc && kc->getAndResetKey('L'))
+    {
       RMSG("Loading LiftObject class");
-      std::shared_ptr<tropic::ConstraintSet> ts;
+      std::shared_ptr<tropic::LiftObjectConstraint> ts;
       try
       {
-        ts = std::make_shared<tropic::LiftObjectConstraint>(tc->getController(), "GenericBody0", "GenericBody3", "GenericBody5", 1.0, 4.0, 7.0);
-        tc->addAndApply(ts, true);
+        tropic::LiftObjectConstraint rh(tc->getController(), "GenericBody0", "GenericBody3", "GenericBody5");
+        tc->addAndApply(rh.lift(1.0, 2.0, 4.0, 0.1), true);
+        tc->addAndApply(rh.tilt(tc->getController(), "GenericBody6", "GenericBody7", 4.0, 5.0, 6.0), true);
+        tc->addAndApply(rh.put(6.0, 8.0, 9.0), true);
+        tropic::LiftObjectConstraint lh(tc->getController(), "GenericBody1", "GenericBody4", "GenericBody5");
+        tc->addAndApply(lh.lift(1.0, 3.0, 4.0, 0.1), true);
+        tc->addAndApply(lh.put(6.0, 7.0, 8.0), true);
       }
       catch (std::string caught)
       {
-        RFATAL("Failed to create : LiftObjectConstraint 1: \"%s\"", caught.c_str());
+        RLOG_CPP(0, "Failed to create : LiftObjectConstraint 1: " << caught);
       }
 
-      try
-      {
-        ts = std::make_shared<tropic::LiftObjectConstraint>(tc->getController(), "GenericBody1", "GenericBody4", "GenericBody5", 1.0, 3.0, 6.0);
-        tc->addAndApply(ts, true);
-      }
-      catch (std::string caught)
-      {
-        RFATAL("Failed to create : LiftObjectConstraint 2: \"%s\"", caught.c_str());
-      }
-
-      ts->print();
+      //ts->print();
       tc->toXML("traj_out.xml");
       RMSG("Done loading LiftObject class");
     }
