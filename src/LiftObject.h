@@ -1,17 +1,22 @@
-
 /*******************************************************************************
+
   Copyright (c) Honda Research Institute Europe GmbH.
   All rights reserved.
+
   Redistribution and use in source and binary forms, with or without
   modification, are permitted provided that the following conditions are met:
+
   1. Redistributions of source code must retain the above copyright notice,
      this list of conditions and the following disclaimer.
+
   2. Redistributions in binary form must reproduce the above copyright notice,
      this list of conditions and the following disclaimer in the documentation
      and/or other materials provided with the distribution.
+
   3. Neither the name of the copyright holder nor the names of its
      contributors may be used to endorse or promote products derived from
      this software without specific prior written permission.
+
   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY EXPRESS OR
   IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
   OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
@@ -22,6 +27,7 @@
   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
   EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 *******************************************************************************/
 
 #ifndef TROPIC_LIFTOBJECTCONSTRAINT_H
@@ -241,7 +247,7 @@ public:
     a1->addActivation(t_grasp, false, 0.5, taskHandObjPolar);
     a1->add(std::make_shared<tropic::PolarConstraint>(t_grasp, 0.0, 0.0, taskHandObjPolar));
 
-    // Object orientation wrt world frame
+    // Object orientation with respect to world frame
     a1->addActivation(t_grasp, true, 0.5, taskObjPolar);
     a1->addActivation(t_end, false, 0.5, taskObjPolar);
     a1->add(std::make_shared<tropic::PolarConstraint>(t_end, 0.0, 0.0, taskObjPolar));
@@ -293,8 +299,7 @@ public:
           RCHECK(taskRelPos.empty());
           taskRelPos = ti->getName();
         }
-
-        if (ti->getClassName()=="Inclination")
+        else if (ti->getClassName()=="Composite")
         {
           RCHECK(taskRelOri.empty());
           taskRelOri = ti->getName();
@@ -315,26 +320,29 @@ public:
 
     // Check that all tasks have been found
     RCHECK_MSG(!taskRelPos.empty(),
-               "Didn't find task with effector=\"%s\" and refBdy=\"%s\"",
+               "Didn't find position task with effector=\"%s\" and refBdy=\"%s\"",
                objectName.c_str(), handName.c_str());
     RCHECK_MSG(!taskRelOri.empty(),
-               "Didn't find task with effector=\"%s\" and refBdy=\"%s\"",
+               "Didn't find Polar angle task with effector=\"%s\" and refBdy=\"%s\"",
                objectName.c_str(), surfaceName.c_str());
-    RCHECK(!taskObjPolar.empty());
+    RCHECK_MSG(!taskObjPolar.empty(),
+               "Didn't find Polar angle task with effector=\"%s\"",
+               objectName.c_str());
 
     auto a1 = std::make_shared<tropic::ActivationSet>();
-
-    RLOG_CPP(0, "taskObjPolar: " << taskObjPolar);
 
     // Hand position with respect to bottle
     a1->addActivation(t_start, true, 0.5, taskRelPos);
     a1->addActivation(t_end, false, 0.5, taskRelPos);
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_pour, 0.0, 0.0, 0.0, taskRelPos));
+    double dur = t_pour - t_start;
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_pour-0.25*dur, 0.0, 0.0, 0.0, taskRelPos));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_pour+0.25*dur, 0.0, 0.0, 0.0, taskRelPos));
     a1->add(std::make_shared<tropic::PositionConstraint>(t_end, 0.0, -0.2, 0.0, taskRelPos));
 
     a1->addActivation(t_start, true, 0.5, taskRelOri);
     a1->addActivation(t_end, false, 0.5, taskRelOri);
-    a1->add(t_pour, RCS_DEG2RAD(150.0), 0.0, 0.0, 7,taskRelOri  + " 0");
+    a1->add(t_pour-0.25*dur, RCS_DEG2RAD(80.0), 0.0, 0.0, 7, taskRelOri  + " 0");
+    a1->add(t_pour+0.25*dur, RCS_DEG2RAD(150.0), 0.0, 0.0, 7, taskRelOri  + " 0");
     a1->add(t_end, RCS_DEG2RAD(30.0), 0.0, 0.0, 7, taskRelOri  + " 0");
 
     a1->addActivation(t_start, true, 0.5, taskObjPolar);

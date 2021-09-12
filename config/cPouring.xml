@@ -32,7 +32,12 @@
   <Task name="RH-Glas Polar" controlVariable="POLAR" effector="GenericBody1" refBdy="GenericBody4" />
 
   <Task name="Bottle-Glas XYZ" controlVariable="XYZ" effector="GenericBody6" refBdy="GenericBody7" refFrame="base_footprint" />
-  <Task name="Bottle-Glas Polar" controlVariable="Inclination" xxaxisDirection="Y" effector="GenericBody6" refBdy="GenericBody7" />
+
+  <Task name="Bottle-Glas Polar" controlVariable="Composite" effector="GenericBody6" refBdy="GenericBody7">
+    <Task name="Bottle-Glas Tilt" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" />
+    <Task name="Bottle-Glas Constraint" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" axisDirection="X" refAxisDirection="X" />
+  </Task>
+
   
   
 

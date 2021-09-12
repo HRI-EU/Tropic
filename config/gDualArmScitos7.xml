@@ -47,7 +47,7 @@
     <Shape type="FRAME" scale="0.15" />
   </Body>
   
-  <Body name="BottleTip" prev="Bottle" transform="0 0 0.23 0 30 0">
+  <Body name="BottleTip" prev="Bottle" transform="0 0 0.23 0 0 0">
     <Shape type="FRAME" scale="0.1" />
   </Body>
   
