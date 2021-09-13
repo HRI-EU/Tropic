@@ -258,7 +258,7 @@ public:
     return success;
   }
 
-  std::shared_ptr<tropic::ActivationSet> put(double t_start, double t_put, double t_release) const
+  std::shared_ptr<tropic::ConstraintSet> put(double t_start, double t_put, double t_release) const
   {
     // Grasp the bottle and lift it up
     auto a1 = std::make_shared<tropic::ActivationSet>();
@@ -287,7 +287,7 @@ public:
     return a1;
   }
 
-  static std::shared_ptr<tropic::ActivationSet>
+  static std::shared_ptr<tropic::ConstraintSet>
   pourWithTwoHands(const Rcs::ControllerBase* controller,
                    std::string rHand,
                    std::string lHand,
@@ -321,7 +321,7 @@ public:
     return a1;
   }
 
-  std::shared_ptr<tropic::ActivationSet> lift(double t_start, double t_grasp, double t_end, double graspHeight) const
+  std::shared_ptr<tropic::ConstraintSet> lift(double t_start, double t_grasp, double t_end, double graspHeight) const
   {
     // Grasp the bottle and lift it up
     auto a1 = std::make_shared<tropic::ActivationSet>();
@@ -352,7 +352,7 @@ public:
     return a1;
   }
 
-  std::shared_ptr<tropic::ActivationSet> tilt(const Rcs::ControllerBase* controller,
+  std::shared_ptr<tropic::ConstraintSet> tilt(const Rcs::ControllerBase* controller,
                                               std::string objToPourFrom,
                                               std::string objToPourInto,
                                               double t_start, double t_pour, double t_end) const
@@ -422,7 +422,9 @@ public:
 
     auto a1 = std::make_shared<tropic::ActivationSet>();
 
-    // Hand position with respect to bottle
+    // Hand position with respect to bottle. We move the bottle tip over the
+    // glas tip, keep it a little bit (while the bottle tilts), and then
+    // move bottle and glas sideways apart.
     a1->addActivation(t_start, true, 0.5, taskRelPos);
     a1->addActivation(t_end, false, 0.5, taskRelPos);
     double dur = t_pour - t_start;
@@ -435,6 +437,7 @@ public:
     a1->add(t_pour-0.25*dur, RCS_DEG2RAD(80.0), 0.0, 0.0, 7, taskRelOri  + " 0");
     a1->add(t_pour+0.25*dur, RCS_DEG2RAD(150.0), 0.0, 0.0, 7, taskRelOri  + " 0");
     a1->add(t_end, RCS_DEG2RAD(30.0), 0.0, 0.0, 7, taskRelOri  + " 0");
+    //a1->add(t_end, RCS_DEG2RAD(0.0), 0.0, 0.0, 7, taskRelOri  + " 1");
 
     a1->addActivation(t_start, true, 0.5, taskObjPolar);
     a1->addActivation(t_end, false, 0.5, taskObjPolar);
