@@ -218,7 +218,7 @@ static void testIK2()
 
     MatNd_addSelf(controller.getGraph()->q, dq_des);
     RcsGraph_setState(controller.getGraph(), NULL, q_dot_des);
-    bool poseOK = controller.checkLimits();
+    //bool poseOK = controller.checkLimits();
     controller.computeX(x_curr);
 
     dt_calc = Timer_getTime() - dt_calc;
@@ -2071,6 +2071,27 @@ static void testIK()
       ts->print();
       tc->toXML("traj_out.xml");
       RMSG("Done loading Johannes's class");
+    }
+    else if (kc && kc->getAndResetKey('u'))
+    {
+      RMSG("Swapping Generic Bodies");
+      static bool swap = false;
+      if (swap)
+      {
+        RcsGraph_linkGenericBody(tc->getInternalController()->getGraph(), 3, "Bottle");
+        RcsGraph_linkGenericBody(tc->getInternalController()->getGraph(), 6, "BottleTip");
+        RcsGraph_linkGenericBody(tc->getInternalController()->getGraph(), 4, "Glas");
+        RcsGraph_linkGenericBody(tc->getInternalController()->getGraph(), 7, "GlasTip");
+      }
+      else
+      {
+        RcsGraph_linkGenericBody(tc->getInternalController()->getGraph(), 4, "Bottle");
+        RcsGraph_linkGenericBody(tc->getInternalController()->getGraph(), 7, "BottleTip");
+        RcsGraph_linkGenericBody(tc->getInternalController()->getGraph(), 3, "Glas");
+        RcsGraph_linkGenericBody(tc->getInternalController()->getGraph(), 6, "GlasTip");
+      }
+      swap = !swap;
+      RMSG("Done swapping Generic Bodies");
     }
     else if (kc && kc->getAndResetKey('l'))
     {

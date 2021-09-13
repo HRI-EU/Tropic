@@ -60,111 +60,202 @@ public:
   LiftObjectConstraint(const Rcs::ControllerBase* controller,
                        const std::string& handName_,
                        const std::string& objectName_,
-                       const std::string& surfaceName_)
+                       const std::string& surfaceName_) :
+    handName(handName_), objectName(objectName_), surfaceName(surfaceName_)
   {
-    RLOG_CPP(1, "handName is " << handName_);
-    RLOG_CPP(1, "objectName is " << objectName_);
-    RLOG_CPP(1, "surfaceName is " << surfaceName_);
+    bool success = getLiftPutTasks(controller, handName, objectName, surfaceName,
+                                   taskObjHandPos, taskHandObjPolar, taskObjSurfacePosX,
+                                   taskObjSurfacePosY, taskObjSurfacePosZ, taskObjPolar);
 
-    // We go through the following looku+ps to resolve the names of possible
+    RCHECK(success);
+  }
+
+  static bool getLiftPutTasks(const Rcs::ControllerBase* controller,
+                              std::string& hand_,
+                              std::string& object_,
+                              std::string& surface_,
+                              std::string& tskObjHandPos_,
+                              std::string& tskHandObjPolar_,
+                              std::string& tskObjSurfacePosX_,
+                              std::string& tskObjSurfacePosY_,
+                              std::string& tskObjSurfacePosZ_,
+                              std::string& tskObjPolar_)
+  {
+    bool success = true;
+
+    // Make a local copy of all arguments, we only set them after we know that
+    // the function returns with success.
+    std::string hand = hand_;
+    std::string object = object_;
+    std::string surface = surface_;
+    std::string tskObjHandPos = tskObjHandPos_;
+    std::string tskHandObjPolar = tskHandObjPolar_;
+    std::string tskObjSurfacePosX = tskObjSurfacePosX_;
+    std::string tskObjSurfacePosY = tskObjSurfacePosY_;
+    std::string tskObjSurfacePosZ = tskObjSurfacePosZ_;
+    std::string tskObjPolar = tskObjPolar_;
+
+    RLOG_CPP(5, "handName is " << hand);
+    RLOG_CPP(5, "objectName is " << object);
+    RLOG_CPP(5, "surfaceName is " << surface);
+
+    // We go through the following look-ups to resolve the names of possible
     // generic bodies.
     const RcsBody* bdy;
-    bdy = RcsGraph_getBodyByName(controller->getGraph(), handName_.c_str());
+    bdy = RcsGraph_getBodyByName(controller->getGraph(), hand.c_str());
     if (!bdy)
     {
-      throw (std::string("Failed to find body for " + handName_));
+      RLOG_CPP(1, "Failed to find body for " << hand);
+      return false;
     }
-    handName = std::string(bdy->name);
+    hand = std::string(bdy->name);
 
-    bdy = RcsGraph_getBodyByName(controller->getGraph(), objectName_.c_str());
+    bdy = RcsGraph_getBodyByName(controller->getGraph(), object.c_str());
     if (!bdy)
     {
-      throw (std::string("Failed to find body for " + objectName_));
+      RLOG_CPP(1, "Failed to find body for " << object);
+      return false;
     }
-    objectName = std::string(bdy->name);
+    object = std::string(bdy->name);
 
-    bdy = RcsGraph_getBodyByName(controller->getGraph(), surfaceName_.c_str());
+    bdy = RcsGraph_getBodyByName(controller->getGraph(), surface.c_str());
     if (!bdy)
     {
-      throw (std::string("Failed to find body for " + surfaceName_));
+      RLOG_CPP(1, "Failed to find body for " << surface);
+      return false;
     }
-    surfaceName = std::string(bdy->name);
+    surface = std::string(bdy->name);
 
-    RLOG_CPP(1, "handName is " << handName);
-    RLOG_CPP(1, "objectName is " << objectName);
-    RLOG_CPP(1, "surfaceName is " << surfaceName);
 
     for (size_t i=0; i<controller->getNumberOfTasks(); ++i)
     {
       const Rcs::Task* ti = controller->getTask(i);
       std::string efName = getEffectorName(ti);
       std::string refName = getRefBodyName(ti);
-
-      RLOG_CPP(1, "Task: " << ti->getName() << ": effector: "
-               << efName << " refBdy: " << refName);
+      std::string className = ti->getClassName();
 
       // taskObjHandPos
-      if ((efName==objectName) && (refName==handName) &&
-          (ti->getClassName()=="XYZ"))
+      if ((efName==object) && (refName==hand) && (className=="XYZ"))
       {
-        RCHECK(taskObjHandPos.empty());
-        taskObjHandPos = ti->getName();
+        if (!tskObjHandPos.empty())
+        {
+          RLOG_CPP(1, "Found duplicate entry for task " << tskObjHandPos);
+          return false;
+        }
+        tskObjHandPos = ti->getName();
       }
 
       // taskObjSurfacePosition z and sideways velocities
-      if ((efName==objectName) && (refName==surfaceName))
+      if ((efName==object) && (refName==surface))
       {
-        if (ti->getClassName()=="Z")
+        if (className=="Z")
         {
-          RCHECK(taskObjSurfacePosZ.empty());
-          RLOG(0, "Found task with effector=\"%s\" and refBdy=\"%s\"",
-               objectName.c_str(), surfaceName.c_str());
-          taskObjSurfacePosZ = ti->getName();
+          if (!tskObjSurfacePosZ.empty())
+          {
+            RLOG_CPP(1, "Found duplicate entry for task " << tskObjSurfacePosZ);
+            return false;
+          }
+          tskObjSurfacePosZ = ti->getName();
         }
-        else if (ti->getClassName()=="X")
+        else if (className=="X")
         {
-          RCHECK(taskObjSurfacePosX.empty());
-          RLOG(0, "Found task with effector=\"%s\" and refBdy=\"%s\"",
-               objectName.c_str(), surfaceName.c_str());
-          taskObjSurfacePosX = ti->getName();
+          if (!tskObjSurfacePosX.empty())
+          {
+            RLOG_CPP(1, "Found duplicate entry for task " << tskObjSurfacePosX);
+            return false;
+          }
+          tskObjSurfacePosX = ti->getName();
         }
-        else if (ti->getClassName()=="Y")
+        else if (className=="Y")
         {
-          RCHECK(taskObjSurfacePosY.empty());
-          RLOG(0, "Found task with effector=\"%s\" and refBdy=\"%s\"",
-               objectName.c_str(), surfaceName.c_str());
-          taskObjSurfacePosY = ti->getName();
+          if (!tskObjSurfacePosY.empty())
+          {
+            RLOG_CPP(1, "Found duplicate entry for task " << tskObjSurfacePosY);
+            return false;
+          }
+          tskObjSurfacePosY = ti->getName();
         }
       }
 
       // taskObjPolar
-      if ((efName==objectName) && (refName.empty()) &&
-          (ti->getClassName()=="POLAR"))
+      if ((efName==object) && (refName.empty()) && (className=="POLAR"))
       {
-        RCHECK(taskObjPolar.empty());
-        taskObjPolar = ti->getName();
+        if (!tskObjPolar.empty())
+        {
+          RLOG_CPP(1, "Found duplicate entry for task " << tskObjPolar);
+          return false;
+        }
+        tskObjPolar = ti->getName();
       }
 
       // taskHandObjPolar
-      if ((efName==handName) && (refName== objectName) &&
-          (ti->getClassName()=="POLAR"))
+      if ((efName==hand) && (refName== object) && (className=="POLAR"))
       {
-        RCHECK(taskHandObjPolar.empty());
-        taskHandObjPolar = ti->getName();
+        if (!tskHandObjPolar.empty())
+        {
+          RLOG_CPP(1, "Found duplicate entry for task " << tskHandObjPolar);
+          return false;
+        }
+        tskHandObjPolar = ti->getName();
       }
     }
 
     // Check that all tasks have been found
-    RCHECK_MSG(!taskObjHandPos.empty(),
-               "Didn't find task with effector=\"%s\" and refBdy=\"%s\"",
-               objectName.c_str(), handName.c_str());
-    RCHECK_MSG(!taskObjSurfacePosZ.empty(),
-               "Didn't find task with effector=\"%s\" and refBdy=\"%s\"",
-               objectName.c_str(), surfaceName.c_str());
-    RCHECK(!taskObjPolar.empty());
-    RCHECK(!taskHandObjPolar.empty());
-    RCHECK(!taskObjSurfacePosX.empty());
-    RCHECK(!taskObjSurfacePosY.empty());
+    if (tskObjHandPos.empty())
+    {
+      RLOG(1, "Didn't find XYZ task with effector=\"%s\" and refBdy=\"%s\"",
+           object.c_str(), hand.c_str());
+      success = false;
+    }
+
+    if (tskObjSurfacePosX.empty())
+    {
+      RLOG(1, "Didn't find X task with effector=\"%s\" and refBdy=\"%s\"",
+           object.c_str(), surface.c_str());
+      success = false;
+    }
+
+    if (tskObjSurfacePosY.empty())
+    {
+      RLOG(1, "Didn't find Y task with effector=\"%s\" and refBdy=\"%s\"",
+           object.c_str(), surface.c_str());
+      success = false;
+    }
+
+    if (tskObjSurfacePosZ.empty())
+    {
+      RLOG(1, "Didn't find Z task with effector=\"%s\" and refBdy=\"%s\"",
+           object.c_str(), surface.c_str());
+      success = false;
+    }
+
+    if (tskObjPolar.empty())
+    {
+      RLOG(1, "Didn't find POLAR task with effector=\"%s\"", object.c_str());
+      success = false;
+    }
+
+    if (tskHandObjPolar.empty())
+    {
+      RLOG(1, "Didn't find POLAR task with effector=\"%s\" and refBdy=\"%s\"",
+           hand.c_str(), object.c_str());
+      success = false;
+    }
+
+    if (success)
+    {
+      hand_ = hand;
+      object_ = object;
+      surface_ = surface;
+      tskObjHandPos_ = tskObjHandPos;
+      tskHandObjPolar_ = tskHandObjPolar;
+      tskObjSurfacePosX_ = tskObjSurfacePosX;
+      tskObjSurfacePosY_ = tskObjSurfacePosY;
+      tskObjSurfacePosZ_ = tskObjSurfacePosZ;
+      tskObjPolar_ = tskObjPolar;
+    }
+
+    return success;
   }
 
   std::shared_ptr<tropic::ActivationSet> put(double t_start, double t_put, double t_release) const
@@ -374,7 +465,7 @@ protected:
   {
   }
 
-  std::string getEffectorName(const Rcs::Task* tsk) const
+  static std::string getEffectorName(const Rcs::Task* tsk)
   {
     if (!tsk)
     {
@@ -387,7 +478,7 @@ protected:
     return std::string(tsk->getEffector()->name);
   }
 
-  std::string getRefBodyName(const Rcs::Task* tsk) const
+  static std::string getRefBodyName(const Rcs::Task* tsk)
   {
     if (!tsk)
     {
@@ -407,8 +498,8 @@ protected:
   std::string taskObjPolar;
   std::string taskHandObjPolar;
 
-  std::string objectName;
   std::string handName;
+  std::string objectName;
   std::string surfaceName;
 };
 
