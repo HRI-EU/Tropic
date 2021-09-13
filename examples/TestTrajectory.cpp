@@ -2092,6 +2092,7 @@ static void testIK()
       }
       swap = !swap;
       RMSG("Done swapping Generic Bodies");
+      tc->getInternalController()->toXML("controller.xml");
     }
     else if (kc && kc->getAndResetKey('l'))
     {
