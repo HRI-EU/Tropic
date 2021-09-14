@@ -42,7 +42,9 @@
     <xTask name="Bottle-Glas Constraint" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" axisDirection="X" refAxisDirection="X" />
   </Task>
 
-  
+  <Task name="Fingers_R" controlVariable="Joints" jnts="j2s7s300_joint_finger_1_R j2s7s300_joint_finger_2_R j2s7s300_joint_finger_3_R" />
+  <Task name="Fingers_L" controlVariable="Joints" jnts="j2s7s300_joint_finger_1_L j2s7s300_joint_finger_2_L j2s7s300_joint_finger_3_L" />
+
   
 
 
