@@ -13,7 +13,7 @@
 -->
 
   <Task name="Bottle-RH XYZ" controlVariable="XYZ" effector="GenericBody3" refBdy="GenericBody0" >
-    <TaskRegion type="BoxInterval" min="0 0 -0.02" max="0 0 0.05" /> 
+    <TaskRegion type="BoxInterval" min="0 0 -0.05" max="0 0 0.05" /> 
   </Task>
   <Task name="Bottle-Table Z" controlVariable="Z" effector="GenericBody3" refBdy="GenericBody5" />
   <Task name="Bottle-Table VelX" controlVariable="X" effector="GenericBody3" refBdy="GenericBody5" />
@@ -37,6 +37,7 @@
 
   <Task name="Bottle-Glas Polar" controlVariable="Composite" effector="GenericBody6" refBdy="GenericBody7">
     <Task name="Bottle-Glas Tilt" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" />
+    <xxxTask name="Bottle-Glas Xrel" controlVariable="X" effector="GenericBody3" refBdy="GenericBody4" refFrame="base_footprint" />
     <xxTask name="Bottle-Glas Constraint" controlVariable="Ad" effector="GenericBody0" />
     <xxTask name="Bottle-Glas Constraint" controlVariable="Cd" effector="GenericBody0" />
     <xTask name="Bottle-Glas Constraint" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" axisDirection="X" refAxisDirection="X" />

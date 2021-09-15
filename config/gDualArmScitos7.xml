@@ -44,6 +44,7 @@
   <Body name="Bottle" prev="Table" rigid_body_joints="-0.1 -0.2 0 0 0 0" color="RED" >
     <Shape type="CYLINDER" length="0.16" radius="0.0325" graphics="true" transform="0 0 0.08 0 0 0" />
     <Shape type="CYLINDER" length="0.08" radius="0.015" graphics="true" transform="0 0 0.2 0 0 0" />
+    <Shape type="FRAME" transform="0 0 0.1 0 0 0" scale="0.15" />
     <Shape type="FRAME" scale="0.15" />
   </Body>
   

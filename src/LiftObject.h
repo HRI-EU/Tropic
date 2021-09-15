@@ -436,8 +436,9 @@ public:
     a1->addActivation(t_end, false, 0.5, taskRelOri);
     a1->add(t_pour-0.25*dur, RCS_DEG2RAD(80.0), 0.0, 0.0, 7, taskRelOri  + " 0");
     a1->add(t_pour+0.25*dur, RCS_DEG2RAD(150.0), 0.0, 0.0, 7, taskRelOri  + " 0");
-    a1->add(t_end, RCS_DEG2RAD(30.0), 0.0, 0.0, 7, taskRelOri  + " 0");
-    //a1->add(t_end, RCS_DEG2RAD(0.0), 0.0, 0.0, 7, taskRelOri  + " 1");
+    a1->add(t_end, RCS_DEG2RAD(10.0), 0.0, 0.0, 7, taskRelOri  + " 0");
+    a1->add(t_pour, RCS_DEG2RAD(0.0), 0.0, 0.0, 7, taskRelOri  + " 1");
+    a1->add(t_end, RCS_DEG2RAD(0.0), 0.0, 0.0, 7, taskRelOri  + " 1");
 
     a1->addActivation(t_start, true, 0.5, taskObjPolar);
     a1->addActivation(t_end, false, 0.5, taskObjPolar);
