@@ -3,9 +3,9 @@
        name="JacoDefaultPose"
        GenericBody0="PowerGrasp_R"
        GenericBody1="PowerGrasp_L"
+       GenericBody2="Table" 
        GenericBody3="Bottle"
        GenericBody4="Glas"
-       GenericBody5="Table" 
        GenericBody6="BottleTip"
        GenericBody7="GlasTip" >
  

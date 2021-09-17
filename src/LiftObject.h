@@ -309,7 +309,7 @@ public:
 
     double t_mid = t_start+0.5*(t_tilt-t_start);
     a1->add(rh.lift(t_start, t_mid, t_tilt, graspHeight));
-    a1->add(lh.lift(t_start, t_mid, t_tilt, graspHeight));
+    a1->add(lh.lift(t_start, t_mid, t_tilt, 0.5*graspHeight));
 
     t_mid = t_tilt+0.5*(t_put-t_tilt);
     a1->add(rh.tilt(controller, bottleTip, glasTip, t_tilt, 5.0, t_put));
@@ -317,6 +317,40 @@ public:
     t_mid = t_put+0.5*(t_end-t_put);
     a1->add(rh.put(t_put, t_mid, t_end));
     a1->add(lh.put(t_put, t_mid, t_end));
+
+    return a1;
+  }
+
+  static std::shared_ptr<tropic::ConstraintSet>
+  pourWithRightHand(const Rcs::ControllerBase* controller,
+                    std::string rHand,
+                    std::string lHand,
+                    std::string bottle,
+                    std::string glas,
+                    std::string table,
+                    std::string bottleTip,
+                    std::string glasTip,
+                    double t_start, double t_end)
+  {
+    const double graspHeight = 0.1;
+    const double duration = t_end - t_start;
+    const double t_tilt = t_start + 0.25*duration;
+    const double t_put = t_start + 0.75*duration;
+    auto a1 = std::make_shared<tropic::ActivationSet>();
+
+    LiftObjectConstraint rh(controller, rHand, bottle, table);
+    //LiftObjectConstraint lh(controller, lHand, glas, table);
+
+    double t_mid = t_start+0.5*(t_tilt-t_start);
+    a1->add(rh.lift(t_start, t_mid, t_tilt, graspHeight));
+    //a1->add(lh.lift(t_start, t_mid, t_tilt, 0.5*graspHeight));
+
+    t_mid = t_tilt+0.5*(t_put-t_tilt);
+    a1->add(rh.tilt(controller, bottleTip, glasTip, t_tilt, 5.0, t_put));
+
+    t_mid = t_put+0.5*(t_end-t_put);
+    a1->add(rh.put(t_put, t_mid, t_end));
+    //a1->add(lh.put(t_put, t_mid, t_end));
 
     return a1;
   }
@@ -338,10 +372,18 @@ public:
     a1->addActivation(t_grasp, false, 0.5, taskHandObjPolar);
     a1->add(std::make_shared<tropic::PolarConstraint>(t_grasp, 0.0, 0.0, taskHandObjPolar));
 
-    // Object orientation with respect to world frame
+    // Object orientation with respect to world frame. We need to make sure
+    // that the objects are a little bit inclined, so that they rotate into
+    // a defined direction. Otherwise, the inclination task will lead to random
+    // tilting directions.
     a1->addActivation(t_grasp, true, 0.5, taskObjPolar);
     a1->addActivation(t_end, false, 0.5, taskObjPolar);
-    a1->add(std::make_shared<tropic::PolarConstraint>(t_end, 0.0, 0.0, taskObjPolar));
+    double tiltSgn = 1.0;
+    if (fabs(graspHeight)< 0.09)
+    {
+      tiltSgn = -1.0;
+    }
+    a1->add(std::make_shared<tropic::PolarConstraint>(t_end, 0.05, tiltSgn*M_PI_2, taskObjPolar));
 
     // Lift object
     a1->addActivation(t_grasp, true, 0.5, taskObjSurfacePosZ);
@@ -437,8 +479,8 @@ public:
     a1->add(t_pour-0.25*dur, RCS_DEG2RAD(80.0), 0.0, 0.0, 7, taskRelOri  + " 0");
     a1->add(t_pour+0.25*dur, RCS_DEG2RAD(150.0), 0.0, 0.0, 7, taskRelOri  + " 0");
     a1->add(t_end, RCS_DEG2RAD(10.0), 0.0, 0.0, 7, taskRelOri  + " 0");
-    a1->add(t_pour, RCS_DEG2RAD(0.0), 0.0, 0.0, 7, taskRelOri  + " 1");
-    a1->add(t_end, RCS_DEG2RAD(0.0), 0.0, 0.0, 7, taskRelOri  + " 1");
+    a1->add(t_pour, RCS_DEG2RAD(90.0), 0.0, 0.0, 7, taskRelOri  + " 1");
+    a1->add(t_end, RCS_DEG2RAD(90.0), 0.0, 0.0, 7, taskRelOri  + " 1");
 
     a1->addActivation(t_start, true, 0.5, taskObjPolar);
     a1->addActivation(t_end, false, 0.5, taskObjPolar);

@@ -4,9 +4,9 @@
 
        GenericBody0="PowerGrasp_R"
        GenericBody1="PowerGrasp_L"
+       GenericBody2="Table"
        GenericBody3="Bottle"
        GenericBody4="Glas"
-       GenericBody5="Table"
        GenericBody6="BottleTip"
        GenericBody7="GlasTip" 
 
@@ -15,38 +15,37 @@
   <Task name="Bottle-RH XYZ" controlVariable="XYZ" effector="GenericBody3" refBdy="GenericBody0" >
     <TaskRegion type="BoxInterval" min="0 0 -0.05" max="0 0 0.05" /> 
   </Task>
-  <Task name="Bottle-Table Z" controlVariable="Z" effector="GenericBody3" refBdy="GenericBody5" />
-  <Task name="Bottle-Table VelX" controlVariable="X" effector="GenericBody3" refBdy="GenericBody5" />
-  <Task name="Bottle-Table VelY" controlVariable="Y" effector="GenericBody3" refBdy="GenericBody5" />
-  <Task name="Bottle Polar" controlVariable="POLAR" effector="GenericBody3" />
+  <Task name="Bottle-Table Z" controlVariable="Z" effector="GenericBody3" refBdy="GenericBody2" />
+  <Task name="Bottle-Table VelX" controlVariable="X" effector="GenericBody3" refBdy="GenericBody2" />
+  <Task name="Bottle-Table VelY" controlVariable="Y" effector="GenericBody3" refBdy="GenericBody2" />
+  <Task name="Bottle Polar" controlVariable="POLAR" effector="GenericBody3" refFrame="base_footprint" />
   <Task name="RH-Bottle Polar" controlVariable="POLAR" effector="GenericBody0" refBdy="GenericBody3" />
 
-  <Task name="Glas-RH XYZ" controlVariable="XYZ" effector="GenericBody4" refBdy="GenericBody1" />
-  <Task name="Glas-Table Z" controlVariable="Z" effector="GenericBody4" refBdy="GenericBody5" />
-  <Task name="Glas-Table X" controlVariable="X" effector="GenericBody4" refBdy="GenericBody5" />
-  <Task name="Glas-Table Y" controlVariable="Y" effector="GenericBody4" refBdy="GenericBody5" />
+  <Task name="Glas-RH XYZ"  controlVariable="XYZ" effector="GenericBody4" refBdy="GenericBody1" />
+  <Task name="Glas-Table X" controlVariable="X"   effector="GenericBody4" refBdy="GenericBody2" />
+  <Task name="Glas-Table Y" controlVariable="Y"   effector="GenericBody4" refBdy="GenericBody2" />
+  <Task name="Glas-Table Z" controlVariable="Z"   effector="GenericBody4" refBdy="GenericBody2" />
 
   
-  <Task name="Glas Polar" controlVariable="POLAR" effector="GenericBody4" />
+  <Task name="Glas Polar" controlVariable="POLAR" effector="GenericBody4" refFrame="base_footprint" />
   <Task name="GlasTip Polar" controlVariable="POLAR" effector="GenericBody7" />
-  <Task name="RH-Glas Polar" controlVariable="POLAR" effector="GenericBody1" refBdy="GenericBody4" />
+  <Task name="LH-Glas Polar" controlVariable="POLAR" effector="GenericBody1" refBdy="GenericBody4" />
 
   <Task name="Bottle-Glas XYZ" controlVariable="XYZ" effector="GenericBody6" refBdy="GenericBody7" refFrame="base_footprint" />
 
     <!-- <Task name="Bottle-Glas Tilt" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" /> -->
 
   <Task name="Bottle-Glas Polar" controlVariable="Composite" effector="GenericBody6" refBdy="GenericBody7">
-    <Task name="Bottle-Glas Tilt" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" />
-    <xxxTask name="Bottle-Glas Xrel" controlVariable="X" effector="GenericBody3" refBdy="GenericBody4" refFrame="base_footprint" />
-    <xxTask name="Bottle-Glas Constraint" controlVariable="Ad" effector="GenericBody0" />
-    <xxTask name="Bottle-Glas Constraint" controlVariable="Cd" effector="GenericBody0" />
-    <xTask name="Bottle-Glas Constraint" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" axisDirection="X" refAxisDirection="X" />
+    <Task name="Tilt ZZ" controlVariable="Inclination" effector="GenericBody6" refBdy="GenericBody7" />
+    <Task name="Tilt ZX" controlVariable="Inclination" effector="GenericBody6" refFrame="base_footprint" refAxisDirection="X" />
   </Task>
 
   <Task name="Fingers_R" controlVariable="Joints" jnts="j2s7s300_joint_finger_1_R j2s7s300_joint_finger_2_R j2s7s300_joint_finger_3_R" />
   <Task name="Fingers_L" controlVariable="Joints" jnts="j2s7s300_joint_finger_1_L j2s7s300_joint_finger_2_L j2s7s300_joint_finger_3_L" />
 
   
+  <Task name="LH-BottleTip" controlVariable="XYZ" effector="GenericBody1" refBdy="GenericBody6" />
+  <Task name="LH-BottleTip2" controlVariable="ABC" effector="GenericBody1" refBdy="GenericBody6" />
 
 
   

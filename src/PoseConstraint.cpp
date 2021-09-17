@@ -81,6 +81,7 @@ PoseConstraint::PoseConstraint(xmlNode* node) : ConstraintSet(node)
   else
   {
     RLOG(1, "Failed to create constraint!");
+    RFATAL("Giving up");
   }
 
   node = node->children;

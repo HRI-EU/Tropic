@@ -2096,7 +2096,13 @@ static void testIK()
     }
     else if (kc && kc->getAndResetKey('l'))
     {
-      auto tSet = tropic::LiftObjectConstraint::pourWithTwoHands(tc->getController(), "GenericBody0", "GenericBody1", "GenericBody3", "GenericBody4", "GenericBody5", "GenericBody6", "GenericBody7", 1.0, 8.0);
+      auto tSet = tropic::LiftObjectConstraint::pourWithTwoHands(tc->getController(), "GenericBody0", "GenericBody1", "GenericBody3", "GenericBody4", "GenericBody2", "GenericBody6", "GenericBody7", 1.0, 8.0);
+      tc->addAndApply(tSet, true);
+      tc->toXML("traj_out.xml");
+    }
+    else if (kc && kc->getAndResetKey('y'))
+    {
+      auto tSet = tropic::LiftObjectConstraint::pourWithRightHand(tc->getController(), "GenericBody0", "GenericBody1", "GenericBody3", "GenericBody4", "GenericBody2", "GenericBody6", "GenericBody7", 1.0, 8.0);
       tc->addAndApply(tSet, true);
     }
     else if (kc && kc->getAndResetKey('L'))
@@ -2105,11 +2111,11 @@ static void testIK()
       std::shared_ptr<tropic::LiftObjectConstraint> ts;
       try
       {
-        tropic::LiftObjectConstraint rh(tc->getController(), "GenericBody0", "GenericBody3", "GenericBody5");
+        tropic::LiftObjectConstraint rh(tc->getController(), "GenericBody0", "GenericBody3", "GenericBody2");
         tc->addAndApply(rh.lift(1.0, 2.0, 4.0, 0.1), true);
         tc->addAndApply(rh.tilt(tc->getController(), "GenericBody6", "GenericBody7", 4.0, 5.0, 6.0), true);
         tc->addAndApply(rh.put(6.0, 8.0, 9.0), true);
-        tropic::LiftObjectConstraint lh(tc->getController(), "GenericBody1", "GenericBody4", "GenericBody5");
+        tropic::LiftObjectConstraint lh(tc->getController(), "GenericBody1", "GenericBody4", "GenericBody2");
         tc->addAndApply(lh.lift(1.0, 3.0, 4.0, 0.1), true);
         tc->addAndApply(lh.put(6.0, 7.0, 8.0), true);
       }
