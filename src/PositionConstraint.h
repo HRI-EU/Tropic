@@ -57,27 +57,18 @@ public:
 
   PositionConstraint(xmlNode* node);
 
-  PositionConstraint(double t, double x, double y, double z,
-                     const std::string& trajNameND, int flag=7);
-
   PositionConstraint(double t, const double I_r_IP[3],
                      const std::string& trajNameND, int flag=7);
 
-  PositionConstraint(double t, const HTr* A_BI_, const double I_r_IP[3],
+  PositionConstraint(double t, double x, double y, double z,
                      const std::string& trajNameND, int flag=7);
 
   virtual PositionConstraint* clone() const;
 
   virtual ~PositionConstraint();
-  virtual double compute(double dt);
   void getPosition(double I_pt[3]);
   virtual void fromXML(xmlNode* node);
   virtual void toXML(std::ostream& out, size_t indent = 0) const;
-
-protected:
-
-  const HTr* A_BI;
-  double B_r_BP[3];
 };
 
 }   // namespace tropic

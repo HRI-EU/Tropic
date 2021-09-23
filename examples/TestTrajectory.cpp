@@ -38,6 +38,7 @@
 #include "IkSolverConstraintRMR.h"
 #include "TrajectoryPlotter1D.h"
 #include "PoseConstraint.h"
+#include "AnchoredPositionConstraint.h"
 #include "PolarConstraint.h"
 #include "ConnectBodyConstraint.h"
 #include "PouringConstraint.h"
@@ -1345,13 +1346,13 @@ MULTI_LINE_STRING(
 namespace tropic
 {
 
-class ContactConstraint : public PositionConstraint
+class ContactConstraint : public AnchoredPositionConstraint
 {
 public:
   ContactConstraint(std::shared_ptr<ContactConstraint> prev,
                     double t, const RcsBody* bdy, const double I_pt[3],
                     TrajectoryND* traj) :
-    PositionConstraint(t, &bdy->A_BI, I_pt, traj->getName(), 7)
+    AnchoredPositionConstraint(t, &bdy->A_BI, I_pt, traj->getName(), 7)
   {
     setClassName("ContactConstraint");
     init(prev, t, bdy, I_pt, traj);
@@ -1359,13 +1360,13 @@ public:
 
   ContactConstraint(double t, const RcsBody* bdy, const double I_pt[3],
                     TrajectoryND* traj) :
-    PositionConstraint(t, &bdy->A_BI, I_pt, traj->getName(), 7)
+    AnchoredPositionConstraint(t, &bdy->A_BI, I_pt, traj->getName(), 7)
   {
     setClassName("ContactConstraint");
     init(nullptr, t, bdy, I_pt, traj);
   }
 
-  ContactConstraint(xmlNode* node) : PositionConstraint(node)
+  ContactConstraint(xmlNode* node) : AnchoredPositionConstraint(node)
   {
     setClassName("ContactConstraint");
   }
@@ -1392,8 +1393,8 @@ public:
       Vec3d_constMulAndAddSelf(throughPt0, tmp, 0.1);
       Vec3d_constMulAndAddSelf(throughPt1, tmp, -0.1);
 
-      add(std::make_shared<PositionConstraint>(t0+0.3*ttc, prev->A_BI, throughPt0, traj->getName(), 1));
-      add(std::make_shared<PositionConstraint>(t0+0.7*ttc, A_BI, throughPt1, traj->getName(), 1));
+      add(std::make_shared<AnchoredPositionConstraint>(t0+0.3*ttc, prev->A_BI, throughPt0, traj->getName(), 1));
+      add(std::make_shared<AnchoredPositionConstraint>(t0+0.7*ttc, A_BI, throughPt1, traj->getName(), 1));
 
       double midPt[3], midNormal[3], n0[3], n1[3];
       prev->getNormal(n0);
@@ -1406,7 +1407,7 @@ public:
       }
       Vec3d_normalizeSelf(midNormal);
       Vec3d_constMulAndAddSelf(midPt, midNormal, 2.0*distance);
-      add(std::make_shared<PositionConstraint>(t0 + 0.5*ttc, A_BI, midPt, traj->getName(), 1));
+      add(std::make_shared<AnchoredPositionConstraint>(t0 + 0.5*ttc, A_BI, midPt, traj->getName(), 1));
     }
   }
 
@@ -1437,7 +1438,7 @@ public:
       }
     }
 
-    return PositionConstraint::compute(dt);
+    return AnchoredPositionConstraint::compute(dt);
   }
 
 protected:

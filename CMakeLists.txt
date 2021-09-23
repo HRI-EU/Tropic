@@ -79,6 +79,7 @@ src/TrajectoryController.cpp
 src/ConstraintSet.cpp
 src/ActivationPoint.cpp
 src/PositionConstraint.cpp
+src/AnchoredPositionConstraint.cpp
 src/EulerConstraint.cpp
 src/PoseConstraint.cpp
 src/PolarConstraint.cpp

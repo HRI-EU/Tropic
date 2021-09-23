@@ -30,7 +30,7 @@
 
 *******************************************************************************/
 
-#include "PositionConstraint.h"
+#include "AnchoredPositionConstraint.h"
 #include "ConstraintFactory.h"
 
 #include <Rcs_macros.h>
@@ -44,50 +44,70 @@
 
 namespace tropic
 {
-REGISTER_CONSTRAINT(PositionConstraint);
+REGISTER_CONSTRAINT(AnchoredPositionConstraint);
 
-PositionConstraint::PositionConstraint() : ConstraintSet()
+AnchoredPositionConstraint::AnchoredPositionConstraint() : ConstraintSet(), A_BI(NULL)
 {
-  setClassName("PositionConstraint");
+  setClassName("AnchoredPositionConstraint");
+  Vec3d_setZero(this->B_r_BP);
 }
 
-PositionConstraint::PositionConstraint(xmlNode* node) : ConstraintSet(node)
+AnchoredPositionConstraint::AnchoredPositionConstraint(xmlNode* node) :
+  ConstraintSet(node), A_BI(NULL)
 {
-  setClassName("PositionConstraint");
+  setClassName("AnchoredPositionConstraint");
+  Vec3d_setZero(this->B_r_BP);
   fromXML(node);
 }
 
-PositionConstraint::PositionConstraint(double t, double x, double y, double z,
-                                       const std::string& trajNameND,
-                                       int flag) :
-  ConstraintSet()
+AnchoredPositionConstraint::AnchoredPositionConstraint(double t, double x, double y, double z,
+                                                       const std::string& trajNameND,
+                                                       int flag) :
+  ConstraintSet(), A_BI(NULL)
 {
-  setClassName("PositionConstraint");
+  setClassName("AnchoredPositionConstraint");
+  Vec3d_setZero(this->B_r_BP);
   add(t, x, 0.0, 0.0, flag, trajNameND + " 0");
   add(t, y, 0.0, 0.0, flag, trajNameND + " 1");
   add(t, z, 0.0, 0.0, flag, trajNameND + " 2");
 }
 
-PositionConstraint::PositionConstraint(double t, const double I_r_IP[3],
-                                       const std::string& trajNameND,
-                                       int flag) :
-  ConstraintSet()
+AnchoredPositionConstraint::AnchoredPositionConstraint(double t, const double I_r_IP[3],
+                                                       const std::string& trajNameND,
+                                                       int flag) :
+  ConstraintSet(), A_BI(NULL)
 {
-  setClassName("PositionConstraint");
+  setClassName("AnchoredPositionConstraint");
+  Vec3d_setZero(this->B_r_BP);
   add(t, I_r_IP[0], 0.0, 0.0, flag, trajNameND + " 0");
   add(t, I_r_IP[1], 0.0, 0.0, flag, trajNameND + " 1");
   add(t, I_r_IP[2], 0.0, 0.0, flag, trajNameND + " 2");
 }
 
-PositionConstraint::~PositionConstraint()
+AnchoredPositionConstraint::AnchoredPositionConstraint(double t, const HTr* A_BI_,
+                                                       const double I_r_IP[3],
+                                                       const std::string& trajNameND,
+                                                       int flag) :
+  ConstraintSet(), A_BI(A_BI_)
+{
+  setClassName("AnchoredPositionConstraint");
+  Vec3d_invTransform(this->B_r_BP, A_BI, I_r_IP);
+  add(t, I_r_IP[0], 0.0, 0.0, flag, trajNameND + " 0");
+  add(t, I_r_IP[1], 0.0, 0.0, flag, trajNameND + " 1");
+  add(t, I_r_IP[2], 0.0, 0.0, flag, trajNameND + " 2");
+}
+
+AnchoredPositionConstraint::~AnchoredPositionConstraint()
 {
 }
 
-PositionConstraint* PositionConstraint::clone() const
+AnchoredPositionConstraint* AnchoredPositionConstraint::clone() const
 {
-  PositionConstraint* tSet = new PositionConstraint();
+  RCHECK_MSG(A_BI==NULL, "This does not yet work due to the A_BI pointer");
+  AnchoredPositionConstraint* tSet = new AnchoredPositionConstraint();
   tSet->constraint = constraint;
   tSet->className = className;
+  Vec3d_copy(tSet->B_r_BP, B_r_BP);
 
   for (size_t i = 0; i < set.size(); ++i)
   {
@@ -98,7 +118,22 @@ PositionConstraint* PositionConstraint::clone() const
   return tSet;
 }
 
-void PositionConstraint::getPosition(double I_pt[3])
+double AnchoredPositionConstraint::compute(double dt)
+{
+  if (this->A_BI)
+  {
+    double I_r_IP[3];
+    Vec3d_transform(I_r_IP, this->A_BI, this->B_r_BP);
+
+    getConstraint(0)->setPosition(I_r_IP[0]);
+    getConstraint(1)->setPosition(I_r_IP[1]);
+    getConstraint(2)->setPosition(I_r_IP[2]);
+  }
+
+  return ConstraintSet::compute(dt);
+}
+
+void AnchoredPositionConstraint::getPosition(double I_pt[3])
 {
   for (size_t i=0; i<numConstraints(false); ++i)
   {
@@ -106,7 +141,7 @@ void PositionConstraint::getPosition(double I_pt[3])
   }
 }
 
-void PositionConstraint::fromXML(xmlNode* node)
+void AnchoredPositionConstraint::fromXML(xmlNode* node)
 {
   if (isXMLNodeName(node, "ConstraintSet") == false)
   {
@@ -144,27 +179,17 @@ void PositionConstraint::fromXML(xmlNode* node)
 
 }
 
-void PositionConstraint::toXML(std::ostream& outStream, size_t indent) const
+void AnchoredPositionConstraint::toXML(std::ostream& outStream, size_t indent) const
 {
   // Prepare indentation string so that hierarchy levels are indented nicely
   std::string indStr(indent, ' ');
 
   // Open set's xml description. The class name is polymorphic
-  outStream << indStr << "<ConstraintSet type=\"" << getClassName() << "\" ";
+  outStream << indStr << "<ConstraintSet type=\""
+            << getClassName() << "\" ";
 
   // Check that we have only 3 constraints
-
-  if (constraint.empty())
-  {
-    throw (std::string("Found PositionConstraint with no constraints"));
-  }
-  else if (constraint.size()!=3)
-  {
-    std::string errMsg = "Trajectory \"" + constraint[0].trajName1D + " has "
-                         + std::to_string(constraint.size())
-                         + " dimensions, but is expected to have 3\n";
-    throw (errMsg);
-  }
+  RCHECK_MSG(constraint.size()==3, "Size is %zu", constraint.size());
 
   // Write out information to top-level tag
   outStream << "t=\"" << constraint[0].c->getTime() << "\" ";
@@ -181,12 +206,7 @@ void PositionConstraint::toXML(std::ostream& outStream, size_t indent) const
 
   char tmp[256];
   bool ok = String_removeSuffix(tmp, constraint[0].trajName1D.c_str(), ' ');
-
-  if (!ok)
-  {
-    std::string errMsg = "Trajectory \"" + std::string(tmp) + " should end like \" 1\"\n";
-    throw (errMsg);
-  }
+  RCHECK_MSG(ok, "Trajectory \"%s\" should end like \" 1\"", tmp);
 
   outStream << "trajectory=\"" << tmp << "\"";
 

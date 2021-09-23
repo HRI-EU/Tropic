@@ -30,11 +30,12 @@
 
 *******************************************************************************/
 
-#ifndef TROPIC_POSECONSTRAINT_H
-#define TROPIC_POSECONSTRAINT_H
+#ifndef TROPIC_ANCHOREDPOSITIONCONSTRAINT_H
+#define TROPIC_ANCHOREDPOSITIONCONSTRAINT_H
 
-#include "PositionConstraint.h"
-#include "EulerConstraint.h"
+#include "ConstraintSet.h"
+
+#include <string>
 
 
 
@@ -42,37 +43,44 @@ namespace tropic
 {
 
 /*! \ingroup Tropic
- *  \brief Class for computing 6d pose trajectories
+ *  \brief Class for computing 3d position trajectories.
  *
- *         This composite class contains two child sets. The first one is a
- *         PositionConstraint, the second one a EulerConstraint. It computes a
- *         6-dimensional trajectory with the components x-y-z-a-b-c, see the
- *         respective classes for more details.
+ *         The class also provides methods to link a constraint against a
+ *         transform. This is however not yet implemented reliably and should
+ *         be avoided unless you know exactly what you do.
  */
-class PoseConstraint : public ConstraintSet
+class AnchoredPositionConstraint : public ConstraintSet
 {
 public:
 
-  PoseConstraint();
+  AnchoredPositionConstraint();
 
-  PoseConstraint(xmlNode* node);
+  AnchoredPositionConstraint(xmlNode* node);
 
-  PoseConstraint(double t, const HTr* A_PI, const std::string& trajNamePos,
-                 const std::string& trajNameOri);
+  AnchoredPositionConstraint(double t, double x, double y, double z,
+                             const std::string& trajNameND, int flag=7);
 
-  // PoseConstraint(double t, const HTr* A_BI, const HTr* A_PI,
-  //                const std::string& trajNamePos,
-  //                const std::string& trajNameOri);
+  AnchoredPositionConstraint(double t, const double I_r_IP[3],
+                             const std::string& trajNameND, int flag=7);
 
-  virtual ~PoseConstraint();
+  AnchoredPositionConstraint(double t, const HTr* A_BI_, const double I_r_IP[3],
+                             const std::string& trajNameND, int flag=7);
 
-  virtual PoseConstraint* clone() const;
+  virtual AnchoredPositionConstraint* clone() const;
 
-  void print() const;
+  virtual ~AnchoredPositionConstraint();
+  virtual double compute(double dt);
+  void getPosition(double I_pt[3]);
+  virtual void fromXML(xmlNode* node);
+  virtual void toXML(std::ostream& out, size_t indent = 0) const;
 
-  void toXML(std::ostream& out, size_t indent = 0) const;
+protected:
+
+  const HTr* A_BI;
+  double B_r_BP[3];
 };
 
 }   // namespace tropic
 
-#endif   // TROPIC_POSECONSTRAINT_H
+
+#endif   // TROPIC_ANCHOREDPOSITIONCONSTRAINT_H

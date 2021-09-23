@@ -103,16 +103,16 @@ PoseConstraint::PoseConstraint(double t, const HTr* A_PI, const std::string& tra
   add(std::make_shared<EulerConstraint>(t, ea, trajNameOri));
 }
 
-PoseConstraint::PoseConstraint(double t, const HTr* A_BI, const HTr* A_PI,
-                               const std::string& trajNamePos,
-                               const std::string& trajNameOri) : ConstraintSet()
-{
-  setClassName("PoseConstraint");
-  double ea[3];
-  Mat3d_toEulerAngles(ea, (double(*)[3]) A_PI->rot);
-  add(std::make_shared<PositionConstraint>(t, A_BI, A_PI->org, trajNamePos));
-  add(std::make_shared<EulerConstraint>(t, A_BI, ea, trajNameOri));
-}
+// PoseConstraint::PoseConstraint(double t, const HTr* A_BI, const HTr* A_PI,
+//                                const std::string& trajNamePos,
+//                                const std::string& trajNameOri) : ConstraintSet()
+// {
+//   setClassName("PoseConstraint");
+//   double ea[3];
+//   Mat3d_toEulerAngles(ea, (double(*)[3]) A_PI->rot);
+//   add(std::make_shared<PositionConstraint>(t, A_BI, A_PI->org, trajNamePos));
+//   add(std::make_shared<EulerConstraint>(t, A_BI, ea, trajNameOri));
+// }
 
 PoseConstraint::~PoseConstraint()
 {
