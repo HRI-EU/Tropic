@@ -355,6 +355,40 @@ public:
     return a1;
   }
 
+  static std::shared_ptr<tropic::ConstraintSet>
+  screwWithTwoHands(const Rcs::ControllerBase* controller,
+                    std::string rHand,
+                    std::string lHand,
+                    std::string bottle,
+                    std::string glas,
+                    std::string table,
+                    std::string bottleTip,
+                    std::string glasTip,
+                    double t_start, double t_end)
+  {
+    const double graspHeight = 0.1;
+    const double duration = t_end - t_start;
+    const double t_tilt = t_start + 0.25*duration;
+    const double t_put = t_start + 0.75*duration;
+    auto a1 = std::make_shared<tropic::ActivationSet>();
+
+    LiftObjectConstraint rh(controller, rHand, bottle, table);
+    LiftObjectConstraint lh(controller, lHand, glas, table);
+
+    double t_mid = t_start+0.5*(t_tilt-t_start);
+    a1->add(rh.lift(t_start, t_mid, t_tilt, graspHeight));
+    a1->add(lh.lift(t_start, t_mid, t_tilt, 0.5*graspHeight));
+
+    t_mid = t_tilt+0.5*(t_put-t_tilt);
+    a1->add(rh.tilt(controller, bottleTip, glasTip, t_tilt, 5.0, t_put));
+
+    t_mid = t_put+0.5*(t_end-t_put);
+    a1->add(rh.put(t_put, t_mid, t_end));
+    a1->add(lh.put(t_put, t_mid, t_end));
+
+    return a1;
+  }
+
   std::shared_ptr<tropic::ConstraintSet> lift(double t_start, double t_grasp, double t_end, double graspHeight) const
   {
     // Grasp the bottle and lift it up
@@ -398,6 +432,100 @@ public:
                                               std::string objToPourFrom,
                                               std::string objToPourInto,
                                               double t_start, double t_pour, double t_end) const
+  {
+    std::string taskRelPos, taskRelOri, taskObjPolar;
+
+    // We go through the following looku+ps to resolve the names of possible
+    // generic bodies.
+    const RcsBody* bdy;
+    bdy = RcsGraph_getBodyByName(controller->getGraph(), objToPourFrom.c_str());
+    if (!bdy)
+    {
+      throw (std::string("Failed to find body for " + objToPourFrom));
+    }
+    objToPourFrom = std::string(bdy->name);
+
+    bdy = RcsGraph_getBodyByName(controller->getGraph(), objToPourInto.c_str());
+    if (!bdy)
+    {
+      throw (std::string("Failed to find body for " + objToPourInto));
+    }
+    objToPourInto = std::string(bdy->name);
+
+    for (size_t i=0; i<controller->getNumberOfTasks(); ++i)
+    {
+      const Rcs::Task* ti = controller->getTask(i);
+
+      // taskObjHandPos
+      if ((getEffectorName(ti)==objToPourFrom && getRefBodyName(ti)==objToPourInto) ||
+          (getEffectorName(ti)==objToPourInto && getRefBodyName(ti)==objToPourFrom))
+      {
+
+        if (ti->getClassName()=="XYZ")
+        {
+          RCHECK(taskRelPos.empty());
+          taskRelPos = ti->getName();
+        }
+        else if (ti->getClassName()=="Composite")
+        {
+          RCHECK(taskRelOri.empty());
+          taskRelOri = ti->getName();
+        }
+
+      }
+
+      // taskObjPolar
+      if ((getEffectorName(ti)==objToPourInto) &&
+          (getRefBodyName(ti).empty()) &&
+          (ti->getClassName()=="POLAR"))
+      {
+        RCHECK(taskObjPolar.empty());
+        taskObjPolar = ti->getName();
+      }
+
+    }
+
+    // Check that all tasks have been found
+    RCHECK_MSG(!taskRelPos.empty(),
+               "Didn't find position task with effector=\"%s\" and refBdy=\"%s\"",
+               objectName.c_str(), handName.c_str());
+    RCHECK_MSG(!taskRelOri.empty(),
+               "Didn't find Polar angle task with effector=\"%s\" and refBdy=\"%s\"",
+               objectName.c_str(), surfaceName.c_str());
+    RCHECK_MSG(!taskObjPolar.empty(),
+               "Didn't find Polar angle task with effector=\"%s\"",
+               objectName.c_str());
+
+    auto a1 = std::make_shared<tropic::ActivationSet>();
+
+    // Hand position with respect to bottle. We move the bottle tip over the
+    // glas tip, keep it a little bit (while the bottle tilts), and then
+    // move bottle and glas sideways apart.
+    a1->addActivation(t_start, true, 0.5, taskRelPos);
+    a1->addActivation(t_end, false, 0.5, taskRelPos);
+    double dur = t_pour - t_start;
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_pour-0.25*dur, 0.0, 0.0, 0.0, taskRelPos));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_pour+0.25*dur, 0.0, 0.0, 0.0, taskRelPos));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_end, 0.0, -0.2, 0.0, taskRelPos));
+
+    a1->addActivation(t_start, true, 0.5, taskRelOri);
+    a1->addActivation(t_end, false, 0.5, taskRelOri);
+    a1->add(t_pour-0.25*dur, RCS_DEG2RAD(80.0), 0.0, 0.0, 7, taskRelOri  + " 0");
+    a1->add(t_pour+0.25*dur, RCS_DEG2RAD(150.0), 0.0, 0.0, 7, taskRelOri  + " 0");
+    a1->add(t_end, RCS_DEG2RAD(10.0), 0.0, 0.0, 7, taskRelOri  + " 0");
+    a1->add(t_pour, RCS_DEG2RAD(90.0), 0.0, 0.0, 7, taskRelOri  + " 1");
+    a1->add(t_end, RCS_DEG2RAD(90.0), 0.0, 0.0, 7, taskRelOri  + " 1");
+
+    a1->addActivation(t_start, true, 0.5, taskObjPolar);
+    a1->addActivation(t_end, false, 0.5, taskObjPolar);
+
+    return a1;
+  }
+
+  std::shared_ptr<tropic::ConstraintSet> screw(const Rcs::ControllerBase* controller,
+                                               std::string objToPourFrom,
+                                               std::string objToPourInto,
+                                               double t_start, double t_pour, double t_end) const
   {
     std::string taskRelPos, taskRelOri, taskObjPolar;
 
