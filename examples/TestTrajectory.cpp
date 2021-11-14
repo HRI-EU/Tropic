@@ -1750,6 +1750,9 @@ static void testIK()
   MatNd* x_des_f    = MatNd_create(controller.getTaskDim(), 1);
   MatNd* dx_des     = MatNd_create(controller.getTaskDim(), 1);
   MatNd* dH         = MatNd_create(1, controller.getGraph()->nJ);
+  MatNd* timings    = MatNd_create(5, 1);
+  MatNd_set(timings, 0, 0, 1.0);
+  MatNd_set(timings, 1, 0, 20.0);
 
   controller.readActivationsFromXML(a_des);
   controller.computeX(x_curr);
@@ -1860,6 +1863,22 @@ static void testIK()
       labels.push_back("gain");
       mw->setLabels(labels);
     }
+
+    {
+      std::vector<std::string> labels;
+      Rcs::MatNdWidget* mw;
+      mw = Rcs::MatNdWidget::create(timings, timings, 0.0, 40.0,
+                                    "Timings", mtx);
+      labels.push_back("t0");
+      labels.push_back("t1");
+      labels.push_back("t2");
+      labels.push_back("t3");
+      labels.push_back("t4");
+      mw->setLabels(labels);
+    }
+
+
+
   }
 
   unsigned int loopCount = 0;
@@ -2097,37 +2116,28 @@ static void testIK()
     }
     else if (kc && kc->getAndResetKey('l'))
     {
-      auto tSet = tropic::LiftObjectConstraint::pourWithTwoHands(tc->getController(), "GenericBody0", "GenericBody1", "GenericBody3", "GenericBody4", "GenericBody2", "GenericBody6", "GenericBody7", 1.0, 8.0);
+      auto tSet = tropic::LiftObjectConstraint::pourWithTwoHands(tc->getController(),
+                                                                 "GenericBody0",
+                                                                 "GenericBody1",
+                                                                 "GenericBody3",
+                                                                 "GenericBody4",
+                                                                 "GenericBody2",
+                                                                 "GenericBody6",
+                                                                 "GenericBody7",
+                                                                 timings->ele[0], timings->ele[1]);
       tc->addAndApply(tSet, true);
       tc->toXML("traj_out.xml");
     }
     else if (kc && kc->getAndResetKey('y'))
     {
-      auto tSet = tropic::LiftObjectConstraint::pourWithRightHand(tc->getController(), "GenericBody0", "GenericBody1", "GenericBody3", "GenericBody4", "GenericBody2", "GenericBody6", "GenericBody7", 1.0, 8.0);
+      auto tSet = tropic::LiftObjectConstraint::pourWithOneHand(tc->getController(),
+                                                                "GenericBody0",
+                                                                "GenericBody3",
+                                                                "GenericBody4",
+                                                                "GenericBody2",
+                                                                "GenericBody6",
+                                                                "GenericBody7", 1.0, 8.0);
       tc->addAndApply(tSet, true);
-    }
-    else if (kc && kc->getAndResetKey('L'))
-    {
-      RMSG("Loading LiftObject class");
-      std::shared_ptr<tropic::LiftObjectConstraint> ts;
-      try
-      {
-        tropic::LiftObjectConstraint rh(tc->getController(), "GenericBody0", "GenericBody3", "GenericBody2");
-        tc->addAndApply(rh.lift(1.0, 2.0, 4.0, 0.1), true);
-        tc->addAndApply(rh.tilt(tc->getController(), "GenericBody6", "GenericBody7", 4.0, 5.0, 6.0), true);
-        tc->addAndApply(rh.put(6.0, 8.0, 9.0), true);
-        tropic::LiftObjectConstraint lh(tc->getController(), "GenericBody1", "GenericBody4", "GenericBody2");
-        tc->addAndApply(lh.lift(1.0, 3.0, 4.0, 0.1), true);
-        tc->addAndApply(lh.put(6.0, 7.0, 8.0), true);
-      }
-      catch (std::string caught)
-      {
-        RLOG_CPP(0, "Failed to create : LiftObjectConstraint 1: " << caught);
-      }
-
-      //ts->print();
-      tc->toXML("traj_out.xml");
-      RMSG("Done loading LiftObject class");
     }
     else if (kc && kc->getAndResetKey('n'))
     {
@@ -2267,6 +2277,7 @@ static void testIK()
   MatNd_destroy(x_des_prev);
   MatNd_destroy(dx_des);
   MatNd_destroy(dH);
+  MatNd_destroy(timings);
 
   pthread_mutex_destroy(&graphLock);
 

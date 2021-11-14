@@ -402,13 +402,6 @@ void TrajectoryControllerBase::stepTrajectoryND(TrajectoryND* tnd,
       tnd->active = tnd->activation[j]->switchesOn();
     }
 
-
-
-
-
-
-
-
     // Compute continuous activation in period after the activation point. It
     // has an effect on the activation in the horizon after the activation time.
     if ((tnd->activation[j]->getTime() <= 0.0) &&
@@ -429,18 +422,9 @@ void TrajectoryControllerBase::stepTrajectoryND(TrajectoryND* tnd,
       //          << tnd->continuousActivation);
     }
 
-
-
-
-
-
-
-
-
     // If an activation point falls out of time, we delete it.
     if (tnd->activation[j]->getTime()<=-tnd->activation[j]->getHorizon()-1.0e-6)
     {
-      // std::shared_ptr<ActivationPoint> iPtr = *(tnd->activation.begin()+j);
       tnd->activation.erase(tnd->activation.begin()+j);
     }
 

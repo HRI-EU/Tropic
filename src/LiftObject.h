@@ -44,6 +44,9 @@
 #include <Rcs_macros.h>
 #include <Rcs_typedef.h>
 
+#define fingersOpen   (0.01)
+#define fingersClosed (0.7)
+#define t_fingerMove  (1.5)
 
 
 namespace tropic
@@ -61,11 +64,21 @@ public:
                        const std::string& handName_,
                        const std::string& objectName_,
                        const std::string& surfaceName_) :
-    handName(handName_), objectName(objectName_), surfaceName(surfaceName_)
+    handName(handName_),
+    objectName(objectName_),
+    surfaceName(surfaceName_)
   {
-    bool success = getLiftPutTasks(controller, handName, objectName, surfaceName,
-                                   taskObjHandPos, taskHandObjPolar, taskObjSurfacePosX,
-                                   taskObjSurfacePosY, taskObjSurfacePosZ, taskObjPolar);
+    bool success = getLiftPutTasks(controller,
+                                   handName,
+                                   objectName,
+                                   surfaceName,
+                                   taskObjHandPos,
+                                   taskHandObjPolar,
+                                   taskObjSurfacePosX,
+                                   taskObjSurfacePosY,
+                                   taskObjSurfacePosZ,
+                                   taskObjPolar,
+                                   taskFingers);
 
     RCHECK(success);
   }
@@ -79,7 +92,8 @@ public:
                               std::string& tskObjSurfacePosX_,
                               std::string& tskObjSurfacePosY_,
                               std::string& tskObjSurfacePosZ_,
-                              std::string& tskObjPolar_)
+                              std::string& tskObjPolar_,
+                              std::string& tskFingers_)
   {
     bool success = true;
 
@@ -109,6 +123,15 @@ public:
       return false;
     }
     hand = std::string(bdy->name);
+
+    const RcsBody* parent = RCSBODY_BY_ID(controller->getGraph(), bdy->parentId);
+    if (parent)
+    {
+      if (STREQ(parent->bdySuffix, "_L") || STREQ(parent->bdySuffix, "_R"))
+      {
+        tskFingers_ = "Fingers" + std::string(parent->bdySuffix);
+      }
+    }
 
     bdy = RcsGraph_getBodyByName(controller->getGraph(), object.c_str());
     if (!bdy)
@@ -277,12 +300,24 @@ public:
     // Retract hand from object
     a1->addActivation(t_put, true, 0.5, taskObjHandPos);
     a1->addActivation(t_release, false, 0.5, taskObjHandPos);
-    a1->add(t_release, 0.2, 0.0, 0.0, 7, taskObjHandPos + " 0");
+    a1->add(t_release+1, 0.2, 0.0, 0.0, 7, taskObjHandPos + " 0");
 
-    // Object orientation wrt world frame
+    // Object orientation wrt world frame. The object is re-connected to the
+    // table at t=t_put. Therefore we must switch of the hand-object relative
+    // orientation to avoid conflicting constraints. If we want the hand to
+    // remain upright a bit longer, we would need to activate an orientation
+    // task that is absolute with respect to the hand, for instance taskHandObjPolar.
     a1->addActivation(t_start, true, 0.5, taskObjPolar);
     a1->addActivation(t_put, false, 0.5, taskObjPolar);
     a1->add(std::make_shared<tropic::PolarConstraint>(t_put, 0.0, 0.0, taskObjPolar));
+    a1->addActivation(t_put, true, 0.5, taskHandObjPolar);
+    a1->addActivation(t_put + 0.5*(t_release-t_put), false, 0.5, taskHandObjPolar);
+
+
+    // Open fingers
+    a1->addActivation(t_release, false, 0.5, taskFingers);
+    a1->add(std::make_shared<tropic::VectorConstraint>(t_put-0.5*t_fingerMove, std::vector<double> {fingersClosed, fingersClosed, fingersClosed}, taskFingers));
+    a1->add(std::make_shared<tropic::VectorConstraint>(t_put+0.5*t_fingerMove, std::vector<double> {fingersOpen, fingersOpen, fingersOpen}, taskFingers));
 
     return a1;
   }
@@ -300,57 +335,55 @@ public:
   {
     const double graspHeight = 0.1;
     const double duration = t_end - t_start;
-    const double t_tilt = t_start + 0.25*duration;
+    const double t_lift = t_start + 0.33*duration;
     const double t_put = t_start + 0.75*duration;
     auto a1 = std::make_shared<tropic::ActivationSet>();
 
     LiftObjectConstraint rh(controller, rHand, bottle, table);
     LiftObjectConstraint lh(controller, lHand, glas, table);
 
-    double t_mid = t_start+0.5*(t_tilt-t_start);
-    a1->add(rh.lift(t_start, t_mid, t_tilt, graspHeight));
-    a1->add(lh.lift(t_start, t_mid, t_tilt, 0.5*graspHeight));
+    const double t_grasp = t_start+0.66*(t_lift-t_start);
+    const double liftHeight = 0.1;
+    a1->add(rh.lift(t_start, t_grasp, t_lift, liftHeight, graspHeight));
+    a1->add(lh.lift(t_start, t_grasp, t_lift, liftHeight, 0.5*graspHeight));
 
-    t_mid = t_tilt+0.5*(t_put-t_tilt);
-    a1->add(rh.tilt(controller, bottleTip, glasTip, t_tilt, 5.0, t_put));
+    const double t_tilt = t_lift+0.5*(t_put-t_lift);
+    a1->add(rh.tilt(controller, bottleTip, glasTip, t_lift, t_tilt, t_put, true));
 
-    t_mid = t_put+0.5*(t_end-t_put);
-    a1->add(rh.put(t_put, t_mid, t_end));
-    a1->add(lh.put(t_put, t_mid, t_end));
+    const double t_release = t_put+0.66*(t_end-t_put);
+    a1->add(rh.put(t_put, t_release, t_end));
+    a1->add(lh.put(t_put, t_release, t_end));
 
     return a1;
   }
 
   static std::shared_ptr<tropic::ConstraintSet>
-  pourWithRightHand(const Rcs::ControllerBase* controller,
-                    std::string rHand,
-                    std::string lHand,
-                    std::string bottle,
-                    std::string glas,
-                    std::string table,
-                    std::string bottleTip,
-                    std::string glasTip,
-                    double t_start, double t_end)
+  pourWithOneHand(const Rcs::ControllerBase* controller,
+                  std::string hand,
+                  std::string bottle,
+                  std::string glas,
+                  std::string table,
+                  std::string bottleTip,
+                  std::string glasTip,
+                  double t_start, double t_end)
   {
     const double graspHeight = 0.1;
+    const double liftHeight = 0.1;
     const double duration = t_end - t_start;
-    const double t_tilt = t_start + 0.25*duration;
+    const double t_lift = t_start + 0.25*duration;
     const double t_put = t_start + 0.75*duration;
     auto a1 = std::make_shared<tropic::ActivationSet>();
 
-    LiftObjectConstraint rh(controller, rHand, bottle, table);
-    //LiftObjectConstraint lh(controller, lHand, glas, table);
+    LiftObjectConstraint rh(controller, hand, bottle, table);
 
-    double t_mid = t_start+0.5*(t_tilt-t_start);
-    a1->add(rh.lift(t_start, t_mid, t_tilt, graspHeight));
-    //a1->add(lh.lift(t_start, t_mid, t_tilt, 0.5*graspHeight));
+    const double t_grasp = t_start+0.66*(t_lift-t_start);
+    a1->add(rh.lift(t_start, t_grasp, t_lift, liftHeight, graspHeight));
 
-    t_mid = t_tilt+0.5*(t_put-t_tilt);
-    a1->add(rh.tilt(controller, bottleTip, glasTip, t_tilt, 5.0, t_put));
+    const double t_tilt = t_lift+0.5*(t_put-t_lift);
+    a1->add(rh.tilt(controller, bottleTip, glasTip, t_lift, t_tilt, t_put, false));
 
-    t_mid = t_put+0.5*(t_end-t_put);
-    a1->add(rh.put(t_put, t_mid, t_end));
-    //a1->add(lh.put(t_put, t_mid, t_end));
+    const double t_release = t_put+0.66*(t_end-t_put);
+    a1->add(rh.put(t_put, t_release, t_end));
 
     return a1;
   }
@@ -367,6 +400,7 @@ public:
                     double t_start, double t_end)
   {
     const double graspHeight = 0.1;
+    const double liftHeight = 0.1;
     const double duration = t_end - t_start;
     const double t_tilt = t_start + 0.25*duration;
     const double t_put = t_start + 0.75*duration;
@@ -376,11 +410,11 @@ public:
     LiftObjectConstraint lh(controller, lHand, glas, table);
 
     double t_mid = t_start+0.5*(t_tilt-t_start);
-    a1->add(rh.lift(t_start, t_mid, t_tilt, graspHeight));
-    a1->add(lh.lift(t_start, t_mid, t_tilt, 0.5*graspHeight));
+    a1->add(rh.lift(t_start, t_mid, t_tilt, liftHeight, graspHeight));
+    a1->add(lh.lift(t_start, t_mid, t_tilt, liftHeight, 0.5*graspHeight));
 
     t_mid = t_tilt+0.5*(t_put-t_tilt);
-    a1->add(rh.tilt(controller, bottleTip, glasTip, t_tilt, 5.0, t_put));
+    a1->add(rh.tilt(controller, bottleTip, glasTip, t_tilt, 5.0, t_put, true));
 
     t_mid = t_put+0.5*(t_end-t_put);
     a1->add(rh.put(t_put, t_mid, t_end));
@@ -389,16 +423,23 @@ public:
     return a1;
   }
 
-  std::shared_ptr<tropic::ConstraintSet> lift(double t_start, double t_grasp, double t_end, double graspHeight) const
+  std::shared_ptr<tropic::ConstraintSet> lift(double t_start,
+                                              double t_grasp,
+                                              double t_end,
+                                              double liftHeight,
+                                              double graspHeight) const
   {
     // Grasp the bottle and lift it up
     auto a1 = std::make_shared<tropic::ActivationSet>();
+
+    RLOG(0, "t_grasp is %f", t_grasp);
 
     // Hand position with respect to bottle
     const double t_pregrasp = t_start + 0.5*(t_grasp-t_start);
     a1->addActivation(t_start, true, 0.5, taskObjHandPos);
     a1->addActivation(t_grasp, false, 0.5, taskObjHandPos);
-    a1->add(t_pregrasp, 0.2, 0.0, 0.0, 1, taskObjHandPos + " 0");
+    a1->add(t_pregrasp, 0.2, 0.0, 0.0, 1, taskObjHandPos + " 0");// 20cm in front
+    a1->add(t_pregrasp, 0.0, 0.0, 0.0, 7, taskObjHandPos + " 1");// and centered
     a1->add(std::make_shared<tropic::PositionConstraint>(t_grasp, 0.0, 0.0, -graspHeight, taskObjHandPos));
 
     // Hand orientation with respect to bottle
@@ -422,8 +463,21 @@ public:
     // Lift object
     a1->addActivation(t_grasp, true, 0.5, taskObjSurfacePosZ);
     a1->addActivation(t_end, false, 0.5, taskObjSurfacePosZ);
-    a1->add(t_end, 0.2, 0.0, 0.0, 7, taskObjSurfacePosZ + " 0");
+    a1->add(t_end+1, 0.2, 0.0, 0.0, 7, taskObjSurfacePosZ + " 0");
     a1->add(std::make_shared<tropic::ConnectBodyConstraint>(t_grasp, objectName, handName));
+
+    // Lift it up in the y-z plane (keep forward position constant)
+    a1->addActivation(t_grasp, true, 0.5, taskObjSurfacePosX);
+    a1->addActivation(t_end, false, 0.5, taskObjSurfacePosX);
+
+    // Reduce snap to null space y-position by moving up vertically
+    a1->addActivation(t_grasp, true, 0.5, taskObjSurfacePosY);
+    a1->addActivation(t_end, false, 0.5, taskObjSurfacePosY);
+
+    // Close fingers
+    a1->addActivation(t_start, true, 0.5, taskFingers);
+    a1->add(std::make_shared<tropic::VectorConstraint>(t_grasp-0.5*t_fingerMove, std::vector<double> {fingersOpen, fingersOpen, fingersOpen}, taskFingers));
+    a1->add(std::make_shared<tropic::VectorConstraint>(t_grasp+0.5*t_fingerMove, std::vector<double> {fingersClosed, fingersClosed, fingersClosed}, taskFingers));
 
     return a1;
   }
@@ -431,7 +485,7 @@ public:
   std::shared_ptr<tropic::ConstraintSet> tilt(const Rcs::ControllerBase* controller,
                                               std::string objToPourFrom,
                                               std::string objToPourInto,
-                                              double t_start, double t_pour, double t_end) const
+                                              double t_start, double t_pour, double t_end, bool bimanual) const
   {
     std::string taskRelPos, taskRelOri, taskObjPolar;
 
@@ -504,20 +558,32 @@ public:
     a1->addActivation(t_start, true, 0.5, taskRelPos);
     a1->addActivation(t_end, false, 0.5, taskRelPos);
     double dur = t_pour - t_start;
+    const double d_separate = 0.3;// How much do hands go away from each other once pouring finished
     a1->add(std::make_shared<tropic::PositionConstraint>(t_pour-0.25*dur, 0.0, 0.0, 0.0, taskRelPos));
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_pour+0.25*dur, 0.0, 0.0, 0.0, taskRelPos));
-    a1->add(std::make_shared<tropic::PositionConstraint>(t_end, 0.0, -0.2, 0.0, taskRelPos));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_pour, 0.0, 0.0, 0.0, taskRelPos));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_pour+0.5*dur, 0.0, 0.0, 0.0, taskRelPos));
+    a1->add(std::make_shared<tropic::PositionConstraint>(t_end+1, 0.0, -d_separate, 0.1, taskRelPos));// 0.1 is a little bit up
 
     a1->addActivation(t_start, true, 0.5, taskRelOri);
     a1->addActivation(t_end, false, 0.5, taskRelOri);
-    a1->add(t_pour-0.25*dur, RCS_DEG2RAD(80.0), 0.0, 0.0, 7, taskRelOri  + " 0");
+    a1->add(t_pour-0.25*dur, RCS_DEG2RAD(80.0), 0.0, 0.0, 1, taskRelOri  + " 0");
     a1->add(t_pour+0.25*dur, RCS_DEG2RAD(150.0), 0.0, 0.0, 7, taskRelOri  + " 0");
-    a1->add(t_end, RCS_DEG2RAD(10.0), 0.0, 0.0, 7, taskRelOri  + " 0");
-    a1->add(t_pour, RCS_DEG2RAD(90.0), 0.0, 0.0, 7, taskRelOri  + " 1");
-    a1->add(t_end, RCS_DEG2RAD(90.0), 0.0, 0.0, 7, taskRelOri  + " 1");
+    a1->add(t_end+1, RCS_DEG2RAD(30.0), 0.0, 0.0, 7, taskRelOri  + " 0");
+    a1->add(t_end+1, RCS_DEG2RAD(90.0), 0.0, 0.0, 7, taskRelOri  + " 1");
 
-    a1->addActivation(t_start, true, 0.5, taskObjPolar);
-    a1->addActivation(t_end, false, 0.5, taskObjPolar);
+    if (bimanual)
+    {
+      // Glas orientation to be upright. This should not be constrained if the
+      // glas is not lifted by a hand, but standing on the table. We can leave it
+      // on if we add some regularization to the IK to be able to cope with
+      // conflicting constraints.
+      a1->addActivation(t_start, true, 0.5, taskObjPolar);
+      a1->addActivation(t_end, false, 0.5, taskObjPolar);
+
+      // The bottle should not move forward or backward during tilting
+      a1->addActivation(t_start, true, 0.5, taskObjSurfacePosX);
+      a1->addActivation(t_end, false, 0.5, taskObjSurfacePosX);
+    }
 
     return a1;
   }
@@ -671,6 +737,7 @@ protected:
   std::string taskObjSurfacePosY;
   std::string taskObjPolar;
   std::string taskHandObjPolar;
+  std::string taskFingers;
 
   std::string handName;
   std::string objectName;

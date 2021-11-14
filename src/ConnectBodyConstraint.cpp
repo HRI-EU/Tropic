@@ -93,7 +93,7 @@ double ConnectBodyConstraint::compute(double dt)
 
   if ((attachTime<0.0) && (attachTime>=-dt))
   {
-    RLOG(0, "Appending \"%s\" to \"%s\"", childName.c_str(), parentName.c_str());
+    RLOG(5, "Appending \"%s\" to \"%s\"", childName.c_str(), parentName.c_str());
 
     RcsBody* child = RcsGraph_getBodyByName(graph, childName.c_str());
     RCHECK_MSG(child, "%s", childName.c_str());
