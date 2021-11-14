@@ -18,7 +18,7 @@
   <Group prev="Lab Frame" >
     <xi:include href="scitos_base_right.xml" />
 
-  <Body name="Table" prev="Lab Frame" rigid_body_joints="0.55 0 0.78 0 0 0" >
+  <Body name="Table" prev="Lab Frame" rigid_body_joints="0.55 0 0.78 0 0 0" color="BLACK_RUBBER" >
     <Shape type="BOX" extents="0.680 1.180 0.020" transform="0 0 -0.01 0 0 0" graphics="true"
 	   depth="true" distance="true" resizeable="true" />
   </Body>

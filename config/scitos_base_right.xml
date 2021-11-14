@@ -107,13 +107,13 @@
   </Body>
 
   <Body name="ptu_pan_link" prev="ptu_link" physics="dynamic" mass="0.01" inertia="0.001 0 0   -0 0.001 0   -0 -0 0.001" >
-    <Joint name="ptu_pan_joint" range="-420 0 420" type="RotZ" transform="0 0 0.095 0 0 0" torqueLimit="200" speedLimit="360" constraint="false" weightJL="0" />
+    <Joint name="ptu_pan_joint" range="-90 0 90" type="RotZ" transform="0 0 0.095 0 0 0" torqueLimit="200" speedLimit="360" constraint="false" weightJL="0" />
     <Shape type="MESH" distance="false" physics="false" graphics="true" transform="0 0 0 -180 0 0" meshFile="hri_scitos_description/pw70_body.stl" />
     <Shape type="MESH" distance="true" physics="true" graphics="false" transform="0 0 0 -180 0 0" meshFile="hri_scitos_description/pw70_body.stl" />
   </Body>
 
   <Body name="ptu_tilt_link" prev="ptu_pan_link" physics="dynamic" mass="0.01" inertia="0.001 0 0   -0 0.001 0   -0 -0 0.001" >
-    <Joint name="ptu_tilt_joint" range="-120 45 120" type="RotX" torqueLimit="12" speedLimit="234.912696" constraint="false" />
+    <Joint name="ptu_tilt_joint" range="-45 30 45" type="RotX" torqueLimit="12" speedLimit="234.912696" constraint="false" />
     <Shape type="MESH" distance="false" physics="false" graphics="true" transform="0 0 0 -180 0 0" meshFile="hri_scitos_description/pw70_square_holder.stl" />
     <Shape type="MESH" distance="true" physics="true" graphics="false" transform="0 0 0 -180 0 0" meshFile="hri_scitos_description/pw70_square_holder.stl" />
   </Body>
