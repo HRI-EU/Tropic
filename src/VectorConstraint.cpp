@@ -204,7 +204,7 @@ void VectorConstraint::toXML(std::ostream& outStream, size_t indent) const
 
     for (size_t i=0; i<constraint.size(); ++i)
     {
-      outStream << constraint[i].c->getPosition() << " ";
+      outStream << constraint[i].c->getPosition();
 
       if (i!=constraint.size()-1)
       {
@@ -222,7 +222,7 @@ void VectorConstraint::toXML(std::ostream& outStream, size_t indent) const
 
     for (size_t i=0; i<constraint.size(); ++i)
     {
-      outStream << constraint[i].c->getVelocity() << " ";
+      outStream << constraint[i].c->getVelocity();
 
       if (i!=constraint.size()-1)
       {
@@ -240,7 +240,7 @@ void VectorConstraint::toXML(std::ostream& outStream, size_t indent) const
 
     for (size_t i=0; i<constraint.size(); ++i)
     {
-      outStream << constraint[i].c->getAcceleration() << " ";
+      outStream << constraint[i].c->getAcceleration();
 
       if (i!=constraint.size()-1)
       {

@@ -68,6 +68,7 @@ ViaPointTrajectory1D::ViaPointTrajectory1D() : Trajectory1D()
 {
   this->viaSeq = new Rcs::ViaPointSequence();
   viaSeq->setTurboMode(true);
+  viaSeq->setComputeHorizon(horizon);
   initFromConstraints();
 }
 
@@ -79,6 +80,7 @@ ViaPointTrajectory1D::ViaPointTrajectory1D(double x0, double horizon_) :
 {
   this->viaSeq = new Rcs::ViaPointSequence();
   viaSeq->setTurboMode(true);
+  viaSeq->setComputeHorizon(horizon);
   initFromConstraints();
 }
 
