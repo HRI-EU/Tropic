@@ -75,6 +75,24 @@ public:
                    double t_start, double t_end);
 
   static std::shared_ptr<tropic::ConstraintSet>
+  screwAndPourWithTwoHands(const Rcs::ControllerBase* controller,
+                           std::string rHand,
+                           std::string lHand,
+                           std::string bottle,
+                           std::string glas,
+                           std::string table,
+                           std::string bottleTip,
+                           std::string glasTip,
+                           double t_start, double t_end);
+
+  static std::shared_ptr<tropic::ConstraintSet>
+  liftWithOneHand(const Rcs::ControllerBase* controller,
+                  std::string hand,
+                  std::string bottle,
+                  std::string table,
+                  double t_start, double t_end);
+
+  static std::shared_ptr<tropic::ConstraintSet>
   pourWithOneHand(const Rcs::ControllerBase* controller,
                   std::string hand,
                   std::string bottle,
@@ -95,6 +113,16 @@ public:
                     std::string glasTip,
                     double t_start, double t_end);
 
+  static std::shared_ptr<tropic::ConstraintSet>
+  screwAndPourWithOneHand(const Rcs::ControllerBase* controller,
+                          std::string rHand,
+                          std::string lHand,
+                          std::string bottle,
+                          std::string glas,
+                          std::string table,
+                          std::string bottleTip,
+                          std::string glasTip,
+                          double t_start, double t_end);
   std::shared_ptr<tropic::ConstraintSet> lift(double t_start,
                                               double t_grasp,
                                               double t_end,
@@ -105,7 +133,6 @@ public:
                                               std::string objToPourFrom,
                                               std::string objToPourInto,
                                               double t_start,
-                                              double t_pour,
                                               double t_end,
                                               bool bimanual) const;
 
@@ -118,13 +145,14 @@ public:
                                                std::string objToPourFrom,
                                                std::string objToPourInto,
                                                double t_start,
-                                               double t_end) const;
+                                               double t_end, bool screwOpen=true) const;
 
 protected:
 
   virtual void fromXML(xmlNode* node);
 
 private:
+public:
 
   static std::string getEffectorName(const Rcs::Task* tsk);
 
@@ -142,6 +170,10 @@ private:
                               std::string& tskObjPolar,
                               std::string& tskFingers);
 
+  // Returns the transformation of the first reference frame of the object
+  // with the given name. This is assumed to be a frame at which the object is
+  // to be grasped: the hand will be aligned with position and the
+  // Polar angles (z-axis is not constrained).
   static HTr getGraspFrame(const Rcs::ControllerBase* controller,
                            std::string object);
 

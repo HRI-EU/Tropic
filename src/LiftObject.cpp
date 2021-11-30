@@ -170,7 +170,7 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
   bdy = RcsGraph_getBodyByName(controller->getGraph(), object.c_str());
   if (!bdy)
   {
-    RLOG_CPP(1, "Failed to find body for " << object);
+    RLOG_CPP(0, "Failed to find body for " << object);
     return false;
   }
   object = std::string(bdy->name);
@@ -196,7 +196,7 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
     {
       if (!tskObjHandPos.empty())
       {
-        RLOG_CPP(1, "Found duplicate entry for task " << tskObjHandPos);
+        RLOG_CPP(0, "Found duplicate entry for task " << tskObjHandPos);
         return false;
       }
       tskObjHandPos = ti->getName();
@@ -218,7 +218,7 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
       {
         if (!tskObjSurfacePosX.empty())
         {
-          RLOG_CPP(1, "Found duplicate entry for task " << tskObjSurfacePosX);
+          RLOG_CPP(0, "Found duplicate entry for task " << tskObjSurfacePosX);
           return false;
         }
         tskObjSurfacePosX = ti->getName();
@@ -227,7 +227,7 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
       {
         if (!tskObjSurfacePosY.empty())
         {
-          RLOG_CPP(1, "Found duplicate entry for task " << tskObjSurfacePosY);
+          RLOG_CPP(0, "Found duplicate entry for task " << tskObjSurfacePosY);
           return false;
         }
         tskObjSurfacePosY = ti->getName();
@@ -239,7 +239,7 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
     {
       if (!tskObjPolar.empty())
       {
-        RLOG_CPP(1, "Found duplicate entry for task " << tskObjPolar);
+        RLOG_CPP(0, "Found duplicate entry for task " << tskObjPolar);
         return false;
       }
       tskObjPolar = ti->getName();
@@ -250,7 +250,7 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
     {
       if (!tskHandObjPolar.empty())
       {
-        RLOG_CPP(1, "Found duplicate entry for task " << tskHandObjPolar);
+        RLOG_CPP(0, "Found duplicate entry for task " << tskHandObjPolar);
         return false;
       }
       tskHandObjPolar = ti->getName();
@@ -260,41 +260,41 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
   // Check that all tasks have been found
   if (tskObjHandPos.empty())
   {
-    RLOG(1, "Didn't find XYZ task with effector=\"%s\" and refBdy=\"%s\"",
+    RLOG(0, "Didn't find XYZ task with effector=\"%s\" and refBdy=\"%s\"",
          object.c_str(), hand.c_str());
     success = false;
   }
 
   if (tskObjSurfacePosX.empty())
   {
-    RLOG(1, "Didn't find X task with effector=\"%s\" and refBdy=\"%s\"",
+    RLOG(0, "Didn't find X task with effector=\"%s\" and refBdy=\"%s\"",
          object.c_str(), surface.c_str());
     success = false;
   }
 
   if (tskObjSurfacePosY.empty())
   {
-    RLOG(1, "Didn't find Y task with effector=\"%s\" and refBdy=\"%s\"",
+    RLOG(0, "Didn't find Y task with effector=\"%s\" and refBdy=\"%s\"",
          object.c_str(), surface.c_str());
     success = false;
   }
 
   if (tskObjSurfacePosZ.empty())
   {
-    RLOG(1, "Didn't find Z task with effector=\"%s\" and refBdy=\"%s\"",
+    RLOG(0, "Didn't find Z task with effector=\"%s\" and refBdy=\"%s\"",
          object.c_str(), surface.c_str());
     success = false;
   }
 
   if (tskObjPolar.empty())
   {
-    RLOG(1, "Didn't find POLAR task with effector=\"%s\"", object.c_str());
+    RLOG(0, "Didn't find POLAR task with effector=\"%s\"", object.c_str());
     success = false;
   }
 
   if (tskHandObjPolar.empty())
   {
-    RLOG(1, "Didn't find POLAR task with effector=\"%s\" and refBdy=\"%s\"",
+    RLOG(0, "Didn't find POLAR task with effector=\"%s\" and refBdy=\"%s\"",
          hand.c_str(), object.c_str());
     success = false;
   }
@@ -397,12 +397,78 @@ LiftObjectConstraint::pourWithTwoHands(const Rcs::ControllerBase* controller,
   a1->add(rh.lift(t_start, t_grasp, t_lift, liftHeight, graspBottle.org[2]));
   a1->add(lh.lift(t_start, t_grasp, t_lift, liftHeight, graspGlas.org[2]));
 
-  const double t_tilt = t_lift+0.5*(t_put-t_lift);
-  a1->add(rh.tilt(controller, bottleTip, glasTip, t_lift, t_tilt, t_put, true));
+  a1->add(rh.tilt(controller, bottleTip, glasTip, t_lift, t_put, true));
 
   const double t_release = t_put+0.66*(t_end-t_put);
   a1->add(rh.put(t_put, t_release, t_end, &rh.A_OT));
   a1->add(lh.put(t_put, t_release, t_end, &lh.A_OT));
+  return a1;
+}
+
+// static
+std::shared_ptr<tropic::ConstraintSet>
+LiftObjectConstraint::screwAndPourWithTwoHands(const Rcs::ControllerBase* controller,
+                                               std::string rHand,
+                                               std::string lHand,
+                                               std::string bottle,
+                                               std::string glas,
+                                               std::string table,
+                                               std::string bottleTip,
+                                               std::string glasTip,
+                                               double t_start, double t_end)
+{
+  HTr graspBottle = getGraspFrame(controller, bottle);
+  HTr graspGlas = getGraspFrame(controller, glas);
+  const double duration = t_end - t_start;
+  const double t_screw = t_start + 0.1*duration;   // Start screwing
+  const double t_pour = t_start + 0.5*duration;    // Start pouring
+  const double t_put = t_start + 0.8*duration;     // Start putting down
+  auto a1 = std::make_shared<tropic::ActivationSet>();
+
+  LiftObjectConstraint rh(controller, rHand, bottle, table);
+  LiftObjectConstraint lh(controller, lHand, glas, table);
+
+  const double t_grasp = t_start + 0.66*(t_screw - t_start);
+  const double liftHeight = 0.1;
+  a1->add(rh.lift(t_start, t_grasp, t_screw, liftHeight, graspBottle.org[2]));
+
+  a1->add(rh.screw(controller, bottle, bottleTip, t_screw, t_pour));
+
+  // Otherwise beteen t_pour and t_put, then hand will move away due to the null space
+  a1->add(std::make_shared<tropic::KeepPositionConstraint>(t_pour+.11, t_put, 0.1, rh.taskObjSurfacePosX));
+  a1->add(std::make_shared<tropic::KeepPositionConstraint>(t_pour+.11, t_put, 0.1, rh.taskObjSurfacePosY));
+
+  a1->add(lh.lift(t_pour, t_pour+0.5*(t_put-t_pour), t_put, liftHeight, graspGlas.org[2]));
+
+  a1->add(rh.tilt(controller, bottleTip, glasTip, t_put, t_end, true));
+
+  const double t_end2 = t_end + 0.1*duration;
+  const double t_release = t_end + 0.66*(t_end2 - t_end);
+  a1->add(rh.put(t_end, t_release, t_end2, &rh.A_OT));
+  a1->add(lh.put(t_end, t_release, t_end2, &lh.A_OT));
+
+  return a1;
+}
+
+// static
+std::shared_ptr<tropic::ConstraintSet>
+LiftObjectConstraint::liftWithOneHand(const Rcs::ControllerBase* controller,
+                                      std::string hand,
+                                      std::string bottle,
+                                      std::string table,
+                                      double t_start, double t_end)
+{
+  HTr graspBottle = getGraspFrame(controller, bottle);
+  const double liftHeight = 0.1;
+  auto a1 = std::make_shared<tropic::ActivationSet>();
+
+  LiftObjectConstraint rh(controller, hand, bottle, table);
+
+  const double t_grasp = t_start + 0.66*(t_end - t_start);
+  a1->add(rh.lift(t_start, t_grasp, t_end, liftHeight, graspBottle.org[2]));
+
+  a1->addActivation(t_end, true, 0.5, rh.taskObjPolar);
+  a1->addActivation(t_end, true, 0.5, "Bottle XYZ");
 
   return a1;
 }
@@ -430,8 +496,7 @@ LiftObjectConstraint::pourWithOneHand(const Rcs::ControllerBase* controller,
   const double t_grasp = t_start+0.66*(t_lift-t_start);
   a1->add(rh.lift(t_start, t_grasp, t_lift, liftHeight, graspBottle.org[2]));
 
-  const double t_tilt = t_lift+0.5*(t_put-t_lift);
-  a1->add(rh.tilt(controller, bottleTip, glasTip, t_lift, t_tilt, t_put, false));
+  a1->add(rh.tilt(controller, bottleTip, glasTip, t_lift, t_put, false));
 
   const double t_release = t_put+0.66*(t_end-t_put);
   a1->add(rh.put(t_put, t_release, t_end, &rh.A_OT));
@@ -466,6 +531,41 @@ LiftObjectConstraint::screwWithTwoHands(const Rcs::ControllerBase* controller,
   a1->add(rh.screw(controller, bottle, bottleTip, t_screw, t_put));
 
   double t_release = t_put + 0.8*(t_end - t_put);
+  a1->add(rh.put(t_put, t_release, t_end, &rh.A_OT));
+
+  return a1;
+}
+
+// static
+std::shared_ptr<tropic::ConstraintSet>
+LiftObjectConstraint::screwAndPourWithOneHand(const Rcs::ControllerBase* controller,
+                                              std::string rHand,
+                                              std::string lHand,
+                                              std::string bottle,
+                                              std::string glas,
+                                              std::string table,
+                                              std::string bottleTip,
+                                              std::string glasTip,
+                                              double t_start, double t_end)
+{
+  HTr graspBottle = getGraspFrame(controller, bottle);
+  const double duration = t_end - t_start;
+  const double t_screw = t_start + 0.1*duration;   // Start screwing
+  const double t_pour = t_start + 0.7*duration;    // Start pouring
+  const double t_put = t_start + 0.9*duration;     // Start putting down
+  auto a1 = std::make_shared<tropic::ActivationSet>();
+
+  LiftObjectConstraint rh(controller, rHand, bottle, table);
+
+  double t_grasp = t_start + 0.8*(t_screw - t_start);
+  const double liftHeight = 0.1;
+  a1->add(rh.lift(t_start, t_grasp, t_screw, liftHeight, graspBottle.org[2]));
+
+  a1->add(rh.screw(controller, bottle, bottleTip, t_screw, t_pour));
+
+  a1->add(rh.tilt(controller, bottleTip, glasTip, t_pour, t_put, false));
+
+  const double t_release = t_put + 0.66*(t_end - t_put);
   a1->add(rh.put(t_put, t_release, t_end, &rh.A_OT));
 
   return a1;
@@ -533,9 +633,10 @@ std::shared_ptr<tropic::ConstraintSet>
 LiftObjectConstraint::tilt(const Rcs::ControllerBase* controller,
                            std::string objToPourFrom,
                            std::string objToPourInto,
-                           double t_start, double t_pour, double t_end, bool bimanual) const
+                           double t_start, double t_end, bool bimanual) const
 {
   std::string taskRelPos, taskRelOri, taskObjPolar;
+  double t_pour = t_start + 0.5 * (t_end - t_start);
 
   // We go through the following looku+ps to resolve the names of possible
   // generic bodies.
@@ -650,7 +751,7 @@ std::shared_ptr<tropic::ConstraintSet>
 LiftObjectConstraint::screw(const Rcs::ControllerBase* controller,
                             std::string objToScrewFrom,
                             std::string objToScrewOff,
-                            double t_start, double t_end) const
+                            double t_start, double t_end, bool screwOpen) const
 {
   double duration = t_end - t_start;
   auto a1 = std::make_shared<tropic::ActivationSet>();
@@ -684,7 +785,6 @@ LiftObjectConstraint::screw(const Rcs::ControllerBase* controller,
 
 #if 1
   // Keep forward position
-  RLOG_CPP(0, "Table pos x is " << taskObjSurfacePosX);
   a1->addActivation(t_start, true, 0.5, taskObjSurfacePosX);
   a1->addActivation(t_end, false, 0.5, taskObjSurfacePosX);
   a1->add(std::make_shared<tropic::KeepPositionConstraint>(t_start + 0.5, t_end, 0.45, taskObjSurfacePosX));
@@ -713,7 +813,8 @@ LiftObjectConstraint::screw(const Rcs::ControllerBase* controller,
 #endif
 
   /////////Srewing start ///////////////
-  const double screwAngle = RCS_DEG2RAD(-60.0);
+  double direction = (screwOpen ? -1.0 : 1.0);
+  const double screwAngle = direction*RCS_DEG2RAD(60.0);
   a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.15*duration, 0.0, 0.0, 0.0, "LH-BottleTip"));
   a1->add(std::make_shared<tropic::EulerConstraint>(t_start+0.2*duration, M_PI_2, screwAngle, -M_PI_2, "LH-BottleTip2"));
   a1->add(std::make_shared<tropic::EulerConstraint>(t_start+0.3*duration, M_PI_2, -screwAngle, -M_PI_2, "LH-BottleTip2"));
@@ -747,7 +848,8 @@ LiftObjectConstraint::screw(const Rcs::ControllerBase* controller,
 
   a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.8*duration, fingersClosedCap, fingersClosedCap, fingersClosedCap, twistingFingers));
   a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.9*duration, fingersClosedCap, fingersClosedCap, fingersClosedCap, twistingFingers));
-  a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.95*duration, fingersOpen, fingersOpen, fingersOpen, twistingFingers));
+  // This will open the fingers after the last turn, so that the cap would fall down.
+  //a1->add(std::make_shared<tropic::PositionConstraint>(t_start + 0.95*duration, fingersOpen, fingersOpen, fingersOpen, twistingFingers));
 
   a1->add(std::make_shared<tropic::PositionConstraint>(t_start, fingersClosed, fingersClosed, fingersClosed, taskFingers));
 
