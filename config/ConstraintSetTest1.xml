@@ -1,0 +1,12 @@
+<ConstraintSet type="ActivationSet" >
+  <Activation t="0.6" switchesOn="false" horizon="0.2" trajectory="ABC_L" />
+  <Activation t="1" switchesOn="true" horizon="0.2" trajectory="ABC_L" />
+  <Constraint t="1" pos="-0.2" vel="0" acc="0" flag="1" trajectory="XYZ_L 0"  />
+  <Constraint t="0.6" pos="-0.35" vel="0" acc="0" flag="1" trajectory="XYZ_L 2"  />
+  <Constraint t="0.6" pos="0.2" vel="0" acc="0" flag="1" trajectory="XYZ_L 1"  />
+  <Constraint t="1.4" pos="0.1" vel="0" acc="0" flag="1" trajectory="XYZ_L 2"  />
+  <Constraint t="1.4" pos="0.5" vel="0" acc="0" flag="1" trajectory="XYZ_L 1"  />
+  <ConstraintSet type="PositionConstraint" t="2" pos="0 0 0" trajectory="Phi_Box" />
+  <ConstraintSet type="PoseConstraint" t="2" pos="0 -0.2 -0.15 -0 0 -0" trajectory="XYZ_R ABC_R" />
+  <ConstraintSet type="PoseConstraint" t="2" pos="0 0.3 0.1 90 0 -0" trajectory="XYZ_L ABC_L" />
+</ConstraintSet>
