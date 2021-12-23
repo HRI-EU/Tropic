@@ -39,6 +39,9 @@ SET(BST_INSTALL_CATEGORY Libraries)
 SET(STANDALONE_PROJECT OFF)
 IF(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   PROJECT(Tropic)
+  SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release." FORCE)
+  SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
+  SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
   LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
   LIST(APPEND CMAKE_PREFIX_PATH $ENV{SIT}/Libraries/Rcs/1.0/share/cmake/Rcs)
   FIND_PACKAGE(Rcs REQUIRED)
@@ -228,4 +231,28 @@ ENDIF()
 ################################################################################
 ADD_SUBDIRECTORY(doc)
 
+################################################################################
+# Configure unit test script
+################################################################################
+IF(UNIX)
+  SET(TEST_EXE_DIR "${EXECUTABLE_OUTPUT_PATH}")
+  SET(TESTSCRIPT_NAME "${TEST_EXE_DIR}/tropic_unittest.sh")
+ELSEIF(WIN32)
+  SET(TEST_EXE_DIR "${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}")
+  SET(TESTSCRIPT_NAME "${TEST_EXE_DIR}/tropic_unittest.bat")
+ENDIF()
+
+IF (UNIX)
+  CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/unittest.in ${TESTSCRIPT_NAME} @ONLY)
+  ADD_CUSTOM_TARGET(tropicunittest 
+      COMMAND ${TESTSCRIPT_NAME}
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMENT "Performing Tropic unittests" VERBATIM)
+ELSE()
+  MESSAGE(STATUS "Tropic unit tests for Linux only")
+ENDIF()
+
+################################################################################
+# Target export script
+################################################################################
 INCLUDE(ExportTropic)

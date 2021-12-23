@@ -783,7 +783,7 @@ void ConstraintSet::toXML(std::ostream& outStream, size_t indent) const
  ******************************************************************************/
 bool ConstraintSet::testXML() const
 {
-  std::string file1("ConstraintSetTest1.xml");
+  std::string file1("config/xml/Tropic/ConstraintSetTest1.xml");
   std::string file2("ConstraintSetTest2.xml");
 
   toXML(file1);
