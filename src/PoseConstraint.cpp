@@ -60,9 +60,7 @@ PoseConstraint::PoseConstraint(xmlNode* node) : ConstraintSet(node)
   }
 
   double t, pos[6];
-  std::vector<std::string> tName;
-
-  Rcs::getXMLNodePropertyVecSTLString(node, "trajectory", tName);
+  std::vector<std::string> tName = Rcs::getXMLNodePropertyVecSTLString(node, "trajectory");
   bool success = (tName.size()==2) ? true : false;
   success = getXMLNodePropertyDouble(node, "t", &t) && success;
   success = getXMLNodePropertyVecN(node, "pos", pos, 6) && success;

@@ -1709,8 +1709,10 @@ static void testIK()
   bool simpleGraphics = argP.hasArgument("-simpleGraphics", "OpenGL without fan"
                                          "cy stuff (shadows, anti-aliasing)");
   bool zigzag = argP.hasArgument("-zigzag", "ZigZag trajectory");
-  bool showOnly = argP.hasArgument("-passiveGui", "Gui shows values but is not active");
+  bool showOnly = argP.hasArgument("-passiveGui", "Gui shows values only");
   bool noTaskGui = argP.hasArgument("-noGui", "No task Gui");
+  bool permissive = argP.hasArgument("-permissive", "No pedantic check for "
+                                     "validity of ConstraintSet instances");
 
   // Option without mutex for viewer
   pthread_mutex_t* mtx = &graphLock;
@@ -1916,7 +1918,7 @@ static void testIK()
       }
 
       auto guiConstraint = std::make_shared<tropic::MultiGoalConstraint>(horizon, x_des, tc->getTrajectories());
-      tc->addAndApply(guiConstraint);
+      tc->addAndApply(guiConstraint, permissive);
     }
 
     MatNd_copy(x_des_prev, x_des);
@@ -2073,7 +2075,7 @@ static void testIK()
       }
       else
       {
-        bool success = tc->addAndApply(ts, true);
+        bool success = tc->addAndApply(ts, permissive);
         RMSG("%s loading trajectory from file \"traj.xml\"", success ? "Success" : "Failure");
         ts->print();
       }
@@ -2087,7 +2089,7 @@ static void testIK()
     {
       RMSG("Loading Johannes's class");
       auto ts = std::make_shared<tropic::PouringConstraint>();
-      tc->addAndApply(ts, true);
+      tc->addAndApply(ts, permissive);
       ts->print();
       tc->toXML("traj_out.xml");
       RMSG("Done loading Johannes's class");
@@ -2125,7 +2127,7 @@ static void testIK()
                                                                  "GenericBody6",
                                                                  "GenericBody7",
                                                                  timings->ele[0], timings->ele[1]);
-      tc->addAndApply(tSet, true);
+      tc->addAndApply(tSet, permissive);
       tc->toXML("traj_out.xml");
     }
     else if (kc && kc->getAndResetKey('y'))
@@ -2137,7 +2139,7 @@ static void testIK()
                                                                 "GenericBody2",
                                                                 "GenericBody6",
                                                                 "GenericBody7", 1.0, 8.0);
-      tc->addAndApply(tSet, true);
+      tc->addAndApply(tSet, permissive);
     }
     else if (kc && kc->getAndResetKey('n'))
     {
@@ -2179,15 +2181,15 @@ static void testIK()
       // auto ts = std::make_shared<tropic::ConnectBodyConstraint>(2.0, "Glas", "PowerGrasp_L");
       // set1->add(set2);
       // set2->add(ts);
-      // tc->addAndApply(set1, true);
+      // tc->addAndApply(set1, permissive);
 
       // RLOG(0, "Adding Polar constraint in 2 seconds");
       // auto ts = std::make_shared<tropic::PolarConstraint>(2.0, 0.0, 0.0, "Polar_L");
-      // tc->addAndApply(ts, true);
+      // tc->addAndApply(ts, permissive);
 
       // RLOG(0, "Adding PositionConstraint in 2 seconds");
       // auto ts = std::make_shared<tropic::PositionConstraint>(2.0, 0.0, 0.0, 0.0, "XYZ_L");
-      // tc->addAndApply(ts, true);
+      // tc->addAndApply(ts, permissive);
 
 
 
@@ -2197,7 +2199,7 @@ static void testIK()
         as->addActivation(0.5, true, 0.5, "Polar_L");
         auto ts = std::make_shared<tropic::PolarConstraint>(2.0, 0.0, 0.0, "Polar_L");
         as->add(ts);
-        tc->addAndApply(as, true);
+        tc->addAndApply(as, permissive);
       }
 
       {
@@ -2206,7 +2208,7 @@ static void testIK()
         as->addActivation(0.5, true, 0.5, "XYZ_L");
         auto ts = std::make_shared<tropic::PositionConstraint>(2.0, 0.55, 0.2, 1.0, "XYZ_L");
         as->add(ts);
-        tc->addAndApply(as, true);
+        tc->addAndApply(as, permissive);
         as->print();
       }
 
