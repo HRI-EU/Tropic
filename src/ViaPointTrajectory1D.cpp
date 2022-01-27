@@ -275,18 +275,22 @@ bool ViaPointTrajectory1D::dxdPosConstraint(MatNd* grad,
  ******************************************************************************/
 int ViaPointTrajectory1D::getPosRow(unsigned int constraintID) const
 {
-  if (viaSeq->viaDescr->n < 6)
+  MatNd* desc = viaSeq->cloneDescriptor();
+
+  // We expect the constraint id in the 6-th column. If there is none, return.
+  if (desc->n < 6)
   {
+    MatNd_destroy(desc);
     return -1;
   }
 
-  for (unsigned int i=0; i<viaSeq->viaDescr->m; ++i)
+  for (unsigned int i=0; i<desc->m; ++i)
   {
-    size_t id_i = lround(MatNd_get(viaSeq->viaDescr, i, 5));
+    size_t id_i = lround(MatNd_get(desc, i, 5));
 
     if (id_i == constraintID)
     {
-      unsigned int flag = lround(MatNd_get(viaSeq->viaDescr, i, 4));
+      unsigned int flag = lround(MatNd_get(desc, i, 4));
 
       if (((flag>>VIA_POS)&0x01) == 0x01)
       {
@@ -298,6 +302,8 @@ int ViaPointTrajectory1D::getPosRow(unsigned int constraintID) const
       }
     }
   }
+
+  MatNd_destroy(desc);
 
   return -1;
 }
