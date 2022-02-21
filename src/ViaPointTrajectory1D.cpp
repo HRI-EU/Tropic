@@ -68,7 +68,6 @@ ViaPointTrajectory1D::ViaPointTrajectory1D() : Trajectory1D()
 {
   this->viaSeq = new Rcs::ViaPointSequence();
   viaSeq->setTurboMode(true);
-  viaSeq->setComputeHorizon(horizon);
   initFromConstraints();
 }
 
@@ -80,7 +79,6 @@ ViaPointTrajectory1D::ViaPointTrajectory1D(double x0, double horizon_) :
 {
   this->viaSeq = new Rcs::ViaPointSequence();
   viaSeq->setTurboMode(true);
-  viaSeq->setComputeHorizon(horizon);
   initFromConstraints();
 }
 
@@ -205,10 +203,13 @@ bool ViaPointTrajectory1D::initFromConstraints()
 
   if (success==false)
   {
-    RcsLogLevel = 4;
+    REXEC(4)
+    {
     viaSeq->check();
     viaSeq->print();
-    RFATAL("Failed to initialize via point sequence");
+    }
+    RFATAL("Failed to initialize via point sequence for trajecory \"%s\"",
+           name.c_str());
   }
 
   MatNd_destroy(viaDescr);
