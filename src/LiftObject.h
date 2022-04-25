@@ -170,6 +170,12 @@ public:
                               std::string& tskObjPolar,
                               std::string& tskFingers);
 
+  static std::vector<Rcs::Task*> createLiftPutTasks(const Rcs::ControllerBase* controller,
+                                                    const std::string& hand,
+                                                    const std::string& object,
+                                                    const std::string& surface,
+                                                    std::vector<std::string> fingers);
+
   // Returns the transformation of the first reference frame of the object
   // with the given name. This is assumed to be a frame at which the object is
   // to be grasped: the hand will be aligned with position and the

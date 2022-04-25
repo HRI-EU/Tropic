@@ -36,9 +36,6 @@
 #include <Rcs_parser.h>
 #include <Rcs_stlParser.h>
 
-#include <map>
-#include <string>
-
 
 namespace tropic
 {

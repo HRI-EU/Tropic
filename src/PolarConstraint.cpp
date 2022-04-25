@@ -79,9 +79,9 @@ PolarConstraint* PolarConstraint::clone() const
   tSet->constraint = constraint;
   tSet->className = className;
 
-  for (size_t i = 0; i < set.size(); ++i)
+  for (size_t i = 0; i < children.size(); ++i)
   {
-    auto child = set[i]->clone();
+    auto child = children[i]->clone();
     tSet->add(std::shared_ptr<ConstraintSet>(child));
   }
 
@@ -166,7 +166,7 @@ void PolarConstraint::toXML(std::ostream& outStream, size_t indent) const
   outStream << "trajectory=\"" << tmp << "\"";
 
   // If there are no children, we close the tag in the first line
-  if (set.empty())
+  if (children.empty())
   {
     outStream << " />" << std::endl;
   }
@@ -175,9 +175,9 @@ void PolarConstraint::toXML(std::ostream& outStream, size_t indent) const
   {
     outStream << " >" << std::endl << std::endl;
 
-    for (size_t i=0; i<set.size(); ++i)
+    for (size_t i=0; i< children.size(); ++i)
     {
-      set[i]->toXML(outStream, indent+2);
+      children[i]->toXML(outStream, indent+2);
     }
     outStream << indStr << "</ConstraintSet>" << std::endl << std::endl;
   }

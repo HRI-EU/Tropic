@@ -38,8 +38,6 @@
 #include <Rcs_stlParser.h>
 #include <Rcs_utils.h>
 
-#include <string>
-
 
 
 namespace tropic
@@ -109,9 +107,9 @@ AnchoredPositionConstraint* AnchoredPositionConstraint::clone() const
   tSet->className = className;
   Vec3d_copy(tSet->B_r_BP, B_r_BP);
 
-  for (size_t i = 0; i < set.size(); ++i)
+  for (size_t i = 0; i < children.size(); ++i)
   {
-    auto child = set[i]->clone();
+    auto child = children[i]->clone();
     tSet->add(std::shared_ptr<ConstraintSet>(child));
   }
 
@@ -211,7 +209,7 @@ void AnchoredPositionConstraint::toXML(std::ostream& outStream, size_t indent) c
   outStream << "trajectory=\"" << tmp << "\"";
 
   // If there are no children, we close the tag in the first line
-  if (set.empty())
+  if (children.empty())
   {
     outStream << " />" << std::endl;
   }
@@ -220,9 +218,9 @@ void AnchoredPositionConstraint::toXML(std::ostream& outStream, size_t indent) c
   {
     outStream << " >" << std::endl << std::endl;
 
-    for (size_t i=0; i<set.size(); ++i)
+    for (size_t i=0; i< children.size(); ++i)
     {
-      set[i]->toXML(outStream, indent+2);
+      children[i]->toXML(outStream, indent+2);
     }
     outStream << indStr << "</ConstraintSet>" << std::endl << std::endl;
   }

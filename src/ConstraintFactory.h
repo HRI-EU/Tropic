@@ -137,24 +137,19 @@ public:
    *         auto constraint = ConstraintFactory::create(node);
    *
    *  \param className The name that is used for instanciating a new
-   *                   physics simulation by name
+   *                   constraint class by name
    */
   ConstraintFactoryRegistrar(const char* className)
   {
-    // Register the function to create and check the physics simulation
+    // Register the function to create the constraint
     ConstraintFactory::registerConstraint(className,
                                           &ConstraintFactoryRegistrar::create);
   }
 
 private:
 
-  /*! \brief This function creates a new physics simulation instance of type T
-   *         passing the given variables to the respective constructor. We call
-   *         the empty constructor and the intialize() function separately,
-   *         since we use polymorphism during the initialization (for instance
-   *         during the construction of the bullet soft physics). This cannot
-   *         be done inside the constructor, since it always will call the
-   *         methods of the base class.
+  /*! \brief This function creates a new constraint instance of type T
+   *         passing the given variables to the respective constructor.
    *
    * \param node    xml configuration
    * \return        New TrajectoryConstraintSet of type T

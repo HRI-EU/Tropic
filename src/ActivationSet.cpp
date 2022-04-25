@@ -56,7 +56,8 @@ ActivationSet::ActivationSet(const ActivationSet& other) :
   for (size_t i=0; i<other.aVec.size(); ++i)
   {
     ActivationPoint* otherA = other.aVec[i].c->clone();
-    aVec.push_back(NamedActivationPoint(std::shared_ptr<ActivationPoint>(otherA), other.aVec[i].trajNameND));
+    aVec.push_back(NamedActivationPoint(std::shared_ptr<ActivationPoint>(otherA),
+                                        other.aVec[i].trajNameND));
   }
 }
 
@@ -83,9 +84,9 @@ ActivationSet* ActivationSet::clone() const
 
   }
 
-  for (size_t i = 0; i < set.size(); ++i)
+  for (size_t i = 0; i < children.size(); ++i)
   {
-    auto child = set[i]->clone();
+    auto child = children[i]->clone();
     tSet->add(std::shared_ptr<ConstraintSet>(child));
   }
 
@@ -192,38 +193,21 @@ double ActivationSet::compute(double dt)
   double endTime = ConstraintSet::compute(dt);
 
   // Determine the end time of this set's activation points
-  for (size_t i = 0; i < this->aVec.size(); ++i)
+  for (auto const& a : aVec)
   {
-    endTime = std::max(endTime, aVec[i].c->getTime());
+    endTime = std::max(endTime, a.c->getTime());
   }
 
   return endTime;
 }
 
-// double ActivationSet::getStartTimeRecurse() const
-// {
-//   double startTime = std::numeric_limits<double>::max();
-
-//   for (size_t i=0; i<this->aVec.size(); ++i)
-//   {
-//     startTime = std::min(startTime, aVec[i].c->getTime());
-//   }
-
-//   for (size_t i=0; i<this->set.size(); ++i)
-//   {
-//     startTime = std::min(startTime, set[i]->getStartTimeRecurse());
-//   }
-
-//   return startTime < 0.0 ? 0.0 : startTime;
-// }
-
 double ActivationSet::getStartTimeRecurse() const
 {
   double startTime = ConstraintSet::getStartTimeRecurse();
 
-  for (size_t i=0; i<this->aVec.size(); ++i)
+  for (auto const& a: aVec)
   {
-    startTime = std::min(startTime, aVec[i].c->getTime());
+    startTime = std::min(startTime, a.c->getTime());
   }
 
   return startTime < 0.0 ? 0.0 : startTime;
@@ -233,24 +217,12 @@ double ActivationSet::getEndTime() const
 {
   double endTime = 0.0;
 
-  for (size_t i = 0; i < this->aVec.size(); ++i)
+  for (auto const& a : aVec)
   {
-    endTime = std::max(endTime, aVec[i].c->getTime());
+    endTime = std::max(endTime, a.c->getTime());
   }
 
-  endTime = std::max(endTime, ConstraintSet::getEndTime());
-
-  // for (size_t i=0; i<this->constraint.size(); ++i)
-  // {
-  //   endTime = std::max(endTime, constraint[i].c->getTime());
-  // }
-
-  // for (size_t i = 0; i < this->set.size(); ++i)
-  // {
-  //   endTime = std::max(endTime, set[i]->getEndTime());
-  // }
-
-  return endTime;
+  return std::max(endTime, ConstraintSet::getEndTime());
 }
 
 bool ActivationSet::toXML(std::string fileName) const
@@ -280,12 +252,12 @@ void ActivationSet::toXML(std::ostream& outStream, size_t indent) const
   outStream << indStr << "<ConstraintSet type=\""
             << getClassName() << "\" >" << std::endl;
 
-  for (size_t i=0; i<aVec.size(); ++i)
+  for (auto const& ai : aVec)
   {
     outStream << indStr << "  <Activation ";
-    outStream << "t=\"" << aVec[i].c->getTime() << "\" ";
+    outStream << "t=\"" << ai.c->getTime() << "\" ";
 
-    if (aVec[i].c->switchesOn())
+    if (ai.c->switchesOn())
     {
       outStream << "switchesOn=\"true\" ";
     }
@@ -294,27 +266,27 @@ void ActivationSet::toXML(std::ostream& outStream, size_t indent) const
       outStream << "switchesOn=\"false\" ";
     }
 
-    outStream << "horizon=\"" << aVec[i].c->getHorizon() << "\" ";
-    outStream << "trajectory=\"" << aVec[i].trajNameND << "\" />" << std::endl;
+    outStream << "horizon=\"" << ai.c->getHorizon() << "\" ";
+    outStream << "trajectory=\"" << ai.trajNameND << "\" />" << std::endl;
   }
 
   // \todo: This duplicates the function in TrajectoryConstraint Set. Maybe here we can do better?
-  for (size_t i=0; i<constraint.size(); ++i)
+  for (auto const& ci : constraint)
   {
     outStream << indStr << "  <Constraint ";
-    outStream << "t=\"" << constraint[i].c->getTime() << "\" ";
-    outStream << "pos=\"" << constraint[i].c->getPosition() << "\" ";
-    outStream << "vel=\"" << constraint[i].c->getVelocity() << "\" ";
-    outStream << "acc=\"" << constraint[i].c->getAcceleration() << "\" ";
-    outStream << "flag=\"" << constraint[i].c->getFlag() << "\" ";
-    outStream << "trajectory=\"" << constraint[i].trajName1D << "\" ";
+    outStream << "t=\"" << ci.c->getTime() << "\" ";
+    outStream << "pos=\"" << ci.c->getPosition() << "\" ";
+    outStream << "vel=\"" << ci.c->getVelocity() << "\" ";
+    outStream << "acc=\"" << ci.c->getAcceleration() << "\" ";
+    outStream << "flag=\"" << ci.c->getFlag() << "\" ";
+    outStream << "trajectory=\"" << ci.trajName1D << "\" ";
     outStream << " />" << std::endl;
   }
 
   // Go recursively through all child sets
-  for (size_t i=0; i<set.size(); ++i)
+  for (auto const& child : children)
   {
-    set[i]->toXML(outStream, indent+2);
+    child->toXML(outStream, indent+2);
   }
 
   // Close set's xml description

@@ -128,9 +128,9 @@ EulerConstraint* EulerConstraint::clone() const
   tSet->oriTrjName = oriTrjName;
   Mat3d_copy(tSet->A_PB, (double (*)[3])A_PB);
 
-  for (size_t i = 0; i < set.size(); ++i)
+  for (size_t i = 0; i < children.size(); ++i)
   {
-    tSet->add(std::shared_ptr<ConstraintSet>(set[i]->clone()));
+    tSet->add(std::shared_ptr<ConstraintSet>(children[i]->clone()));
   }
 
   return tSet;
@@ -256,9 +256,9 @@ void EulerConstraint::apply(std::vector<TrajectoryND*>& trajectory,
   }   // if (this->oriTrj)
 
   // Continue recursion
-  for (size_t i = 0; i<set.size(); ++i)
+  for (size_t i = 0; i< children.size(); ++i)
   {
-    set[i]->apply(trajectory, tMap, permissive);
+    children[i]->apply(trajectory, tMap, permissive);
   }
 
 }
@@ -378,7 +378,7 @@ void EulerConstraint::toXML(std::ostream& outStream, size_t indent) const
   outStream << "trajectory=\"" << oriTrjName << "\"";
 
   // If there are no children, we close the tag in the first line
-  if (set.empty())
+  if (children.empty())
   {
     outStream << " />" << std::endl;
   }
@@ -387,9 +387,9 @@ void EulerConstraint::toXML(std::ostream& outStream, size_t indent) const
   {
     outStream << " >" << std::endl << std::endl;
 
-    for (size_t i=0; i<set.size(); ++i)
+    for (size_t i=0; i< children.size(); ++i)
     {
-      set[i]->toXML(outStream, indent+2);
+      children[i]->toXML(outStream, indent+2);
     }
     outStream << indStr << "</ConstraintSet>" << std::endl << std::endl;
   }

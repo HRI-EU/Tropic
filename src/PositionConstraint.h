@@ -35,8 +35,6 @@
 
 #include "ConstraintSet.h"
 
-#include <string>
-
 
 
 namespace tropic

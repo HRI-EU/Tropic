@@ -31,6 +31,7 @@
 *******************************************************************************/
 
 #include "TrajectoryND.h"
+#include "Trajectory1D.h"
 #include "Rcs_macros.h"
 
 #include <typeinfo>

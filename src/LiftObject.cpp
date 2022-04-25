@@ -40,6 +40,7 @@
 #include "ActivationSet.h"
 #include "KeepPositionConstraint.h"
 
+#include <TaskFactory.h>
 #include <Rcs_macros.h>
 #include <Rcs_typedef.h>
 
@@ -313,6 +314,123 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
   }
 
   return success;
+}
+
+std::vector<Rcs::Task*> LiftObjectConstraint::createLiftPutTasks(const Rcs::ControllerBase* controller,
+                                                                 const std::string& hand_,
+                                                                 const std::string& object_,
+                                                                 const std::string& surface_,
+                                                                 std::vector<std::string> fingers)
+{
+  // We make a local copy of the body strings, since they might be resolved into
+  // different names when being a GenericBody
+  std::string hand = hand_, object = object_, surface = surface_;
+  std::vector<Rcs::Task*> tasks;
+
+  // We go through the following look-ups to resolve the names of possible
+  // generic bodies.
+  const RcsBody* bdy;
+  bdy = RcsGraph_getBodyByName(controller->getGraph(), hand.c_str());
+  if (!bdy)
+  {
+    RLOG_CPP(1, "Failed to find body for " << hand);
+    return tasks;
+  }
+  hand = std::string(bdy->name);
+
+  bdy = RcsGraph_getBodyByName(controller->getGraph(), object.c_str());
+  if (!bdy)
+  {
+    RLOG_CPP(0, "Failed to find body for " << object);
+    return tasks;
+  }
+  object = std::string(bdy->name);
+
+  bdy = RcsGraph_getBodyByName(controller->getGraph(), surface.c_str());
+  if (!bdy)
+  {
+    RLOG_CPP(1, "Failed to find body for " << surface);
+    return tasks;
+  }
+  surface = std::string(bdy->name);
+
+  std::string fingerTask;
+  for (auto f : fingers)
+  {
+    const RcsJoint* jnt = RcsGraph_getJointByName(controller->getGraph(), f.c_str());
+    if (!jnt)
+    {
+      RLOG_CPP(1, "Failed to find joint for " << f);
+      return tasks;
+    }
+    fingerTask += f;
+    fingerTask += " ";
+  }
+
+
+  // taskObjHandPos: XYZ-task with effector=object and refBdy=hand
+  std::string xmlTask = "<Task name = \"" + object + "-" + hand + "-XYZ\" " +
+                        "controlVariable=\"XYZ\" " +
+                        "effector=\"" + object + "\" " +
+                        "refBdy=\"" + hand + "\" />";
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+
+  // taskObjSurfacePosition z and sideways velocities
+  xmlTask = "<Task name = \"" + object + "-" + surface + "-X\" " +
+            "controlVariable=\"X\" " +
+            "effector=\"" + object + "\" " + "refBdy=\"" + surface + "\" />";
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+
+  xmlTask = "<Task name = \"" + object + "-" + surface + "-Y\" " +
+            "controlVariable=\"Z\" " +
+            "effector=\"" + object + "\" " + "refBdy=\"" + surface + "\" />";
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+
+  xmlTask = "<Task name = \"" + object + "-" + surface + "-Z\" " +
+            "controlVariable=\"Y\" " +
+            "effector=\"" + object + "\" " + "refBdy=\"" + surface + "\" />";
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+
+  // taskObjPolar
+  xmlTask = "<Task name = \"" + object + "-POLAR\" " +
+            "controlVariable=\"POLAR\" " + "effector=\"" + object + "\" />";
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+
+  // taskHandObjPolar
+  xmlTask = "<Task name = \"" + hand + "-" + object + "-POLAR\" " +
+            "controlVariable=\"POLAR\" " + "effector=\"" + hand + "\" " +
+            "refBdy=\"" + object + "\" />";
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+
+  // Fingers
+  xmlTask = "<Task name = \"" + hand + "_fingers" + " \" controlVariable=\"Joints\" " +
+            "jnts=\"" + fingerTask + "\" />";
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+
+  // Check that all constructed tasks are valid
+  bool valid = true;
+  for (size_t i = 0; i < tasks.size(); ++i)
+  {
+    if (!tasks[i])
+    {
+      valid = false;
+      RLOG_CPP(0, "Task " << i << " is NULL");
+    }
+  }
+
+  // If we found one or more NULL task, we delete all tasks and return an
+  // empty vector
+  if (!valid)
+  {
+    for (auto ti : tasks)
+    {
+      delete ti;   // deleting NULL is safe
+    }
+
+    tasks.clear();
+  }
+
+  return tasks;
 }
 
 std::shared_ptr<tropic::ConstraintSet>

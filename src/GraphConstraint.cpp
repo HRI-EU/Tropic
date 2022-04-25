@@ -78,10 +78,10 @@ GraphConstraint* GraphConstraint::clone() const
   tSet->className = className;
   tSet->graph = NULL;
 
-  for (size_t i = 0; i < set.size(); ++i)
+  for (size_t i = 0; i < children.size(); ++i)
   {
     // Recursive cloning
-    auto child = set[i]->clone();
+    auto child = children[i]->clone();
     tSet->add(std::shared_ptr<ConstraintSet>(child));
   }
 

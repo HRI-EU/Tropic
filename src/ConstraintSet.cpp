@@ -80,13 +80,13 @@ ConstraintSet::ConstraintSet(const ConstraintSet& other) :
   // Remove constraints and sets on all levels
   clear();
 
-  for (size_t i = 0; i < other.set.size(); ++i)
+  for (size_t i = 0; i < other.children.size(); ++i)
   {
     // Calls the copy constructor for the RHS, which in turn calls the copy
     // constructor ... so that we go through all in the hierarchy
     //auto child = std::make_shared<ConstraintSet>(*(other.set[i].get()));
     // add(child);
-    auto child = set[i]->clone();
+    auto child = children[i]->clone();
     add(std::shared_ptr<ConstraintSet>(child));
   }
 }
@@ -102,10 +102,10 @@ ConstraintSet* ConstraintSet::clone() const
   tSet->constraint = constraint;
   tSet->className = className;
 
-  for (size_t i = 0; i < set.size(); ++i)
+  for (size_t i = 0; i < children.size(); ++i)
   {
     // Recursive cloning
-    auto child = set[i]->clone();
+    auto child = children[i]->clone();
     tSet->add(std::shared_ptr<ConstraintSet>(child));
   }
 
@@ -121,15 +121,15 @@ bool ConstraintSet::isEqual(const ConstraintSet& other) const
   if ((constraint!=other.constraint) ||
       (className!=other.className) ||
       (getTypeName()!=other.getTypeName()) ||
-      (set.size()!=other.set.size()))
+      (children.size()!=other.children.size()))
   {
     return false;
   }
 
   // From here on we call the shared_ptr isEqual() function
-  for (size_t i=0; i<set.size(); ++i)
+  for (size_t i=0; i< children.size(); ++i)
   {
-    if (!set[i]->isEqual(other.set[i]))
+    if (!children[i]->isEqual(other.children[i]))
     {
       return false;
     }
@@ -174,16 +174,16 @@ bool ConstraintSet::isEqual(std::shared_ptr<ConstraintSet> other) const
     return false;
   }
 
-  if (set.size() != other->set.size())
+  if (children.size() != other->children.size())
   {
     RLOG_CPP(5, "Sizes differ");
     return false;
   }
 
   // From here on we call the != compare operator.
-  for (size_t i=0; i<set.size(); ++i)
+  for (size_t i=0; i< children.size(); ++i)
   {
-    if (!set[i]->isEqual(other->set[i]))
+    if (!children[i]->isEqual(other->children[i]))
     {
       RLOG(5, "Set %zu differs", i);
       return false;
@@ -241,9 +241,9 @@ size_t ConstraintSet::numConstraints(bool recursive) const
 
   if (recursive)
   {
-    for (size_t i=0; i<set.size(); ++i)
+    for (size_t i=0; i< children.size(); ++i)
     {
-      nConstraints += set[i]->numConstraints(recursive);
+      nConstraints += children[i]->numConstraints(recursive);
     }
   }
 
@@ -255,16 +255,16 @@ size_t ConstraintSet::numConstraints(bool recursive) const
  ******************************************************************************/
 size_t ConstraintSet::numSets(bool recursive) const
 {
-  size_t nSets = set.size();
+  size_t nSets = children.size();
 
   if (recursive==false)
   {
     return nSets;
   }
 
-  for (size_t i=0; i<set.size(); ++i)
+  for (size_t i=0; i< children.size(); ++i)
   {
-    nSets += set[i]->numSets();
+    nSets += children[i]->numSets();
   }
 
   return nSets;
@@ -285,7 +285,7 @@ double ConstraintSet::compute(double dt)
 
   std::vector<int> idxToDelete;
 
-  for (int i=this->set.size()-1; i>=0; i--)
+  for (int i=this->children.size()-1; i>=0; i--)
   {
     // If the sub-set has no children, and none of its constraints is used
     // anywhere else, we delete it. This means that the constraint will also
@@ -293,13 +293,13 @@ double ConstraintSet::compute(double dt)
     // issues if compute() is called for a set that has not been added to
     // any trajectory, and is inspected (or written to file) after calling
     // compute: Some constraints might be missing then.
-    if ((set[i]->set.size()==0) && (!set[i]->inUse()))
+    if ((children[i]->children.size()==0) && (!children[i]->inUse()))
     {
       idxToDelete.push_back(i);
     }
     else
     {
-      const double sTime = set[i]->compute(dt);
+      const double sTime = children[i]->compute(dt);
       endTime = std::max(endTime, sTime);
     }
   }
@@ -308,7 +308,7 @@ double ConstraintSet::compute(double dt)
   // a loop going forward in idxToDelete.
   for (size_t i=0; i<idxToDelete.size(); ++i)
   {
-    set.erase(set.begin()+idxToDelete[i]);
+    children.erase(children.begin()+idxToDelete[i]);
   }
 
 
@@ -342,9 +342,9 @@ double ConstraintSet::getStartTimeRecurse() const
     startTime = std::min(startTime, constraint[i].c->getTime());
   }
 
-  for (size_t i=0; i<this->set.size(); ++i)
+  for (size_t i=0; i<this->children.size(); ++i)
   {
-    startTime = std::min(startTime, set[i]->getStartTimeRecurse());
+    startTime = std::min(startTime, children[i]->getStartTimeRecurse());
   }
 
   return startTime < 0.0 ? 0.0 : startTime;
@@ -362,9 +362,9 @@ double ConstraintSet::getEndTime() const
     endTime = std::max(endTime, constraint[i].c->getTime());
   }
 
-  for (size_t i=0; i<this->set.size(); ++i)
+  for (size_t i=0; i<this->children.size(); ++i)
   {
-    endTime = std::max(endTime, set[i]->getEndTime());
+    endTime = std::max(endTime, children[i]->getEndTime());
   }
 
   return endTime;
@@ -397,13 +397,13 @@ std::shared_ptr<Constraint1D> ConstraintSet::getConstraint(size_t idx) const
  ******************************************************************************/
 std::shared_ptr<ConstraintSet> ConstraintSet::getSet(size_t idx) const
 {
-  if (idx >= set.size())
+  if (idx >= children.size())
   {
-    RLOG(1, "WARNING: idx: %d   size: %d", (int)idx, (int)set.size());
+    RLOG_CPP(1, "WARNING: idx: " << idx << " size: " << children.size());
     return nullptr;
   }
 
-  return set[idx];
+  return children[idx];
 }
 
 /*******************************************************************************
@@ -427,7 +427,7 @@ void ConstraintSet::add(std::shared_ptr<ConstraintSet> other)
 {
   if (other != nullptr)
   {
-    this->set.push_back(other);
+    this->children.push_back(other);
   }
 }
 
@@ -470,9 +470,9 @@ void ConstraintSet::shiftTime(double dt)
     constraint[i].c->shiftTime(dt);
   }
 
-  for (size_t i=0; i<set.size(); ++i)
+  for (size_t i=0; i< children.size(); ++i)
   {
-    set[i]->shiftTime(dt);
+    children[i]->shiftTime(dt);
   }
 
 }
@@ -552,9 +552,9 @@ void ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
     }
   }
 
-  for (size_t i = 0; i<set.size(); ++i)
+  for (size_t i = 0; i< children.size(); ++i)
   {
-    set[i]->apply(trajectory, tMap, permissive);
+    children[i]->apply(trajectory, tMap, permissive);
   }
 
 }
@@ -566,13 +566,13 @@ void ConstraintSet::clear()
 {
   // We go through all sub-sets and call their clear function before we
   // delete it
-  for (size_t i=0; i<set.size(); ++i)
+  for (size_t i=0; i< children.size(); ++i)
   {
-    set[i]->clear();
+    children[i]->clear();
   }
 
   // Then we empty the vector of sub-sets of this set
-  set.clear();
+  children.clear();
 
   // Then we remove all constraint from the current set. They don't need to be
   // deleted explicitely since that's done through shared_ptrs.
@@ -635,14 +635,14 @@ void ConstraintSet::print() const
     }
   }
 
-  if (set.empty())
+  if (children.empty())
   {
     printf("no child sets\n");
   }
 
-  for (size_t i=0; i<this->set.size(); ++i)
+  for (size_t i=0; i<this->children.size(); ++i)
   {
-    set[i]->print();
+    children[i]->print();
   }
 }
 
@@ -769,9 +769,9 @@ void ConstraintSet::toXML(std::ostream& outStream, size_t indent) const
   }
 
   // Go recursively through all child sets
-  for (size_t i=0; i<set.size(); ++i)
+  for (size_t i=0; i< children.size(); ++i)
   {
-    set[i]->toXML(outStream, indent+2);
+    children[i]->toXML(outStream, indent+2);
   }
 
   // Close set's xml description

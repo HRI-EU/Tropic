@@ -308,9 +308,9 @@ public:
       setsOfType.push_back(self);
     }
 
-    for (size_t i=0; i<set.size(); ++i)
+    for (size_t i=0; i< children.size(); ++i)
     {
-      set[i]->findSetsOfType<T>(setsOfType);
+      children[i]->findSetsOfType<T>(setsOfType);
     }
 
   }
@@ -358,7 +358,7 @@ protected:
   virtual void add(NamedConstraint1D constraint);
   virtual double getStartTimeRecurse() const;
 
-  std::vector<std::shared_ptr<ConstraintSet>> set;
+  std::vector<std::shared_ptr<ConstraintSet>> children;
   std::string className;
   std::vector<NamedConstraint1D> constraint;
 };

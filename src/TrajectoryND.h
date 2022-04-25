@@ -33,9 +33,8 @@
 #ifndef TROPIC_TRAJECTORYND_H
 #define TROPIC_TRAJECTORYND_H
 
-#include "Trajectory1D.h"
 #include "ActivationPoint.h"
-
+#include "Trajectory1D.h"
 
 
 namespace tropic
@@ -115,8 +114,6 @@ private:
   double blending;
   double continuousActivation;
   std::string name;
-
-public:
   std::vector<double> x_curr;
   std::vector<double> x_prev;
   std::vector<double> x_pprev;

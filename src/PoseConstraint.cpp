@@ -122,9 +122,9 @@ PoseConstraint* PoseConstraint::clone() const
   tSet->constraint = constraint;
   tSet->className = className;
 
-  for (size_t i = 0; i < set.size(); ++i)
+  for (size_t i = 0; i < children.size(); ++i)
   {
-    auto child = set[i]->clone();
+    auto child = children[i]->clone();
     tSet->add(std::shared_ptr<ConstraintSet>(child));
   }
 
@@ -134,16 +134,16 @@ PoseConstraint* PoseConstraint::clone() const
 void PoseConstraint::print() const
 {
   printf("%s (%s): ", getClassName().c_str(), getTypeName().c_str());
-  printf("t=%.3f ", set[0]->getConstraint(0)->getTime());
+  printf("t=%.3f ", children[0]->getConstraint(0)->getTime());
   printf("pos=%.3f %.3f %.3f ",
-         set[0]->getConstraint(0)->getPosition(),
-         set[0]->getConstraint(1)->getPosition(),
-         set[0]->getConstraint(2)->getPosition());
+         children[0]->getConstraint(0)->getPosition(),
+         children[0]->getConstraint(1)->getPosition(),
+         children[0]->getConstraint(2)->getPosition());
   double quat[4];
-  quat[0] = set[1]->getConstraint(0)->getPosition();
-  quat[1] = set[1]->getConstraint(1)->getPosition();
-  quat[2] = set[1]->getConstraint(2)->getPosition();
-  quat[3] = set[1]->getConstraint(3)->getPosition();
+  quat[0] = children[1]->getConstraint(0)->getPosition();
+  quat[1] = children[1]->getConstraint(1)->getPosition();
+  quat[2] = children[1]->getConstraint(2)->getPosition();
+  quat[3] = children[1]->getConstraint(3)->getPosition();
   double rm[3][3], ea[3];
   Quat_toRotationMatrix(rm, quat);
   Mat3d_toEulerAngles(ea, rm);
@@ -198,7 +198,7 @@ void PoseConstraint::toXML(std::ostream& outStream, size_t indent) const
   outStream << "trajectory=\"" << tmp << " " << oriSet->getTrajectoryName() << "\"";
 
   // If there are no children, we close the tag in the first line
-  if (set.size()==2)
+  if (children.size()==2)
   {
     outStream << " />" << std::endl;
   }
@@ -207,9 +207,9 @@ void PoseConstraint::toXML(std::ostream& outStream, size_t indent) const
   {
     outStream << " >" << std::endl << std::endl;
 
-    for (size_t i=2; i<set.size(); ++i)
+    for (size_t i=2; i< children.size(); ++i)
     {
-      set[i]->toXML(outStream, indent+2);
+      children[i]->toXML(outStream, indent+2);
     }
     outStream << indStr << "</ConstraintSet>" << std::endl << std::endl;
   }

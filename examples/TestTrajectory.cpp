@@ -534,7 +534,7 @@ public:
       return false;
     }
 
-    set.clear();
+    children.clear();
     double ea[3];
     Vec3d_set(ea, deltaPhi*phi, 0.0, 0.0);
     add(std::make_shared<tropic::EulerConstraint>(t_goal, ea, trajPhi->getName()));
@@ -1426,14 +1426,14 @@ public:
 
   virtual double compute(double dt)
   {
-    for (size_t j=0; j<this->set.size(); ++j)
+    for (size_t j=0; j<this->children.size(); ++j)
     {
-      for (size_t i = 0; i<set[j]->numConstraints(false); ++i)
+      for (size_t i = 0; i< children[j]->numConstraints(false); ++i)
       {
-        if ((set[j]->getConstraint(i)->getTime()<0.1) &&
-            (set[j]->getConstraint(i)->getFlag()==1))
+        if ((children[j]->getConstraint(i)->getTime()<0.1) &&
+            (children[j]->getConstraint(i)->getFlag()==1))
         {
-          set[j]->getConstraint(i)->setFlag(0);
+          children[j]->getConstraint(i)->setFlag(0);
         }
       }
     }
@@ -1664,10 +1664,12 @@ static void testIK()
   Rcs::KeyCatcherBase::registerKey("m", "Manipulability null space");
   Rcs::KeyCatcherBase::registerKey("v", "Write current model_state to console");
   Rcs::KeyCatcherBase::registerKey("t", "Load trajectory from Johannes's cool class");
-  Rcs::KeyCatcherBase::registerKey("l", "Load trajectory from LiftObject class");
+  Rcs::KeyCatcherBase::registerKey("l", "Bi-manual pouring");
+  Rcs::KeyCatcherBase::registerKey("y", "One-handed pouring");
+  Rcs::KeyCatcherBase::registerKey("O", "Create tasks");
 
   int algo = 1;
-  double alpha = 0.05, lambda = 0.0, dt = 0.01, dt_calc = 0.0;
+  double alpha = 0.05, lambda = 0.0, dt = 0.01, dt_calc = 0.0, determinant = 0.0;
   double jlCost = 0.0, dJlCost = 0.0, horizon = 2.0;
   bool calcDistance = true;
   char xmlFileName[128] = "cDualArmScitos7.xml";
@@ -1723,7 +1725,8 @@ static void testIK()
 
   if (argP.hasArgument("-h"))
   {
-    printf("Resolved motion rate control test\n\n");
+    printf("Trajectory generation with IK:\n\n");
+    printf("bin/TestTrajectory -m 5 -passiveGui -dir config/xml/Tropic/ -f cPouring.xml\n");
     pthread_mutex_destroy(&graphLock);
     return;
   }
@@ -1989,7 +1992,7 @@ static void testIK()
     switch (algo)
     {
       case 0:
-        ikSolver->solveLeftInverse(dq_des, dx_des, dH, a_des, lambda);
+        determinant = ikSolver->solveLeftInverse(dq_des, dx_des, dH, a_des, lambda);
         break;
 
       case 1:
@@ -2018,7 +2021,7 @@ static void testIK()
         // ikSolver->solveRightInverse(dq_des, dx_des, dH, a_des, lambdaA);
         // MatNd_destroy(lambdaA);
 
-        ikSolver->solveRightInverse(dq_des, dx_des, dH, a_des, lambda);
+        determinant = ikSolver->solveRightInverse(dq_des, dx_des, dH, a_des, lambda);
       }
       break;
 
@@ -2059,6 +2062,33 @@ static void testIK()
     {
       RLOGS(0, "Running controller test");
       controller.test(true);
+    }
+    else if (kc && kc->getAndResetKey('O'))
+    {
+      RLOGS(0, "Creating tasks");
+      std::vector<std::string> fingers = {"j2s7s300_joint_finger_1_R",
+                                          "j2s7s300_joint_finger_2_R",
+                                          "j2s7s300_joint_finger_3_R"
+                                         };
+      auto tasks = tropic::LiftObjectConstraint::createLiftPutTasks(tc->getController(),
+                                                                    "GenericBody0",
+                                                                    "GenericBody3",
+                                                                    "GenericBody2", fingers);
+
+      for (auto const t : tasks)
+      {
+        t->print();
+      }
+
+      Rcs::ControllerBase c(RcsGraph_clone(tc->getController()->getGraph()));
+
+      for (auto const t : tasks)
+      {
+        c.add(t);
+      }
+
+      c.toXML("cTestMe.xml");
+
     }
     else if (kc && kc->getAndResetKey('p'))
     {
@@ -2226,7 +2256,7 @@ static void testIK()
             controller.getGraph()->nJ, ikSolver->getInternalDof(),
             (int) controller.getActiveTaskDim(a_des),
             jlCost, dJlCost,
-            ikSolver->getDeterminant()==0.0?"SINGULAR":"",
+            determinant==0.0?"SINGULAR":"",
             ((dJlCost > 1.0e-8) && (MatNd_getNorm(dx_des) == 0.0)) ?
             "COST INCREASE" : "",
             algo, lambda, alpha,
@@ -2250,7 +2280,7 @@ static void testIK()
       runLoop = false;
     }
 
-    if (pause==true || ikSolver->getDeterminant()==0.0)
+    if (pause==true || determinant==0.0)
     {
       RPAUSE();
     }
@@ -2723,9 +2753,9 @@ static void testDynamicActivation(int argc, char** argv)
     //MatNd_eleMulSelf(dx_des, ikSolver.getCurrentActivation());
     cntrl->computeJointlimitGradient(dH);
     MatNd_constMulSelf(dH, alpha*blending);
-    ikSolver.solveRightInverse(dq_des, dx_des, dH, tc.getActivationPtr(), lambda);
+    double det = ikSolver.solveRightInverse(dq_des, dx_des, dH, tc.getActivationPtr(), lambda);
     //ikSolver.solveLeftInverse(dq_des, dx_des, dH, a_cont, lambda);
-    RCHECK(ikSolver.getDeterminant()>0.0);
+    RCHECK(det>0.0);
     MatNd_constMulSelf(dq_des, 1.0/dt);
 
     // First order filter with decaying time constant at task switch points
