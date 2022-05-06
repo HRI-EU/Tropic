@@ -47,23 +47,29 @@ IF(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
   FIND_PACKAGE(Rcs REQUIRED)
   MESSAGE(STATUS "Compiling Tropic as stand-alone project")
   SET(STANDALONE_PROJECT ON)
-  SET(LIBRARY_LINKING_TYPE "SHARED")
   FIND_PACKAGE(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
   IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     SET(CMAKE_INSTALL_PREFIX "$ENV{SIT}/Libraries/Tropic/1.0" CACHE PATH "Default sand box directory" FORCE)
   ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 ELSE()
   SET(RCS_CONFIG_DIR "config")
-  INCLUDE(CompileSettings)
   LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Tropic/cmake)
   MESSAGE(STATUS "Compiling ${PROJECT_NAME} as in-tree project")
 ENDIF()
 
 ################################################################################
+# Compile settings
+################################################################################
+SET(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+SET(BUILD_SHARED_LIBS ON)
+
+################################################################################
 # Setup exported target collection
 ################################################################################
+
 # Setup TROPIC_EXPORT_LIBRARIES so that CMakeLists.txt can modify it
 SET(TROPIC_EXPORT_LIBRARIES "" CACHE INTERNAL "")
+
 # Create a macro for adding an export library
 FUNCTION(TROPIC_ADD_EXPORT_LIBRARY library)
   SET(TROPIC_EXPORT_LIBRARIES ${TROPIC_EXPORT_LIBRARIES} ${library} CACHE INTERNAL "")
@@ -87,11 +93,9 @@ ENDIF(WIN32)
 SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 ################################################################################
-#
 # The RPATH to be used when installing, but only if it's not a system directory
 # See CMake wiki:
 # (https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling)
-#
 ################################################################################
 LIST(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib/$ENV{MAKEFILE_PLATFORM}" isSystemDir)
 IF("${isSystemDir}" STREQUAL "-1")
@@ -126,7 +130,7 @@ src/ConnectBodyConstraint.cpp
 src/LiftObject.cpp
 )
 
-ADD_LIBRARY(Tropic ${LIBRARY_LINKING_TYPE} ${TROPIC_SRCS})
+ADD_LIBRARY(Tropic ${TROPIC_SRCS})
 
 TARGET_INCLUDE_DIRECTORIES(Tropic PUBLIC
     # Header source location
