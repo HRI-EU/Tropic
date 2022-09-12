@@ -93,6 +93,13 @@ public:
                   double t_start, double t_end);
 
   static std::shared_ptr<tropic::ConstraintSet>
+  putWithOneHand(const Rcs::ControllerBase* controller,
+                 std::string hand,
+                 std::string bottle,
+                 std::string table,
+                 double t_start, double t_end);
+
+  static std::shared_ptr<tropic::ConstraintSet>
   pourWithOneHand(const Rcs::ControllerBase* controller,
                   std::string hand,
                   std::string bottle,
@@ -170,7 +177,7 @@ public:
                               std::string& tskObjPolar,
                               std::string& tskFingers);
 
-  static std::vector<Rcs::Task*> createLiftPutTasks(const Rcs::ControllerBase* controller,
+  static std::vector<Rcs::Task*> createLiftPutTasks(const RcsGraph* graph,
                                                     const std::string& hand,
                                                     const std::string& object,
                                                     const std::string& surface,

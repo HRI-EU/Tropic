@@ -162,9 +162,10 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
   const RcsBody* parent = RCSBODY_BY_ID(controller->getGraph(), bdy->parentId);
   if (parent)
   {
-    if (STREQ(parent->bdySuffix, "_L") || STREQ(parent->bdySuffix, "_R"))
+    //if (STREQ(parent->bdySuffix, "_L") || STREQ(parent->bdySuffix, "_R"))
     {
-      tskFingers_ = "Fingers" + std::string(parent->bdySuffix);
+      //tskFingers_ = "Fingers" + std::string(parent->bdySuffix);
+      tskFingers_ = hand + "_fingers";
     }
   }
 
@@ -316,7 +317,7 @@ bool LiftObjectConstraint::getLiftPutTasks(const Rcs::ControllerBase* controller
   return success;
 }
 
-std::vector<Rcs::Task*> LiftObjectConstraint::createLiftPutTasks(const Rcs::ControllerBase* controller,
+std::vector<Rcs::Task*> LiftObjectConstraint::createLiftPutTasks(const RcsGraph* graph,
                                                                  const std::string& hand_,
                                                                  const std::string& object_,
                                                                  const std::string& surface_,
@@ -330,7 +331,7 @@ std::vector<Rcs::Task*> LiftObjectConstraint::createLiftPutTasks(const Rcs::Cont
   // We go through the following look-ups to resolve the names of possible
   // generic bodies.
   const RcsBody* bdy;
-  bdy = RcsGraph_getBodyByName(controller->getGraph(), hand.c_str());
+  bdy = RcsGraph_getBodyByName(graph, hand.c_str());
   if (!bdy)
   {
     RLOG_CPP(1, "Failed to find body for " << hand);
@@ -338,7 +339,7 @@ std::vector<Rcs::Task*> LiftObjectConstraint::createLiftPutTasks(const Rcs::Cont
   }
   hand = std::string(bdy->name);
 
-  bdy = RcsGraph_getBodyByName(controller->getGraph(), object.c_str());
+  bdy = RcsGraph_getBodyByName(graph, object.c_str());
   if (!bdy)
   {
     RLOG_CPP(0, "Failed to find body for " << object);
@@ -346,7 +347,7 @@ std::vector<Rcs::Task*> LiftObjectConstraint::createLiftPutTasks(const Rcs::Cont
   }
   object = std::string(bdy->name);
 
-  bdy = RcsGraph_getBodyByName(controller->getGraph(), surface.c_str());
+  bdy = RcsGraph_getBodyByName(graph, surface.c_str());
   if (!bdy)
   {
     RLOG_CPP(1, "Failed to find body for " << surface);
@@ -357,7 +358,7 @@ std::vector<Rcs::Task*> LiftObjectConstraint::createLiftPutTasks(const Rcs::Cont
   std::string fingerTask;
   for (auto f : fingers)
   {
-    const RcsJoint* jnt = RcsGraph_getJointByName(controller->getGraph(), f.c_str());
+    const RcsJoint* jnt = RcsGraph_getJointByName(graph, f.c_str());
     if (!jnt)
     {
       RLOG_CPP(1, "Failed to find joint for " << f);
@@ -373,39 +374,39 @@ std::vector<Rcs::Task*> LiftObjectConstraint::createLiftPutTasks(const Rcs::Cont
                         "controlVariable=\"XYZ\" " +
                         "effector=\"" + object + "\" " +
                         "refBdy=\"" + hand + "\" />";
-  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, graph));
 
   // taskObjSurfacePosition z and sideways velocities
   xmlTask = "<Task name = \"" + object + "-" + surface + "-X\" " +
             "controlVariable=\"X\" " +
             "effector=\"" + object + "\" " + "refBdy=\"" + surface + "\" />";
-  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, graph));
 
   xmlTask = "<Task name = \"" + object + "-" + surface + "-Y\" " +
             "controlVariable=\"Z\" " +
             "effector=\"" + object + "\" " + "refBdy=\"" + surface + "\" />";
-  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, graph));
 
   xmlTask = "<Task name = \"" + object + "-" + surface + "-Z\" " +
             "controlVariable=\"Y\" " +
             "effector=\"" + object + "\" " + "refBdy=\"" + surface + "\" />";
-  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, graph));
 
   // taskObjPolar
   xmlTask = "<Task name = \"" + object + "-POLAR\" " +
             "controlVariable=\"POLAR\" " + "effector=\"" + object + "\" />";
-  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, graph));
 
   // taskHandObjPolar
   xmlTask = "<Task name = \"" + hand + "-" + object + "-POLAR\" " +
             "controlVariable=\"POLAR\" " + "effector=\"" + hand + "\" " +
             "refBdy=\"" + object + "\" />";
-  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, graph));
 
   // Fingers
-  xmlTask = "<Task name = \"" + hand + "_fingers" + " \" controlVariable=\"Joints\" " +
+  xmlTask = "<Task name = \"" + hand + "_fingers\" controlVariable=\"Joints\" " +
             "jnts=\"" + fingerTask + "\" />";
-  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, controller->getGraph()));
+  tasks.push_back(Rcs::TaskFactory::createTask(xmlTask, graph));
 
   // Check that all constructed tasks are valid
   bool valid = true;
@@ -586,7 +587,23 @@ LiftObjectConstraint::liftWithOneHand(const Rcs::ControllerBase* controller,
   a1->add(rh.lift(t_start, t_grasp, t_end, liftHeight, graspBottle.org[2]));
 
   a1->addActivation(t_end, true, 0.5, rh.taskObjPolar);
-  a1->addActivation(t_end, true, 0.5, "Bottle XYZ");
+  //a1->addActivation(t_end, true, 0.5, "Bottle XYZ");// HACK
+
+  return a1;
+}
+
+// static
+std::shared_ptr<tropic::ConstraintSet>
+LiftObjectConstraint::putWithOneHand(const Rcs::ControllerBase* controller,
+                                      std::string hand,
+                                      std::string bottle,
+                                      std::string table,
+                                      double t_start, double t_end)
+{
+  LiftObjectConstraint rh(controller, hand, bottle, table);
+  const double t_put = t_start + 0.66 * (t_end - t_start);
+  auto a1 = std::make_shared<tropic::ActivationSet>();
+  a1->add(rh.put(t_start, t_put, t_end));
 
   return a1;
 }
@@ -977,6 +994,7 @@ LiftObjectConstraint::screw(const Rcs::ControllerBase* controller,
 
 LiftObjectConstraint::LiftObjectConstraint(xmlNode* node)
 {
+  RFATAL("Implement me");
 }
 
 LiftObjectConstraint::LiftObjectConstraint(const LiftObjectConstraint& other)
@@ -995,6 +1013,7 @@ LiftObjectConstraint::~LiftObjectConstraint()
 
 void LiftObjectConstraint::fromXML(xmlNode* node)
 {
+  RFATAL("Implement me");
 }
 
 // static
