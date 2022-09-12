@@ -111,6 +111,8 @@ public:
 
   std::string getTrajectoryName() const;
 
+  void setTrajectoryName(const std::string& oriTrjName);
+
 protected:
 
   void getPreviousQuaternion(double quat[4]) const;

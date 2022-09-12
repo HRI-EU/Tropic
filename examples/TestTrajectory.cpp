@@ -965,6 +965,7 @@ static void testExplore()
 
   Rcs::IkSolverRMR ikSolver(&controller);
 
+  MatNd* a_des     = MatNd_create(controller.getNumberOfTasks(), 1);
   MatNd* x_des     = MatNd_create(controller.getTaskDim(), 1);
   MatNd* dx_des    = MatNd_create(controller.getTaskDim(), 1);
   MatNd* dq_des    = MatNd_create(controller.getGraph()->dof, 1);
@@ -1011,8 +1012,7 @@ static void testExplore()
       // We launch it in "show only" mode, so that there are no modifications
       // to the activations. Our interface is not very well designed, so that
       // we have to do some casting here.
-      Rcs::ControllerWidgetBase::create(&controller,
-                                        (MatNd*)traj->getActivationPtr(),
+      Rcs::ControllerWidgetBase::create(&controller, a_des,
                                         x_des, x_des, mtx, true);
     }
   }
@@ -1097,6 +1097,7 @@ static void testExplore()
     traj->step(dt_step);
     dt_traj = Timer_getSystemTime() - dt_traj;
     traj->getPosition(0.0, x_des);
+    traj->getActivation(a_des);
 
     /////////////////////////////////////////////////////////////////
     // Inverse kinematics
@@ -1104,7 +1105,7 @@ static void testExplore()
     controller.computeDX(dx_des, x_des);
     controller.computeJointlimitGradient(dH);
     MatNd_constMulSelf(dH, alpha*traj->computeBlending());
-    ikSolver.solveRightInverse(dq_des, dx_des, dH, traj->getActivationPtr(), 0.0);
+    ikSolver.solveRightInverse(dq_des, dx_des, dH, a_des, 0.0);
     MatNd_addSelf(controller.getGraph()->q, dq_des);
     MatNd_constMul(q_dot_des, dq_des, 1.0/dt);
     RcsGraph_setState(controller.getGraph(), NULL, q_dot_des);
@@ -1145,6 +1146,7 @@ static void testExplore()
 
   delete traj;
 
+  MatNd_destroy(a_des);
   MatNd_destroy(x_des);
   MatNd_destroy(dx_des);
   MatNd_destroy(dq_des);
@@ -1672,7 +1674,8 @@ static void testIK()
   double alpha = 0.05, lambda = 0.0, dt = 0.01, dt_calc = 0.0, determinant = 0.0;
   double jlCost = 0.0, dJlCost = 0.0, horizon = 2.0;
   bool calcDistance = true;
-  char xmlFileName[128] = "cDualArmScitos7.xml";
+  //char xmlFileName[128] = "cDualArmScitos7.xml";
+  char xmlFileName[128] = "cPouring.xml";
   char directory[128] = "config/xml/Tropic";
   char effortBdyName[256] = "";
 
@@ -1841,7 +1844,7 @@ static void testIK()
     {
       if (showOnly)
       {
-        Rcs::ControllerWidgetBase::create(&controller, (MatNd*)tc->getActivationPtr(), x_des_f,
+        Rcs::ControllerWidgetBase::create(&controller, a_des, x_des_f,
                                           x_curr, mtx, true);
       }
       else
@@ -2070,7 +2073,7 @@ static void testIK()
                                           "j2s7s300_joint_finger_2_R",
                                           "j2s7s300_joint_finger_3_R"
                                          };
-      auto tasks = tropic::LiftObjectConstraint::createLiftPutTasks(tc->getController(),
+      auto tasks = tropic::LiftObjectConstraint::createLiftPutTasks(tc->getController()->getGraph(),
                                                                     "GenericBody0",
                                                                     "GenericBody3",
                                                                     "GenericBody2", fingers);
@@ -2202,7 +2205,7 @@ static void testIK()
     else if (kc && kc->getAndResetKey('v'))
     {
       RcsGraph_fprintModelState(stdout, controller.getGraph(),
-                                controller.getGraph()->q);
+                                controller.getGraph()->q, NULL, 0);
     }
     else if (kc && kc->getAndResetKey('t'))
     {
@@ -2670,6 +2673,7 @@ static void testDynamicActivation(int argc, char** argv)
   const unsigned int nx = cntrl->getTaskDim();
   const unsigned int nt = cntrl->getNumberOfTasks();
   const unsigned int nq = cntrl->getGraph()->dof;
+  MatNd* a_des      = MatNd_create(nt, 1);
   MatNd* a_prev     = MatNd_create(nt, 1);
   MatNd* a_cont     = MatNd_create(nt, 1);
   MatNd* x_curr     = MatNd_create(nx, 1);
@@ -2685,7 +2689,8 @@ static void testDynamicActivation(int argc, char** argv)
 
   cntrl->computeX(x_curr);
   MatNd_copy(x_des, x_curr);
-  MatNd_copy(a_prev, tc.getActivationPtr());
+  tc.getActivation(a_des);
+  MatNd_copy(a_prev, a_des);
 
   auto moveSet = genTraj1(trajName, activationHorizon);
   RCHECK(moveSet);
@@ -2711,8 +2716,7 @@ static void testDynamicActivation(int argc, char** argv)
     viewer->add(hud);
     viewer->setUpdateFrequency(60.0);
     viewer->runInThread(&mtx);
-    Rcs::ControllerWidgetBase::create(cntrl, (MatNd*)tc.getActivationPtr(),
-                                      x_des, x_curr, &mtx, true);
+    Rcs::ControllerWidgetBase::create(cntrl, a_des, x_des, x_curr, &mtx, true);
   }
 
 
@@ -2724,11 +2728,12 @@ static void testDynamicActivation(int argc, char** argv)
     /////////////////////////////////////////////////////////////////
     // Trajectory
     /////////////////////////////////////////////////////////////////
-    MatNd_copy(a_prev, tc.getActivationPtr());
+    tc.getActivation(a_prev);
     endTime = tc.step(dt);
     tc.getContinuousActivation(a_cont);
+    tc.getActivation(a_des);
     tc.getPosition(x_des);
-    bool taskSwitch = !MatNd_isEqual(a_prev, tc.getActivationPtr(), 1.0e-3);
+    bool taskSwitch = !MatNd_isEqual(a_prev, a_des, 1.0e-3);
     if (taskSwitch)
     {
       qFilt = 1.0;
@@ -2753,7 +2758,7 @@ static void testDynamicActivation(int argc, char** argv)
     //MatNd_eleMulSelf(dx_des, ikSolver.getCurrentActivation());
     cntrl->computeJointlimitGradient(dH);
     MatNd_constMulSelf(dH, alpha*blending);
-    double det = ikSolver.solveRightInverse(dq_des, dx_des, dH, tc.getActivationPtr(), lambda);
+    double det = ikSolver.solveRightInverse(dq_des, dx_des, dH, a_des, lambda);
     //ikSolver.solveLeftInverse(dq_des, dx_des, dH, a_cont, lambda);
     RCHECK(det>0.0);
     MatNd_constMulSelf(dq_des, 1.0/dt);
@@ -2782,7 +2787,7 @@ static void testDynamicActivation(int argc, char** argv)
     VecNd_copy(&q_row[nx+1], dx_des->ele, nx);                       // 7-11
     VecNd_copy(&q_row[2*nx+1], q->ele, nq);                          // 12-14
     VecNd_copy(&q_row[2*nx+nq+1], q_dot->ele, nq);                   // 15-17
-    VecNd_copy(&q_row[2*nx+2*nq+1], tc.getActivationPtr()->ele, nt); // 18-20
+    VecNd_copy(&q_row[2*nx+2*nq+1], a_des->ele, nt);                 // 18-20
     VecNd_copy(&q_row[nt+2*nx+2*nq+1], x_curr->ele, nx);             // 21-25
     VecNd_copy(&q_row[nx+nt+2*nx+2*nq+1], x_dot_curr->ele, nx);      // 26-30
     VecNd_copy(&q_row[nx+nx+nt+2*nx+2*nq+1], a_cont->ele, nt);       // 31-33
@@ -2878,6 +2883,8 @@ static void testDynamicActivation(int argc, char** argv)
   MatNd_destroy(dq_des);
   MatNd_destroy(dH);
   MatNd_destroy(plotMe);
+  MatNd_destroy(a_des);
+  MatNd_destroy(a_prev);
 
   pthread_mutex_destroy(&mtx);
 }

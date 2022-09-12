@@ -49,12 +49,14 @@ EulerConstraint::EulerConstraint() :
   ConstraintSet(), A_BI(NULL), oriTrj(NULL)
 {
   setClassName("EulerConstraint");
+  Mat3d_setIdentity(this->A_PB);
 }
 
 EulerConstraint::EulerConstraint(xmlNode* node) :
   ConstraintSet(node), A_BI(NULL), oriTrj(NULL)
 {
   setClassName("EulerConstraint");
+  Mat3d_setIdentity(this->A_PB);
   fromXML(node);
 }
 
@@ -183,6 +185,11 @@ void EulerConstraint::getWorldQuaternion(double quat[4])
 std::string EulerConstraint::getTrajectoryName() const
 {
   return oriTrjName;
+}
+
+void EulerConstraint::setTrajectoryName(const std::string& name)
+{
+  oriTrjName = name;
 }
 
 void EulerConstraint::apply(std::vector<TrajectoryND*>& trajectory,
