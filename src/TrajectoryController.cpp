@@ -124,9 +124,10 @@ const char* TrajectoryControllerBase::getClassName() const
   return "TrajectoryController";
 }
 
-void TrajectoryControllerBase::populateTasks(double horizon)
+bool TrajectoryControllerBase::populateTasks(double horizon)
 {
   RLOG(0, "populateTasks in base class not implemented");
+  return false;
 }
 
 unsigned int TrajectoryControllerBase::getNumberOfConstraints() const
@@ -284,6 +285,46 @@ void TrajectoryControllerBase::print() const
     std::cout << "Trajectory " << i << std::endl;
     trajectory[i]->print();
   }
+}
+
+bool TrajectoryControllerBase::check() const
+{
+  bool success = true;
+
+  success = checkDuplicateTrajectories();
+
+  return success;
+}
+
+bool TrajectoryControllerBase::checkDuplicateTrajectories() const
+{
+  bool success = true;
+
+  // Check for duplicate names in the 1-d trajectories
+  std::map<std::string,Trajectory1D*> tMap;
+
+  for (size_t i=0; i<trajectory.size(); ++i)
+  {
+    const size_t dim = trajectory[i]->getInternalDim();
+
+    for (size_t j=0; j<dim; ++j)
+    {
+      Trajectory1D* tj = trajectory[i]->getTrajectory1D(j);
+
+      std::map<std::string, Trajectory1D*>::iterator it;
+      it = tMap.find(tj->getName());
+      if (it!=tMap.end())
+      {
+        RLOG(1, "Trajectory \"%s\" is duplicate", tj->getName().c_str());
+        success = false;
+      }
+
+      tMap[tj->getName()] = tj;
+    }
+
+  }
+
+  return success;
 }
 
 double TrajectoryControllerBase::getActivation(int idx) const

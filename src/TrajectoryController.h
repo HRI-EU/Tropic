@@ -84,7 +84,8 @@ public:
    */
   virtual const char* getClassName() const;
 
-  virtual void populateTasks(double horizon);
+  virtual bool populateTasks(double horizon);
+
   /*! \brief Convenience method to access the dimension of the overall task
    *         vector.
    */
@@ -162,6 +163,14 @@ public:
   /*! \brief Calls the print() method of all TrajectoryND members.
    */
   virtual void print() const;
+
+  /*! \brief Performs several checks on the class.
+   */
+  virtual bool check() const;
+
+  /*! \brief Performs several checks on the class.
+   */
+  virtual bool checkDuplicateTrajectories() const;
 
   virtual double getActivation(int idx) const;
   virtual void getActivation(MatNd* activation) const;
@@ -259,7 +268,12 @@ public:
     TrajectoryControllerBase()
   {
     this->controller = controller_;
-    populateTasks(horizon);
+    bool success = populateTasks(horizon);
+
+    if (!success)
+    {
+      throw std::invalid_argument("Found duplicate names in Trajectory1D class");
+    }
   }
 
   TrajectoryController(const std::string& cfgFile, double horizon) :
@@ -267,11 +281,16 @@ public:
   {
     this->ownController = new Rcs::ControllerBase(cfgFile);
     this->controller = ownController;
-    populateTasks(horizon);
+    bool success = populateTasks(horizon);
+
+    if (!success)
+    {
+      throw std::invalid_argument("Found duplicate names in Trajectory1D class");
+    }
   }
 
 
-  void populateTasks(double horizon)
+  bool populateTasks(double horizon)
   {
     typedef Rcs::StackVec<double, 16> TaskVec;
 
@@ -308,6 +327,7 @@ public:
 
     }   // for (size_t i=0; i<controller->getNumberOfTasks(); ++i)
 
+    return checkDuplicateTrajectories();
   }
 
   virtual ~TrajectoryController()
