@@ -71,13 +71,6 @@ public:
    */
   TrajectoryControllerBase& operator=(const TrajectoryControllerBase& rhs);
 
-  /*! \brief Constructor based on a ControllerBase instance. For each task of
-   *         the controller, a TrajectoryND instance will be created. The
-   *         horizon is an artificial point that comes into play at the end
-   *         of the trajectory, see \ref Trajectory1D for more details.
-   */
-  /* TrajectoryControllerBase(Rcs::ControllerBase* controller, double horizon=1.0); */
-
   /*! \brief Deletes all dynamic memory of the instance.
    */
   virtual ~TrajectoryControllerBase();
@@ -91,6 +84,7 @@ public:
    */
   virtual const char* getClassName() const;
 
+  virtual void populateTasks(double horizon);
   /*! \brief Convenience method to access the dimension of the overall task
    *         vector.
    */
@@ -160,28 +154,21 @@ public:
    */
   void clearConstraintSet();
 
-  /*! \brief Initializes the internal activation vector from the controller's
-   *         xml file.
-   *  \return True for success, false otherwise. False will for instance be
-   *          returned if the controller has not been created from an xml
-   *          file and the information is therefore not available.
+  /*! \brief Clears all constraint from the rootSet and deletes all
+   *         trajectories. The controller remains untouched.
    */
-  bool readActivationsFromXML();
+  void eraseTrajectories();
 
   /*! \brief Calls the print() method of all TrajectoryND members.
    */
   virtual void print() const;
 
-  /*! \brief Returns a non-modifiable pointer to the internal activation
-   *         vector. The caller is responsible that it is accessed
-   *         correctly and in a thread-safe manner.
-   */
-  const MatNd* getActivationPtr() const;
   virtual double getActivation(int idx) const;
   virtual void getActivation(MatNd* activation) const;
   virtual void getContinuousActivation(MatNd* activation) const;
   virtual void setActivation(int idx, bool activity);
   virtual void setActivation(bool activity);
+  virtual void setActivation(const MatNd* activation);
 
   /*! \brief Returns the number of goal and via points,
    *         excluding the now-point and horizon point.
@@ -258,7 +245,6 @@ protected:
   Rcs::ControllerBase* ownController;
   std::vector<TrajectoryND*> trajectory;
   ConstraintSet rootSet;
-  MatNd* activation;
   double reactivationScaling;
 };
 
@@ -273,7 +259,6 @@ public:
     TrajectoryControllerBase()
   {
     this->controller = controller_;
-    this->activation = MatNd_create((unsigned int)controller->getNumberOfTasks(), 1);
     populateTasks(horizon);
   }
 
@@ -282,7 +267,6 @@ public:
   {
     this->ownController = new Rcs::ControllerBase(cfgFile);
     this->controller = ownController;
-    this->activation = MatNd_create((unsigned int)controller->getNumberOfTasks(), 1);
     populateTasks(horizon);
   }
 

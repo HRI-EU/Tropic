@@ -43,8 +43,7 @@ namespace tropic
 {
 
 TrajectoryControllerBase::TrajectoryControllerBase() :
-  controller(NULL), ownController(NULL), rootSet(), activation(NULL),
-  reactivationScaling(1.0)
+  controller(NULL), ownController(NULL), rootSet(), reactivationScaling(1.0)
 {
 }
 
@@ -61,12 +60,10 @@ TrajectoryControllerBase::TrajectoryControllerBase(const TrajectoryControllerBas
     trajectory.push_back(ti);
   }
 
-  this->activation = MatNd_clone(copyFromMe.activation);
   this->ownController = new Rcs::ControllerBase(*(copyFromMe.getController()));
   this->controller = ownController;
   this->reactivationScaling = copyFromMe.reactivationScaling;
 
-  //rootSet = ConstraintSet(copyFromMe.rootSet);
   rootSet.apply(trajectory);
 }
 
@@ -90,9 +87,6 @@ TrajectoryControllerBase& TrajectoryControllerBase::operator=(const TrajectoryCo
     trajectory.push_back(ti);
   }
 
-  MatNd_destroy(this->activation);
-  this->activation = MatNd_clone(copyFromMe.activation);
-
   delete this->ownController;
   this->ownController = new Rcs::ControllerBase(*(copyFromMe.getController()));
   this->controller = ownController;
@@ -112,12 +106,7 @@ TrajectoryControllerBase::~TrajectoryControllerBase()
     delete trajectory[i];
   }
 
-  MatNd_destroy(this->activation);
-
-  if (this->ownController)
-  {
-    delete this->ownController;
-  }
+  delete this->ownController;   // Ok to call on NULL
 }
 
 TrajectoryControllerBase* TrajectoryControllerBase::clone() const
@@ -133,6 +122,11 @@ unsigned int TrajectoryControllerBase::getDim() const
 const char* TrajectoryControllerBase::getClassName() const
 {
   return "TrajectoryController";
+}
+
+void TrajectoryControllerBase::populateTasks(double horizon)
+{
+  RLOG(0, "populateTasks in base class not implemented");
 }
 
 unsigned int TrajectoryControllerBase::getNumberOfConstraints() const
@@ -271,10 +265,16 @@ void TrajectoryControllerBase::clearConstraintSet()
   rootSet.clear();
 }
 
-bool TrajectoryControllerBase::readActivationsFromXML()
+void TrajectoryControllerBase::eraseTrajectories()
 {
-  getController()->readActivationsFromXML(this->activation);
-  return true;
+  rootSet.clear();
+
+  for (size_t i=0; i<trajectory.size(); ++i)
+  {
+    delete trajectory[i];
+  }
+
+  trajectory.clear();
 }
 
 void TrajectoryControllerBase::print() const
@@ -286,19 +286,20 @@ void TrajectoryControllerBase::print() const
   }
 }
 
-const MatNd* TrajectoryControllerBase::getActivationPtr() const
-{
-  return this->activation;
-}
-
 double TrajectoryControllerBase::getActivation(int idx) const
 {
-  return MatNd_get(this->activation, idx, 0);
+  return trajectory[idx]->isActive() ? 1.0 : 0.0;
 }
 
 void TrajectoryControllerBase::getActivation(MatNd* a) const
 {
-  MatNd_reshapeCopy(a, this->activation);
+  MatNd_reshape(a, trajectory.size(), 1);
+
+  for (size_t i=0; i<trajectory.size(); ++i)
+  {
+    MatNd_set(a, i, 0, trajectory[i]->isActive() ? 1.0 : 0.0);
+  }
+
 }
 
 void TrajectoryControllerBase::getContinuousActivation(MatNd* a) const
@@ -312,7 +313,6 @@ void TrajectoryControllerBase::getContinuousActivation(MatNd* a) const
 
 void TrajectoryControllerBase::setActivation(int idx, bool activity)
 {
-  MatNd_set(this->activation, idx, 0, (activity==true) ? 1.0 : 0.0);
   trajectory[idx]->addActivationPoint(std::make_shared<ActivationPoint>(0.0, activity, 0.0));
   trajectory[idx]->active = activity;
 }
@@ -322,6 +322,14 @@ void TrajectoryControllerBase::setActivation(bool activity)
   for (size_t i=0; i<trajectory.size(); ++i)
   {
     setActivation(i, activity);
+  }
+}
+
+void TrajectoryControllerBase::setActivation(const MatNd* activation)
+{
+  for (size_t i=0; i<trajectory.size(); ++i)
+  {
+    setActivation(i, MatNd_get(activation, i, 0));
   }
 }
 
@@ -531,7 +539,7 @@ double TrajectoryControllerBase::step(double dt)
   {
     const Rcs::Task* task_i = controller->getTask(i);
     stepTrajectoryND(trajectory[i], task_i, dt);
-    this->activation->ele[i] = trajectory[i]->isActive();
+    //this->activation->ele[i] = trajectory[i]->isActive();
   }
 
   return endTime;
