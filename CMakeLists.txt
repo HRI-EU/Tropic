@@ -80,6 +80,34 @@ IF (WIN32)
 ENDIF(WIN32)
 
 ################################################################################
+# Compile settings
+################################################################################
+IF(UNIX)
+  # SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -pedantic -fPIC -Wno-long-long -Wno-variadic-macros -std=c99")
+  # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -fPIC -Wno-format -Wno-long-long -Wno-variadic-macros")
+  # ADD_DEFINITIONS(-D__linux__)
+
+  # Flag -rdynamic needed for backtrace()
+  IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -rdynamic")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -rdynamic")
+  ENDIF()
+  
+  IF(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    # setting march to core2 to enable valgrind debugging (also good for Xeon)
+    # Low level optimization for debug mode, flag for checking stack corruption, flag for debug output
+    SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -march=core2 -O0 -fstack-protector-all -ggdb")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=core2 -O0 -fstack-protector-all -ggdb")
+  ELSE()
+    # setting march to native for optimal performance on local machine
+    # Strong optimization for release mode
+    SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -march=native -ggdb")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -ggdb")
+  ENDIF()
+  
+ENDIF()
+
+################################################################################
 #
 # Add the automatically determined parts of the RPATH which point to directories
 # outside the build tree to the install RPATH. Required for Vortex and other
@@ -128,6 +156,10 @@ src/ConstraintFactory.cpp
 src/GraphConstraint.cpp
 src/ConnectBodyConstraint.cpp
 src/LiftObject.cpp
+# src/ActionBase.cpp
+# src/ActionGet.cpp
+# src/ActionPut.cpp
+# src/ActionPour.cpp
 )
 
 ADD_LIBRARY(Tropic ${TROPIC_SRCS})
@@ -141,10 +173,19 @@ TARGET_INCLUDE_DIRECTORIES(Tropic PUBLIC
 
 TARGET_LINK_LIBRARIES(Tropic RcsCore)
 
+ADD_LIBRARY(TropicExamples examples/ExampleTrajectoryIK.cpp)# examples/ExampleActions.cpp)
+TARGET_LINK_LIBRARIES(TropicExamples RcsGraphics RcsPhysics RcsGui Tropic)
+
+# We add this option to force the linker to export the symbols. This
+# solves the issue that it will not be exposed, since all initialization 
+# happens inside statically. Under Unix, we can use -Wl,--no-as-needed
+IF (WIN32)
+  TARGET_LINK_OPTIONS(TropicExamples PUBLIC /INCLUDE:TropicExampleInfo)
+ENDIF()
 ###############################################################################
 # Install the libraries
 ###############################################################################
-INSTALL(TARGETS Tropic EXPORT TropicExport DESTINATION lib/$ENV{MAKEFILE_PLATFORM})
+INSTALL(TARGETS Tropic TropicExamples EXPORT TropicExport DESTINATION lib/$ENV{MAKEFILE_PLATFORM})
 
 ###############################################################################
 # Install the headers
@@ -169,6 +210,11 @@ ADD_CUSTOM_COMMAND(
     COMMAND ${CMAKE_COMMAND} -E copy
     ${LIBRARY_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/Tropic.dll
     ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/Tropic.dll)
+  ADD_CUSTOM_COMMAND(
+      TARGET TropicExamples POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy
+      ${LIBRARY_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/TropicExamples.dll
+      ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/TropicExamples.dll)
 ENDIF()
 
 ###############################################################################
@@ -188,6 +234,11 @@ IF(NOT HEADLESS_BUILD)
   TARGET_LINK_LIBRARIES(TestSimpleTrajectory Tropic)
   IF(STANDALONE_PROJECT)
     TARGET_LINK_LIBRARIES(TestSimpleTrajectory Qt5::Core Qt5::Gui Qt5::Widgets)
+  ENDIF()
+
+  IF (WIN32)
+    ADD_EXECUTABLE(ExampleSAPI examples/ExampleSAPI.cpp)
+    ADD_EXECUTABLE(ExampleListen examples/ExampleListen.cpp)
   ENDIF()
 
   ###############################################################################
