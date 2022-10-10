@@ -535,6 +535,7 @@ void ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
     {
       if (!permissive)
       {
+        RLOG_CPP(1, "Trajectory map has " << tMap.size() << " entries");
         for (auto it=tMap.begin(); it!=tMap.end(); ++it)
         {
           RLOG_CPP(1, "Candidate: " << it->first);

@@ -603,7 +603,8 @@ void TrajectoryND::getPositionConstraintBefore(double* x, double t) const
  ******************************************************************************/
 void TrajectoryND::print() const
 {
-  std::cout << "TrajectoryND: \"" << getName() << "\"" << std::endl;
+  std::cout << "TrajectoryND: \"" << getName() << "\" with " << trajVec1D.size()
+            << " sub-trajectories" << std::endl;
 
   for (size_t i=0; i<trajVec1D.size(); ++i)
   {
