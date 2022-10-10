@@ -58,15 +58,19 @@ PolarConstraint::PolarConstraint(xmlNode* node) :
 }
 
 PolarConstraint::PolarConstraint(double t, double polarPhi, double polarTheta,
-                                 const std::string& trajNameND) : ConstraintSet()
+                                 const std::string& trajNameND, int flag) : ConstraintSet()
 {
   setClassName("PolarConstraint");
   double polarAxis[3];
   Vec3d_getPolarAxis(polarAxis, polarPhi, polarTheta);
 
-  add(t, polarAxis[0], trajNameND + " 0");
-  add(t, polarAxis[1], trajNameND + " 1");
-  add(t, polarAxis[2], trajNameND + " 2");
+  //add(t, polarAxis[0], trajNameND + " 0");
+  //add(t, polarAxis[1], trajNameND + " 1");
+  //add(t, polarAxis[2], trajNameND + " 2");
+
+  add(t, polarAxis[0], 0.0, 0.0, flag, trajNameND + " 0");
+  add(t, polarAxis[1], 0.0, 0.0, flag, trajNameND + " 1");
+  add(t, polarAxis[2], 0.0, 0.0, flag, trajNameND + " 2");
 }
 
 PolarConstraint::~PolarConstraint()

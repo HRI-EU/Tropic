@@ -57,7 +57,7 @@ public:
   PolarConstraint();
   PolarConstraint(xmlNode* node);
   PolarConstraint(double t, double polarPhi, double polarTheta,
-                  const std::string& trajNameND);
+                  const std::string& trajNameND, int flag=7);
   virtual ~PolarConstraint();
   virtual PolarConstraint* clone() const;
   virtual void fromXML(xmlNode* node);
