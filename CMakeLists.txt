@@ -155,6 +155,7 @@ src/VectorConstraint.cpp
 src/ConstraintFactory.cpp
 src/GraphConstraint.cpp
 src/ConnectBodyConstraint.cpp
+src/JointWeightConstraint.cpp
 src/LiftObject.cpp
 # src/ActionBase.cpp
 # src/ActionGet.cpp
