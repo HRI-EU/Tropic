@@ -159,10 +159,6 @@ src/GraphConstraint.cpp
 src/ConnectBodyConstraint.cpp
 src/JointWeightConstraint.cpp
 src/LiftObject.cpp
-# src/ActionBase.cpp
-# src/ActionGet.cpp
-# src/ActionPut.cpp
-# src/ActionPour.cpp
 )
 
 ADD_LIBRARY(Tropic ${TROPIC_SRCS})
@@ -185,6 +181,7 @@ TARGET_LINK_LIBRARIES(TropicExamples RcsGraphics RcsPhysics RcsGui Tropic)
 IF (WIN32)
   TARGET_LINK_OPTIONS(TropicExamples PUBLIC /INCLUDE:TropicExampleInfo)
 ENDIF()
+
 ###############################################################################
 # Install the libraries
 ###############################################################################
@@ -238,10 +235,13 @@ IF(NOT HEADLESS_BUILD)
   IF(STANDALONE_PROJECT)
     TARGET_LINK_LIBRARIES(TestSimpleTrajectory Qt5::Core Qt5::Gui Qt5::Widgets)
   ENDIF()
+  
+  ADD_EXECUTABLE(ExampleRunnerTropic examples/ExampleRunner.cpp)
 
-  IF (WIN32)
-    ADD_EXECUTABLE(ExampleSAPI examples/ExampleSAPI.cpp)
-    ADD_EXECUTABLE(ExampleListen examples/ExampleListen.cpp)
+  IF (UNIX)
+    TARGET_LINK_LIBRARIES(ExampleRunnerTropic -Wl,--no-as-needed RcsExamples TropicExamples -Wl,--as-needed)
+  ELSE()
+    TARGET_LINK_LIBRARIES(ExampleRunnerTropic RcsExamples TropicExamples)
   ENDIF()
 
   ###############################################################################
