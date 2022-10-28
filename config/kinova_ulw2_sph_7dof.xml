@@ -64,7 +64,7 @@
   </Body>
 
   <Body name="j2s7s300_link_finger_tip_1" prev="j2s7s300_link_finger_1" not_physics="dynamic" mass="0.01" inertia="7.89997e-07 0 0   -0 7.89997e-07 0   -0 -0 8e-08" >
-    <Joint name="j2s7s300_joint_finger_tip_1" range="-1 57.29578 114.591559" type="RotZ" transform="0.044 -0.003 0 0 0 0" torqueLimit="2" speedLimit="57.29578" />
+    <Joint name="j2s7s300_joint_finger_tip_1" range="-1 57.29578 114.591559" type="RotZ" transform="0.044 -0.003 0 0 0 0" torqueLimit="2" speedLimit="57.29578" coupledTo="j2s7s300_joint_finger_1" couplingFactor="0" constraint="true" />
     <Shape type="MESH" distance="false" not_physics="true" graphics="true" meshFile="kinova_description/meshes/finger_distal.STL" color="#cad1edff" />
   </Body>
 
@@ -74,7 +74,7 @@
   </Body>
 
   <Body name="j2s7s300_link_finger_tip_2" prev="j2s7s300_link_finger_2" not_physics="dynamic" mass="0.01" inertia="7.89997e-07 0 0   -0 7.89997e-07 0   -0 -0 8e-08" >
-    <Joint name="j2s7s300_joint_finger_tip_2" range="-1 57.29578 114.591559" type="RotZ" transform="0.044 -0.003 0 0 0 0" torqueLimit="2" speedLimit="57.29578" />
+    <Joint name="j2s7s300_joint_finger_tip_2" range="-1 57.29578 114.591559" type="RotZ" transform="0.044 -0.003 0 0 0 0" torqueLimit="2" speedLimit="57.29578" coupledTo="j2s7s300_joint_finger_2" couplingFactor="0" constraint="true" />
     <Shape type="MESH" distance="false" not_physics="true" graphics="true" meshFile="kinova_description/meshes/finger_distal.STL" color="#cad1edff" />
   </Body>
 
@@ -84,7 +84,7 @@
   </Body>
 
   <Body name="j2s7s300_link_finger_tip_3" prev="j2s7s300_link_finger_3" not_physics="dynamic" mass="0.01" inertia="7.89997e-07 0 0   -0 7.89997e-07 0   -0 -0 8e-08" >
-    <Joint name="j2s7s300_joint_finger_tip_3" range="-1 57.29578 114.591559" type="RotZ" transform="0.044 -0.003 0 0 0 0" torqueLimit="2" speedLimit="57.29578" />
+    <Joint name="j2s7s300_joint_finger_tip_3" range="-1 57.29578 114.591559" type="RotZ" transform="0.044 -0.003 0 0 0 0" torqueLimit="2" speedLimit="57.29578" coupledTo="j2s7s300_joint_finger_3" couplingFactor="0" constraint="true" />
     <Shape type="MESH" distance="false" not_physics="true" graphics="true" meshFile="kinova_description/meshes/finger_distal.STL" color="#cad1edff" />
   </Body>
 

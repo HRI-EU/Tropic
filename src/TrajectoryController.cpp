@@ -50,11 +50,11 @@ TrajectoryControllerBase::TrajectoryControllerBase() :
 TrajectoryControllerBase::TrajectoryControllerBase(const TrajectoryControllerBase& copyFromMe) :
   rootSet(copyFromMe.rootSet)
 {
-  //  RLOG_CPP(0, "Cloning " << copyFromMe.trajectory.size() << " trajectories");
+  //RLOG_CPP(0, "Cloning " << copyFromMe.trajectory.size() << " trajectories");
 
   for (size_t i=0; i<copyFromMe.trajectory.size(); ++i)
   {
-    //RLOG_CPP(0, "Cloning trajectory " << i);
+    // RLOG_CPP(0, "Cloning trajectory " << i);
     TrajectoryND* ti = copyFromMe.trajectory[i]->clone();
     ti->clear();
     trajectory.push_back(ti);
@@ -64,7 +64,11 @@ TrajectoryControllerBase::TrajectoryControllerBase(const TrajectoryControllerBas
   this->controller = ownController;
   this->reactivationScaling = copyFromMe.reactivationScaling;
 
-  rootSet.apply(trajectory);
+  // We apply the constraints permissively for cases where we have modified the
+  // trajectory vector and some of the constraints are not valid any more.
+  const bool permissive = true;
+  rootSet.apply(trajectory, permissive);
+  //RLOG_CPP(0, "done rootSet.apply(trajectory)");
 }
 
 TrajectoryControllerBase& TrajectoryControllerBase::operator=(const TrajectoryControllerBase& copyFromMe)
@@ -124,10 +128,15 @@ const char* TrajectoryControllerBase::getClassName() const
   return "TrajectoryController";
 }
 
-bool TrajectoryControllerBase::populateTasks(double horizon)
+bool TrajectoryControllerBase::populateTrajectories(double horizon)
 {
-  RLOG(0, "populateTasks in base class not implemented");
+  RLOG(0, "populateTrajectories in base class not implemented");
   return false;
+}
+
+void TrajectoryControllerBase::addTrajectory(const Rcs::Task* task_i, double horizon)
+{
+  RFATAL("addTrajectoryin base class not implemented");
 }
 
 unsigned int TrajectoryControllerBase::getNumberOfConstraints() const
@@ -264,6 +273,43 @@ void TrajectoryControllerBase::clear(bool clearActivations)
 void TrajectoryControllerBase::clearConstraintSet()
 {
   rootSet.clear();
+}
+
+void TrajectoryControllerBase::addTrajectory(TrajectoryND* traj)
+{
+  trajectory.push_back(traj);
+}
+
+bool TrajectoryControllerBase::eraseTrajectory(const std::string& name)
+{
+  int idx = controller->getTaskIndex(name.c_str());
+
+  if (idx==-1)
+  {
+    return false;
+  }
+
+  return eraseTrajectory(idx);
+}
+
+bool TrajectoryControllerBase::eraseTrajectory(size_t index)
+{
+  if (trajectory.empty())
+  {
+    return false;
+  }
+
+  if (index > trajectory.size() - 1)
+  {
+    RLOG_CPP(1, "Failed to erase trajectory with index " << index
+             << " - should be less than " << trajectory.size());
+    return false;
+  }
+
+  delete trajectory[index];
+  trajectory.erase(trajectory.begin() + index);
+
+  return true;
 }
 
 void TrajectoryControllerBase::eraseTrajectories()

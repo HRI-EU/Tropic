@@ -54,10 +54,20 @@
   
   <Body name="Glas" prev="Table" rigid_body_joints="0.1 0.2 0 0 0 0" color="GREEN" >
     <Shape type="CYLINDER" length="0.14" radius="0.03" graphics="true" transform="0 0 0.07 0 0 0" />
+    <Shape type="FRAME" transform="0 0 0.1 0 0 0" scale="0.15" />
     <Shape type="FRAME" scale="0.15" />
   </Body>
   
   <Body name="GlasTip" prev="Glas" transform="0 0 0.16 0 0 0" >
+    <Shape type="FRAME" scale="0.1" />
+  </Body>
+  
+  <Body name="Cornflakes" prev="Table" rigid_body_joints="0 0 0 0 0 -30" color="PEWTER" >
+    <Shape type="BOX" extents="0.2 0.05 0.3" graphics="true" transform="0 0 0.15 0 0 0" />
+    <Shape type="FRAME" scale="0.15" />
+  </Body>
+  
+  <Body name="CornflakesTop" prev="Cornflakes" transform="0 0 0.3 0 0 0" >
     <Shape type="FRAME" scale="0.1" />
   </Body>
   

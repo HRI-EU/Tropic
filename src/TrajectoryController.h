@@ -84,7 +84,13 @@ public:
    */
   virtual const char* getClassName() const;
 
-  virtual bool populateTasks(double horizon);
+  virtual void addTrajectory(const Rcs::Task* task_i, double horizon);
+
+  /*! \brief Adds a trajectory for each task. The function checks for duplicate
+   *         trajectories and returns flase if one or more duplicates have been
+   *         found.
+   */
+  virtual bool populateTrajectories(double horizon);
 
   /*! \brief Convenience method to access the dimension of the overall task
    *         vector.
@@ -155,9 +161,23 @@ public:
    */
   void clearConstraintSet();
 
-  /*! \brief Clears all constraint from the rootSet and deletes all
-   *         trajectories. The controller remains untouched.
+  /*! \brief Appends a trajectory to the vector of trajectories.
    */
+  void addTrajectory(TrajectoryND* traj);
+
+  /*! \brief Deletes the trajectory at the given index idx. If idx is not a
+   *         valid index, the function does nothing and returns false.
+   */
+  bool eraseTrajectory(size_t idx);
+
+  /*! \brief Deletes the trajectory with the given name. If no trajectory with
+   *         this name exists, the function does nothing and returns false.
+   */
+  bool eraseTrajectory(const std::string& name);
+
+  /*! \brief Clears all constraint from the rootSet and deletes all
+     *         trajectories. The controller remains untouched.
+     */
   void eraseTrajectories();
 
   /*! \brief Calls the print() method of all TrajectoryND members.
@@ -172,7 +192,13 @@ public:
    */
   virtual bool checkDuplicateTrajectories() const;
 
+  /*! \brief Returns the activation value of the idx's trajectory.
+   */
   virtual double getActivation(int idx) const;
+
+  /*! \brief Copies the full activation vector into argument activation. It
+   *         will be reshaped to [nTasks x 1].
+   */
   virtual void getActivation(MatNd* activation) const;
   virtual void getContinuousActivation(MatNd* activation) const;
   virtual void setActivation(int idx, bool activity);
@@ -183,13 +209,24 @@ public:
    *         excluding the now-point and horizon point.
    */
   unsigned int getNumberOfConstraints() const;
+
+  /*! \brief Returns the number of constraints that are children of the
+   *         class's rootSet. This value might differ from the one
+   *         returned from getNumberOfConstraints(), for instance if the
+   *         apply() method hasn't been called.
+   */
   unsigned int getNumberOfSetConstraints() const;
+
+  /*! \brief Returns the number of constraint sets that are children of the
+   *         class's rootSet, plus one for the rootSet itself.
+   */
   unsigned int getNumberOfSets() const;
 
   /*! \brief Returns the smallest blending value by going through all
    *         trajectories.
    */
   double computeBlending() const;
+
   TrajectoryND* getTrajectory(const std::string& name) const;
   TrajectoryND* getTrajectory(size_t index) const;
   std::vector<TrajectoryND*> getTrajectories() const;
@@ -268,7 +305,7 @@ public:
     TrajectoryControllerBase()
   {
     this->controller = controller_;
-    bool success = populateTasks(horizon);
+    bool success = populateTrajectories(horizon);
 
     if (!success)
     {
@@ -281,7 +318,7 @@ public:
   {
     this->ownController = new Rcs::ControllerBase(cfgFile);
     this->controller = ownController;
-    bool success = populateTasks(horizon);
+    bool success = populateTrajectories(horizon);
 
     if (!success)
     {
@@ -289,49 +326,52 @@ public:
     }
   }
 
-
-  bool populateTasks(double horizon)
+  virtual ~TrajectoryController()
   {
-    typedef Rcs::StackVec<double, 16> TaskVec;
+  }
 
+  bool populateTrajectories(double horizon)
+  {
     for (size_t i=0; i<controller->getNumberOfTasks(); ++i)
     {
-      const Rcs::Task* task_i = controller->getTask(i);
-      TaskVec x(task_i->getDim());
-      task_i->computeX(x);
-
-      if (task_i->getClassName()=="POLAR")
-      {
-        TrajectoryPolar<T>* ti = new TrajectoryPolar<T>(x, horizon);
-        ti->setName(task_i->getName());
-        trajectory.push_back(ti);
-      }
-      else if (task_i->getClassName()=="ABC")
-      {
-        TrajectoryEuler<T>* ti = new TrajectoryEuler<T>(x, horizon);
-        ti->setName(task_i->getName());
-        trajectory.push_back(ti);
-      }
-      else if (task_i->getClassName()=="XYZ")
-      {
-        TrajectoryPos3D<T>* ti = new TrajectoryPos3D<T>(x, horizon);
-        ti->setName(task_i->getName());
-        trajectory.push_back(ti);
-      }
-      else
-      {
-        TrajectoryPosND<T>* ti = new TrajectoryPosND<T>(x, x.size(), horizon);
-        ti->setName(task_i->getName());
-        trajectory.push_back(ti);
-      }
-
-    }   // for (size_t i=0; i<controller->getNumberOfTasks(); ++i)
+      addTrajectory(controller->getTask(i), horizon);
+    }
 
     return checkDuplicateTrajectories();
   }
 
-  virtual ~TrajectoryController()
+  void addTrajectory(const Rcs::Task* task_i, double horizon)
   {
+    typedef Rcs::StackVec<double, 16> TaskVec;
+
+    TaskVec x(task_i->getDim());
+    task_i->computeX(x);
+
+    if (task_i->getClassName()=="POLAR")
+    {
+      TrajectoryPolar<T>* ti = new TrajectoryPolar<T>(x, horizon);
+      ti->setName(task_i->getName());
+      trajectory.push_back(ti);
+    }
+    else if (task_i->getClassName()=="ABC")
+    {
+      TrajectoryEuler<T>* ti = new TrajectoryEuler<T>(x, horizon);
+      ti->setName(task_i->getName());
+      trajectory.push_back(ti);
+    }
+    else if (task_i->getClassName()=="XYZ")
+    {
+      TrajectoryPos3D<T>* ti = new TrajectoryPos3D<T>(x, horizon);
+      ti->setName(task_i->getName());
+      trajectory.push_back(ti);
+    }
+    else
+    {
+      TrajectoryPosND<T>* ti = new TrajectoryPosND<T>(x, x.size(), horizon);
+      ti->setName(task_i->getName());
+      trajectory.push_back(ti);
+    }
+
   }
 
 };

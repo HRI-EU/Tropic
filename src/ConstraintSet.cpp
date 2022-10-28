@@ -84,11 +84,12 @@ ConstraintSet::ConstraintSet(const ConstraintSet& other) :
   {
     // Calls the copy constructor for the RHS, which in turn calls the copy
     // constructor ... so that we go through all in the hierarchy
-    //auto child = std::make_shared<ConstraintSet>(*(other.set[i].get()));
+    // auto child = std::make_shared<ConstraintSet>(*(other.set[i].get()));
     // add(child);
-    auto child = children[i]->clone();
-    add(std::shared_ptr<ConstraintSet>(child));
+
+    add(std::shared_ptr<ConstraintSet>(other.children[i]->clone()));
   }
+
 }
 
 /*******************************************************************************
