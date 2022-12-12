@@ -112,11 +112,11 @@ public:
 
   ExampleTrajectoryIK(int argc, char** argv);
   virtual ~ExampleTrajectoryIK();
-  virtual void initParameters();
-  virtual void parseArgs(Rcs::CmdLineParser* parser);
+  virtual bool initParameters();
+  virtual bool parseArgs(Rcs::CmdLineParser* parser);
   virtual bool initAlgo();
-  virtual void initGraphics();
-  virtual void initGuis();
+  virtual bool initGraphics();
+  virtual bool initGuis();
   virtual void step();
   virtual void handleKeys();
   virtual std::string help();

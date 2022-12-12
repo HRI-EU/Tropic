@@ -171,17 +171,19 @@ void ExampleTrajectoryIK::clear()
 
   if (tc)
   {
-  tc->takeControllerOwnership(false);
+    tc->takeControllerOwnership(false);
   }
 }
 
-void ExampleTrajectoryIK::initParameters()
+bool ExampleTrajectoryIK::initParameters()
 {
   xmlFileName = "cPouring.xml";
   directory = "config/xml/Tropic";
+
+  return true;
 }
 
-void ExampleTrajectoryIK::parseArgs(Rcs::CmdLineParser* argP)
+bool ExampleTrajectoryIK::parseArgs(Rcs::CmdLineParser* argP)
 {
   argP->getArgument("-horizon", &horizon, "Trajectory horizon (default is %f)",
                     horizon);
@@ -215,6 +217,8 @@ void ExampleTrajectoryIK::parseArgs(Rcs::CmdLineParser* argP)
   argP->getArgument("-permissive", &permissive, "No pedantic check for "
                     "validity of ConstraintSet instances");
   argP->getArgument("-showTimings", &showTimingsGui, "Show Gui for timings");
+
+  return true;
 }
 
 bool ExampleTrajectoryIK::initAlgo()
@@ -280,7 +284,7 @@ bool ExampleTrajectoryIK::initAlgo()
   return true;
 }
 
-void ExampleTrajectoryIK::initGraphics()
+bool ExampleTrajectoryIK::initGraphics()
 {
   Rcs::KeyCatcherBase::registerKey("q", "Quit");
   Rcs::KeyCatcherBase::registerKey("T", "Run controller test");
@@ -300,7 +304,7 @@ void ExampleTrajectoryIK::initGraphics()
 
   if (valgrind)
   {
-    return;
+    return true;
   }
 
   viewer = new Rcs::Viewer(!simpleGraphics, !simpleGraphics);
@@ -336,13 +340,15 @@ void ExampleTrajectoryIK::initGraphics()
   }
 
   viewer->runInThread(mtx);
+
+  return true;
 }
 
-void ExampleTrajectoryIK::initGuis()
+bool ExampleTrajectoryIK::initGuis()
 {
   if (valgrind)
   {
-    return;
+    return true;
   }
 
   // Launch the task widget
@@ -390,6 +396,7 @@ void ExampleTrajectoryIK::initGuis()
     mGuiTimings->setLabels(labels);
   }
 
+  return true;
 }
 
 void ExampleTrajectoryIK::step()
