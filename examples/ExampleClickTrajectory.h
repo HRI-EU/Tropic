@@ -31,8 +31,8 @@
 
 *******************************************************************************/
 
-#ifndef TROPIC_EXAMPLETRAJECTORYIK_H
-#define TROPIC_EXAMPLETRAJECTORYIK_H
+#ifndef TROPIC_CLICKTRAJECTORY_H
+#define TROPIC_CLICKTRAJECTORY_H
 
 #include "TrajectoryController.h"
 
@@ -40,89 +40,56 @@
 #include <IkSolverRMR.h>
 #include <RcsViewer.h>
 #include <KeyCatcher.h>
-#include <GraphNode.h>
 #include <HUD.h>
-#include <BodyPointDragger.h>
-#include <VertexArrayNode.h>
-#include <ControllerWidgetBase.h>
-#include <JointWidget.h>
-#include <MatNdWidget.h>
 
-
-extern "C" {
-  void TropicExampleInfo();
-}
 
 namespace tropic
 {
+class ContactConstraint;
 
-class ExampleTrajectoryIK : public Rcs::ExampleBase
+class ExampleClickTrajectory : public Rcs::ExampleBase
 {
 public:
 
-  int algo;
-  unsigned int loopCount;
-  double alpha, lambda, dt, dt_calc, determinant;
-  double jlCost, dJlCost, horizon;
-  bool calcDistance;
-  bool pause, launchJointWidget, manipulability, cAvoidance, constraintIK;
-  bool valgrind, simpleGraphics, zigzag, showOnly, noTaskGui, permissive;
-  bool nomutex;
-  bool showTimingsGui;
-  std::string xmlFileName;
-  std::string directory;
-  std::string effortBdyName;
-  int effortBdyId;
+  bool freeze;
+  bool zigzag;
+  bool valgrind;
+  double time;
+  double dt;
+  double motionEndTime;
+  double horizon;
+  double ttc;
+  const RcsBody* cursor;
+  const RcsBody* box;
+  const RcsBody* sphere;
+  const RcsBody* torus;
+  const RcsJoint* boxJnt;
+  const RcsJoint* sphereJnt;
+  const RcsJoint* torusJnt;
+  const RcsJoint* cursorJnt;
+  TrajectoryControllerBase* tc;
 
-  pthread_mutex_t graphLock;
-  pthread_mutex_t* mtx;
-
-  Rcs::ControllerBase* controller;
-  Rcs::IkSolverRMR* ikSolver;
-
-  MatNd* dq_des;
-  MatNd* q_dot_des;
-  MatNd* a_des;
-  MatNd* x_curr;
-  MatNd* x_des;
-  MatNd* x_des_prev;
-  MatNd* x_des_f;
-  MatNd* dx_des;
-  MatNd* dH;
-  MatNd* timings;
-  MatNd* F_effort;
-
-  std::shared_ptr<tropic::TrajectoryControllerBase> tc;
-
-  // Visualization
   Rcs::Viewer* viewer;
   osg::ref_ptr<Rcs::KeyCatcher> kc;
-  osg::ref_ptr<Rcs::GraphNode> gn;
   osg::ref_ptr<Rcs::HUD> hud;
-  osg::ref_ptr<Rcs::BodyPointDragger> dragger;
-  osg::ref_ptr<Rcs::VertexArrayNode> cn;
-  char hudText[2056];
 
-  // Guis
-  Rcs::ControllerGui* cGui;
-  Rcs::JointGui* jGui;
-  Rcs::MatNdGui* mGuiTimings;
-  Rcs::MatNdGui* mGuiEffort;
+  std::shared_ptr<tropic::ContactConstraint> prevContact, lastContact;
+
+  pthread_mutex_t mtx;
 
 
-  ExampleTrajectoryIK(int argc, char** argv);
-  virtual ~ExampleTrajectoryIK();
+  ExampleClickTrajectory(int argc, char** argv);
+  virtual ~ExampleClickTrajectory();
   virtual bool initParameters();
   virtual bool parseArgs(Rcs::CmdLineParser* parser);
   virtual bool initAlgo();
   virtual bool initGraphics();
-  virtual bool initGuis();
   virtual void step();
   virtual void handleKeys();
-  virtual std::string help();
-  virtual void clear();
+  /* virtual std::string help(); */
+  /* virtual void clear(); */
 };
 
 }   // namespace tropic
 
-#endif   // TROPIC_EXAMPLETRAJECTORYIK_H
+#endif   // TROPIC_CLICKTRAJECTORY_H

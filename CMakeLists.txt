@@ -170,8 +170,15 @@ TARGET_INCLUDE_DIRECTORIES(Tropic PUBLIC
 
 TARGET_LINK_LIBRARIES(Tropic RcsCore)
 
-ADD_LIBRARY(TropicExamples examples/ExampleTrajectoryIK.cpp)# examples/ExampleActions.cpp)
+ADD_LIBRARY(TropicExamples examples/ExampleTrajectoryIK.cpp examples/ExampleClickTrajectory.cpp)
 TARGET_LINK_LIBRARIES(TropicExamples RcsGraphics RcsPhysics RcsGui Tropic)
+
+TARGET_INCLUDE_DIRECTORIES(TropicExamples PUBLIC
+    # Header source location
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples>
+    
+    # Header install location
+    $<INSTALL_INTERFACE:include>)
 
 # We add this option to force the linker to export the symbols. This
 # solves the issue that it will not be exposed, since all initialization 
