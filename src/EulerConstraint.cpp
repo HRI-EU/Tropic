@@ -280,7 +280,7 @@ double EulerConstraint::compute(double dt)
   bool flip = makeShortestPath(quat);
   if (flip)
   {
-    RFATAL("FLIP");
+    RLOG(0, "FLIP - can happen when activation changed");
   }
   setQuaternion(quat);
 
