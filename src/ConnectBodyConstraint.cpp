@@ -97,9 +97,11 @@ double ConnectBodyConstraint::compute(double dt)
 
     RcsBody* child = RcsGraph_getBodyByName(graph, childName.c_str());
     RCHECK_MSG(child, "%s", childName.c_str());
+
+    // In case there is no parent, we connect the body to -1
     RcsBody* parent = RcsGraph_getBodyByName(graph, parentName.c_str());
-    RCHECK_MSG(parent, "%s", parentName.c_str());
-    bool success = RcsBody_attachToBodyId(graph, child->id, parent->id);
+    int parentId = parent ? parent->id : -1;
+    bool success = RcsBody_attachToBodyId(graph, child->id, parentId);
     RCHECK(success);
     this->active = false;
   }
