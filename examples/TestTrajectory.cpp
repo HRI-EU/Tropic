@@ -1237,6 +1237,88 @@ bool testViaPointTrajectory1D()
 /*******************************************************************************
  *
  ******************************************************************************/
+bool testScale()
+{
+  bool success = true;
+  double horizon = 1.0;
+  int flag = 1, loopCount = 0;
+  double dt = 0.001;
+  Rcs::CmdLineParser argP;
+  argP.getArgument("-horizon", &horizon, "Receeding horizon length [sec]");
+  argP.getArgument("-flag", &flag, "Flag for via trajectory selection");
+  argP.getArgument("-dt", &dt, "Sampling time for plotting");
+  bool valgrind = argP.hasArgument("-valgrind", "Valgrind checking mode");
+  bool turbo = argP.hasArgument("-turbo", "Set turbo mode");
+
+  if (argP.hasArgument("-h"))
+  {
+      RMSG("This test creates twice the same via point sequence, but with "
+          "different dt. In the first iteration, dt is twice as large as in "
+          "the second one, therefore leading to a slower dynamics. We expect "
+          "that the maximum velocities scale linearly with the dt, and "
+          "therefore the ratio of the dt must be 0.5.");
+      return success;
+  }
+
+  MatNd* plotMe = NULL;
+  std::vector<double> maxVel(2, 0.0);
+
+  for (int i = 0; i < 2; ++i)
+  {
+    tropic::ViaPointTrajectory1D via(1.0, horizon);
+    RCHECK(via.check());
+    via.getViaSequence()->setTurboMode(turbo);
+
+    double scale;
+
+    if (i == 0)
+    {
+      scale = 2.0;
+    }
+    else
+    {
+      scale = 1.0;
+    }
+
+    via.addConstraint(scale * 0.95, 2.0, 0.0, 0.0, 0);
+    via.addConstraint(scale * 1.0, 1.1, 0.0, 0.0, 7);
+    via.addConstraint(scale * 1.5, 2.0, 0.0, 0.0, 1);
+    via.addConstraint(scale * 1.75, 2.0, 0.0, 0.0, 0);
+    via.addConstraint(scale * 1.85, 2.0, 0.0, 0.0, 0);
+    via.addConstraint(scale * 1.95, 2.0, 0.0, 0.0, 0);
+    via.addConstraint(scale * 2.0, 1.1, 0.0, 0.0, 7);
+    via.addConstraint(scale * 10.95, 2.0, 0.0, 0.0, 0);
+
+    via.initFromConstraints();
+    std::cout << via << std::endl;
+    const Rcs::ViaPointSequence* viaSeq = via.getViaSequence();
+    //viaSeq->gnuplot(dt, flag);
+    MatNd* traj = MatNd_create(1, 1);
+    viaSeq->computeTrajectory(traj, scale*dt);
+
+    if (!plotMe)
+    {
+      plotMe = MatNd_create(2, traj->n);
+    }
+    double* row = MatNd_getRowPtr(plotMe, i);
+    VecNd_copy(row, traj->ele + 2*traj->n, traj->n);
+    maxVel[i] = VecNd_maxAbsEle(row, plotMe->n);
+
+    MatNd_destroy(traj);
+  }
+
+  MatNd_transposeSelf(plotMe);
+  MatNd_gnuplot("Scaling test", plotMe);
+  RLOG(0, "Max vel 1: %f   max vel 2: %f   ratio: %f", 
+      maxVel[0], maxVel[1], maxVel[0] / maxVel[1]);
+  MatNd_destroy(plotMe);
+
+  return success;
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
 static bool testTrajectory1D()
 {
   bool success = true;
@@ -2927,6 +3009,10 @@ int main(int argc, char** argv)
       testExplore();
       break;
 
+    case 4:
+      testScale();
+      break;
+
     case 5:
       testIK();
       break;
@@ -2976,6 +3062,7 @@ int main(int argc, char** argv)
     printf("\t\t1   ViaPointTrajectory plotter test\n");
     printf("\t\t2   Trajectory1D plotter test\n");
     printf("\t\t3   Box planner trajectory\n");
+    printf("\t\t4   Time scaling test\n");
     printf("\t\t5   Trajectories as input to IK\n");
     printf("\t\t6   Copying TrajectoryController test\n");
     printf("\t\t7   Loading from xml file test\n");
