@@ -30,7 +30,6 @@
 
 *******************************************************************************/
 
-
 #include "ConnectBodyConstraint.h"
 #include "ConstraintFactory.h"
 
@@ -40,6 +39,7 @@
 #include <Rcs_parser.h>
 #include <Rcs_stlParser.h>
 #include <Rcs_utils.h>
+#include <Rcs_VecNd.h>
 
 #include <algorithm>
 
@@ -53,6 +53,7 @@ ConnectBodyConstraint::ConnectBodyConstraint(double t, const std::string& child_
   GraphConstraint(), childName(child_), parentName(parent_), attachTime(t), active(true)
 {
   setClassName("ConnectBodyConstraint");
+  HTr_setZero(&this->attachToTrf);
 }
 
 ConnectBodyConstraint::ConnectBodyConstraint(xmlNode* node) :
@@ -64,7 +65,7 @@ ConnectBodyConstraint::ConnectBodyConstraint(xmlNode* node) :
 
 ConnectBodyConstraint::ConnectBodyConstraint(const ConnectBodyConstraint& other) :
   GraphConstraint(other), childName(other.childName), parentName(other.parentName),
-  attachTime(other.attachTime), active(other.active)
+  attachTime(other.attachTime), active(other.active), attachToTrf(other.attachToTrf)
 {
 }
 
@@ -73,6 +74,7 @@ ConnectBodyConstraint* ConnectBodyConstraint::clone() const
   ConnectBodyConstraint* tSet = new ConnectBodyConstraint(attachTime, childName, parentName);
   tSet->constraint = constraint;
   tSet->className = className;
+  tSet->attachToTrf = attachToTrf;
 
   for (size_t i = 0; i < children.size(); ++i)
   {
@@ -100,10 +102,21 @@ double ConnectBodyConstraint::compute(double dt)
 
     // In case there is no parent, we connect the body to -1
     RcsBody* parent = RcsGraph_getBodyByName(graph, parentName.c_str());
+
     int parentId = parent ? parent->id : -1;
+
+    HTr tmp;
+    HTr_copy(&tmp, &child->A_BI);
+
+    if (!VecNd_isZero((double*)&attachToTrf, 12))
+    {
+      HTr_copy(&child->A_BI, &attachToTrf);
+    }
+
     bool success = RcsBody_attachToBodyId(graph, child->id, parentId);
     RCHECK(success);
     this->active = false;
+    HTr_copy(&child->A_BI, &tmp);
   }
 
   return GraphConstraint::compute(dt);
@@ -181,6 +194,10 @@ void ConnectBodyConstraint::toXML(std::ostream& outStream, size_t indent) const
 
 }
 
+void ConnectBodyConstraint::setConnectTransform(const HTr* A_BI)
+{
+  HTr_copy(&attachToTrf, A_BI);
+}
 
 
 }   // namespace tropic

@@ -64,6 +64,7 @@ public:
 
   virtual void toXML(std::ostream& out, size_t indent = 0) const;
 
+  void setConnectTransform(const HTr* A_BI);
 
 protected:
 
@@ -72,6 +73,7 @@ protected:
   std::string childName, parentName;
   double attachTime;
   bool active;
+  HTr attachToTrf;
 };
 
 
