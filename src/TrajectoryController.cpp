@@ -50,11 +50,11 @@ TrajectoryControllerBase::TrajectoryControllerBase() :
 TrajectoryControllerBase::TrajectoryControllerBase(const TrajectoryControllerBase& copyFromMe) :
   rootSet(copyFromMe.rootSet)
 {
-  //RLOG_CPP(0, "Cloning " << copyFromMe.trajectory.size() << " trajectories");
+  NLOG_CPP(0, "Cloning " << copyFromMe.trajectory.size() << " trajectories");
 
   for (size_t i=0; i<copyFromMe.trajectory.size(); ++i)
   {
-    // RLOG_CPP(0, "Cloning trajectory " << i);
+    NLOG_CPP(0, "Cloning trajectory " << i);
     TrajectoryND* ti = copyFromMe.trajectory[i]->clone();
     ti->clear();
     trajectory.push_back(ti);
@@ -68,7 +68,7 @@ TrajectoryControllerBase::TrajectoryControllerBase(const TrajectoryControllerBas
   // trajectory vector and some of the constraints are not valid any more.
   const bool permissive = true;
   rootSet.apply(trajectory, permissive);
-  //RLOG_CPP(0, "done rootSet.apply(trajectory)");
+  NLOG_CPP(0, "done rootSet.apply(trajectory)");
 }
 
 TrajectoryControllerBase& TrajectoryControllerBase::operator=(const TrajectoryControllerBase& copyFromMe)
