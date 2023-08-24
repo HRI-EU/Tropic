@@ -108,9 +108,14 @@ double ConnectBodyConstraint::compute(double dt)
     HTr tmp;
     HTr_copy(&tmp, &child->A_BI);
 
+    // In case an attachment transform has been set, we assume it to be
+    // represented in the child's frame of reference. We therefore first
+    // transform it into world coordinates and then call the attach body
+    // function.
     if (!VecNd_isZero((double*)&attachToTrf, 12))
     {
-      HTr_copy(&child->A_BI, &attachToTrf);
+      //HTr_copy(&child->A_BI, &attachToTrf);
+      HTr_transform(&child->A_BI, &parent->A_BI, &attachToTrf);
     }
 
     bool success = RcsBody_attachToBodyId(graph, child->id, parentId);
