@@ -50,13 +50,20 @@ REGISTER_CONSTRAINT(JointWeightConstraint);
 
 JointWeightConstraint::JointWeightConstraint(double t, const std::string& jointName_,
                                              double jointWeight_) :
-  GraphConstraint(), jointName(jointName_), jointWeight(jointWeight_), changeTime(t), active(true)
+  GraphConstraint(), jointName(jointName_), jointWeight(jointWeight_), jointLimitWeight(-1.0), changeTime(t), active(true)
+{
+  setClassName("JointWeightConstraint");
+}
+
+JointWeightConstraint::JointWeightConstraint(double t, const std::string& jointName_,
+                                             double jointWeight_, double jointLimitWeight_) :
+  GraphConstraint(), jointName(jointName_), jointWeight(jointWeight_), jointLimitWeight(jointLimitWeight_), changeTime(t), active(true)
 {
   setClassName("JointWeightConstraint");
 }
 
 JointWeightConstraint::JointWeightConstraint(xmlNode* node) :
-  GraphConstraint(), changeTime(0.0), jointWeight(1.0), active(true)
+  GraphConstraint(), changeTime(0.0), jointWeight(1.0), jointLimitWeight(1.0), active(true)
 {
   setClassName("JointWeightConstraint");
   fromXML(node);
@@ -98,6 +105,12 @@ double JointWeightConstraint::compute(double dt)
     RcsJoint* jnt = RcsGraph_getJointByName(graph, jointName.c_str());
     RCHECK_MSG(jnt, "%s", jointName.c_str());
     jnt->weightMetric = jointWeight;
+
+    if (jointLimitWeight!=-1.0)
+    {
+      jnt->weightJL = jointLimitWeight;
+    }
+
     this->active = false;
   }
 
@@ -131,6 +144,7 @@ void JointWeightConstraint::fromXML(xmlNode* node)
   bool success = Rcs::getXMLNodePropertySTLString(node, "joint", jointName);
   success = getXMLNodePropertyDouble(node, "t", &changeTime) && success;
   success = getXMLNodePropertyDouble(node, "weightMetric", &jointWeight) && success;
+  success = getXMLNodePropertyDouble(node, "weightJL", &jointLimitWeight) && success;
 
   active = (changeTime>0.0) ? true : false;
 
@@ -156,6 +170,11 @@ void JointWeightConstraint::toXML(std::ostream& outStream, size_t indent) const
   outStream << "t=\"" << changeTime << "\" ";
   outStream << "joint=\"" << jointWeight << "\" ";
   outStream << "weightMetric=\"" << jointWeight << "\" ";
+
+  if (jointLimitWeight != -1.0)
+  {
+    outStream << "weightJL=\"" << jointLimitWeight << "\" ";
+  }
 
   // If there are no children, we close the tag in the first line
   if (children.empty())

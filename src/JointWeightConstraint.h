@@ -46,6 +46,9 @@ public:
   JointWeightConstraint(double t, const std::string& jointName,
                         double jointWeight);
 
+  JointWeightConstraint(double t, const std::string& jointName,
+                        double jointWeight, double jointLimitWeight);
+
   JointWeightConstraint(xmlNode* node);
 
   JointWeightConstraint(const JointWeightConstraint& other);
@@ -72,6 +75,7 @@ protected:
   std::string jointName;
   double changeTime;
   double jointWeight;
+  double jointLimitWeight;
   bool active;
 };
 
