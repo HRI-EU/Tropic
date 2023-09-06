@@ -103,6 +103,9 @@ public:
    *         corresponding trajectories are initialized with the kinematic
    *         state of the system, so that no jumps on any levels are
    *         introduced.
+   *
+   *  \param[in]  dt   Time step the trajectories are stepped forward
+   *  \return End time of trajectories after stepping dt. It is always >= 0.
    */
   virtual double step(double dt);
 

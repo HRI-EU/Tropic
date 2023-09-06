@@ -626,7 +626,15 @@ double TrajectoryControllerBase::step(double dt)
   {
     const Rcs::Task* task_i = controller->getTask(i);
     stepTrajectoryND(trajectory[i], task_i, dt);
-    //this->activation->ele[i] = trajectory[i]->isActive();
+  }
+
+  // We return the end time after the step. Therefore we need to consider the passed dt.
+  endTime -= dt;
+
+  // We never return a negative end time.
+  if (endTime<0.0)
+  {
+    endTime = 0.0;
   }
 
   return endTime;
