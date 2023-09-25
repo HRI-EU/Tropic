@@ -255,7 +255,10 @@ void VectorConstraint::toXML(std::ostream& outStream, size_t indent) const
   bool ok = String_removeSuffix(tmp, constraint[0].trajName1D.c_str(), ' ');
   RCHECK_MSG(ok, "Trajectory \"%s\" should end like \" 1\"", tmp);
 
-  outStream << "trajectory=\"" << tmp << "\"";
+  outStream << "trajectory=\"" << tmp << "\" ";
+
+  // Add constraint ids
+  outStream << getIdsForXML();
 
   // If there are no children, we close the tag in the first line
   if (children.empty())

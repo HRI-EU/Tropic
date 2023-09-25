@@ -749,6 +749,26 @@ bool ConstraintSet::toXML(std::string fileName) const
 /*******************************************************************************
  *
  ******************************************************************************/
+std::string ConstraintSet::getIdsForXML() const
+{
+  std::string str = "id=\"";
+  for (size_t i=0; i< constraint.size(); ++i)
+  {
+    str += std::to_string(constraint[i].c->getID());
+
+    if (i != constraint.size()-1)
+    {
+      str += " ";
+    }
+  }
+  str += "\" ";
+
+  return str;
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
 void ConstraintSet::toXML(std::ostream& outStream, size_t indent) const
 {
   // Prepare indentation string so that hierarchy levels are indented nicely
@@ -767,6 +787,7 @@ void ConstraintSet::toXML(std::ostream& outStream, size_t indent) const
     outStream << "acc=\"" << constraint[i].c->getAcceleration() << "\" ";
     outStream << "flag=\"" << constraint[i].c->getFlag() << "\" ";
     outStream << "trajectory=\"" << constraint[i].trajName1D << "\" ";
+    outStream << "id=\"" << constraint[i].c->getID() << "\" ";
     outStream << " />" << std::endl;
   }
 

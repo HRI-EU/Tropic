@@ -280,6 +280,7 @@ void ActivationSet::toXML(std::ostream& outStream, size_t indent) const
     outStream << "acc=\"" << ci.c->getAcceleration() << "\" ";
     outStream << "flag=\"" << ci.c->getFlag() << "\" ";
     outStream << "trajectory=\"" << ci.trajName1D << "\" ";
+    outStream << "id=\"" << ci.c->getID() << "\" ";
     outStream << " />" << std::endl;
   }
 

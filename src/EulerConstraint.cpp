@@ -382,7 +382,10 @@ void EulerConstraint::toXML(std::ostream& outStream, size_t indent) const
     outStream << "flag=\"" << constraint[0].c->getFlag() << "\" ";
   }
 
-  outStream << "trajectory=\"" << oriTrjName << "\"";
+  outStream << "trajectory=\"" << oriTrjName << "\" ";
+
+  // Add constraint ids
+  outStream << getIdsForXML();
 
   // If there are no children, we close the tag in the first line
   if (children.empty())

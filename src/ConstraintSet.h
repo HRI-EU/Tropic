@@ -294,11 +294,16 @@ public:
    */
   virtual bool testXML() const;
 
-  /*! \brief Collects all sets of the given template type and appends them to
-   *         the vector setsOfType. No hierarchies are considered in the
-   *         augmented vector, it is just a "linear" collection of the set
-   *         hierarchy.
+  /*! \brief Returns a string with the ConstraintSet's constraint ids:
+   *         >id="186 187 188" <
    */
+  std::string getIdsForXML() const;
+
+  /*! \brief Collects all sets of the given template type and appends them to
+     *         the vector setsOfType. No hierarchies are considered in the
+     *         augmented vector, it is just a "linear" collection of the set
+     *         hierarchy.
+     */
   template <typename T>
   void findSetsOfType(std::vector<T*>& setsOfType)
   {

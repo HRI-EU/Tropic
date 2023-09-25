@@ -36,6 +36,9 @@
 #include <functional>
 #include <iostream>
 #include <cmath>
+#include <mutex>
+
+static std::mutex constraintStatsMtx;
 
 
 namespace tropic
@@ -47,6 +50,24 @@ namespace tropic
 size_t Constraint1D::constraintCount = 1;
 static size_t constraintStats = 0;
 
+static inline void incrementConstraintStats()
+{
+  std::lock_guard<std::mutex> lock(constraintStatsMtx);
+  constraintStats++;
+}
+
+static inline void decrementConstraintStats()
+{
+  std::lock_guard<std::mutex> lock(constraintStatsMtx);
+  constraintStats--;
+}
+
+static inline size_t getConstraintStats()
+{
+  std::lock_guard<std::mutex> lock(constraintStatsMtx);
+  return constraintStats;
+}
+
 static void myExit(void)
 {
   if (constraintStats != 0)
@@ -54,6 +75,8 @@ static void myExit(void)
     std::cerr << "[" << __FILE__ << ": " << __FUNCTION__
               << "(" << __LINE__ << ")]: " << constraintStats
               << " constraints on exit - should be 0" << std::endl;
+    std::cerr << "size_t max: " << std::numeric_limits<size_t>::max()
+              << std::endl;
   }
 }
 
@@ -77,7 +100,7 @@ static PreStartRoutine onDynamicLoad;
 Constraint1D::Constraint1D() :
   t(0.0), x(0.0), x_dot(0.0), x_ddot(0.0), flag(0), id(constraintCount++)
 {
-  constraintStats++;
+  incrementConstraintStats();
 }
 
 /*******************************************************************************
@@ -91,7 +114,7 @@ Constraint1D::Constraint1D(double t_,
   t(t_), x(x_), x_dot(x_dot_), x_ddot(x_ddot_), flag(flag_),
   id(constraintCount++)
 {
-  constraintStats++;
+  incrementConstraintStats();
 }
 
 /*******************************************************************************
@@ -101,7 +124,7 @@ Constraint1D::Constraint1D(double t_,
                            double x_) :
   t(t_), x(x_), x_dot(0.0), x_ddot(0.0), flag(7), id(constraintCount++)
 {
-  constraintStats++;
+  incrementConstraintStats();
 }
 
 /*******************************************************************************
@@ -111,7 +134,7 @@ Constraint1D::Constraint1D(const std::shared_ptr<Constraint1D> copyFromMe) :
   t(copyFromMe->t), x(copyFromMe->x), x_dot(copyFromMe->x_dot),
   x_ddot(copyFromMe->x_ddot), flag(copyFromMe->flag), id(copyFromMe->id)
 {
-  constraintStats++;
+  incrementConstraintStats();
 }
 
 /*******************************************************************************
@@ -121,7 +144,7 @@ Constraint1D::Constraint1D(const Constraint1D& copyFromMe) :
   t(copyFromMe.t), x(copyFromMe.x), x_dot(copyFromMe.x_dot),
   x_ddot(copyFromMe.x_ddot), flag(copyFromMe.flag), id(copyFromMe.id)
 {
-  constraintStats++;
+  incrementConstraintStats();
 }
 
 /*******************************************************************************
@@ -129,7 +152,14 @@ Constraint1D::Constraint1D(const Constraint1D& copyFromMe) :
  ******************************************************************************/
 Constraint1D::~Constraint1D()
 {
-  constraintStats--;
+  if (getConstraintStats()==0)
+  {
+    std::cerr << "[" << __FILE__ << ": " << __FUNCTION__
+              << "(" << __LINE__ << ")]: Constraint underflow with id "
+              << id << std::endl;
+  }
+
+  decrementConstraintStats();
 }
 
 /*******************************************************************************
@@ -327,7 +357,7 @@ void Constraint1D::assignUniqueID()
  ******************************************************************************/
 size_t Constraint1D::getNumConstraints()
 {
-  return constraintStats;
+  return getConstraintStats();
 }
 
 }   // namespace tropic

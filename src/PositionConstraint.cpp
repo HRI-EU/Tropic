@@ -186,7 +186,10 @@ void PositionConstraint::toXML(std::ostream& outStream, size_t indent) const
     throw (errMsg);
   }
 
-  outStream << "trajectory=\"" << tmp << "\"";
+  outStream << "trajectory=\"" << tmp << "\" ";
+
+  // Add constraint ids
+  outStream << getIdsForXML();
 
   // If there are no children, we close the tag in the first line
   if (children.empty())
