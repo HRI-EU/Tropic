@@ -29,29 +29,31 @@
 #  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+set -euo pipefail
+
 function testXML1()
 {
-    build/$MAKEFILE_PLATFORM/TestTrajectory -m 7 -dl 1 &> UnitTestResults.txt
+    build/"${MAKEFILE_PLATFORM}"/TestTrajectory -m 7 -dl 1 &> UnitTestResults.txt
     testXMLResult1=$?
 }
 
 function testXML2()
 {
-    build/$MAKEFILE_PLATFORM/TestTrajectory -m 8 -dl 1 &> UnitTestResults.txt
+    build/"${MAKEFILE_PLATFORM}"/TestTrajectory -m 8 -dl 1 &> UnitTestResults.txt
     testXMLResult2=$?
 }
 
 echo -n "Testing trajectory xml functions part 1 ... "
 testXML1
 
-if [ $testXMLResult1 -eq 0 ]
+if [ "${testXMLResult1}" -eq 0 ]
 then
   echo "succeeded"
-elif [ $testXMLResult1 -eq 255 ]
+elif [ "${testXMLResult1}" -eq 255 ]
 then
   echo "failed with more than 255 errors"
 else
-  echo "failed with $testXMLResult1 errors" 
+  echo "failed with ${testXMLResult1} errors" 
 fi
 
 
@@ -59,13 +61,13 @@ fi
 echo -n "Testing trajectory xml functions part 2 ... "
 testXML2
 
-if [ $testXMLResult2 -eq 0 ]
+if [ "${testXMLResult2}" -eq 0 ]
 then
   echo "succeeded"
-elif [ $testXMLResult2 -eq 255 ]
+elif [ "${testXMLResult2}" -eq 255 ]
 then
   echo "failed with more than 255 errors"
 else
-  echo "failed with $testXMLResult2 errors" 
+  echo "failed with ${testXMLResult2} errors" 
 fi
 

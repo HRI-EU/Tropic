@@ -483,8 +483,10 @@ LiftObjectConstraint::put(double t_start, double t_put, double t_release,
 
   // Open fingers
   a1->addActivation(t_release, false, 0.5, taskFingers);
-  a1->add(std::make_shared<tropic::VectorConstraint>(t_put-0.5*t_fingerMove, std::vector<double> {fingersClosed, fingersClosed, fingersClosed}, taskFingers));
-  a1->add(std::make_shared<tropic::VectorConstraint>(t_put+0.5*t_fingerMove, std::vector<double> {fingersOpen, fingersOpen, fingersOpen}, taskFingers));
+  std::vector<double> fc = std::vector<double> {fingersClosed, fingersClosed, fingersClosed};
+  std::vector<double> fo = std::vector<double> {fingersOpen, fingersOpen, fingersOpen};
+  a1->add(std::make_shared<tropic::VectorConstraint>(t_put-0.5*t_fingerMove, fc, taskFingers));
+  a1->add(std::make_shared<tropic::VectorConstraint>(t_put+0.5*t_fingerMove, fo, taskFingers));
 
   return a1;
 }
@@ -595,10 +597,10 @@ LiftObjectConstraint::liftWithOneHand(const Rcs::ControllerBase* controller,
 // static
 std::shared_ptr<tropic::ConstraintSet>
 LiftObjectConstraint::putWithOneHand(const Rcs::ControllerBase* controller,
-                                      std::string hand,
-                                      std::string bottle,
-                                      std::string table,
-                                      double t_start, double t_end)
+                                     std::string hand,
+                                     std::string bottle,
+                                     std::string table,
+                                     double t_start, double t_end)
 {
   LiftObjectConstraint rh(controller, hand, bottle, table);
   const double t_put = t_start + 0.66 * (t_end - t_start);

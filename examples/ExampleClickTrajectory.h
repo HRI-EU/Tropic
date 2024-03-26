@@ -31,8 +31,8 @@
 
 *******************************************************************************/
 
-#ifndef TROPIC_CLICKTRAJECTORY_H
-#define TROPIC_CLICKTRAJECTORY_H
+#ifndef TROPIC_EXAMPLECLICKTRAJECTORY_H
+#define TROPIC_EXAMPLECLICKTRAJECTORY_H
 
 #include "TrajectoryController.h"
 
@@ -92,4 +92,4 @@ public:
 
 }   // namespace tropic
 
-#endif   // TROPIC_CLICKTRAJECTORY_H
+#endif   // TROPIC_EXAMPLECLICKTRAJECTORY_H
