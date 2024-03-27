@@ -178,7 +178,7 @@ TARGET_INCLUDE_DIRECTORIES(TropicExamples PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples>
     
     # Header install location
-    $<INSTALL_INTERFACE:include>)
+    $<INSTALL_INTERFACE:include/Tropic>)
 
 # We add this option to force the linker to export the symbols. This
 # solves the issue that it will not be exposed, since all initialization 
@@ -190,14 +190,18 @@ ENDIF()
 ###############################################################################
 # Install the libraries
 ###############################################################################
-INSTALL(TARGETS Tropic TropicExamples EXPORT TropicExport DESTINATION lib/$ENV{MAKEFILE_PLATFORM})
+#INSTALL(TARGETS Tropic TropicExamples EXPORT TropicExport DESTINATION lib/$ENV{MAKEFILE_PLATFORM})
+INSTALL(TARGETS Tropic TropicExamples EXPORT TropicExport
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib/Tropic)
 
 ###############################################################################
 # Install the headers
 ###############################################################################
 INSTALL(
   DIRECTORY src/ 
-  DESTINATION include
+  DESTINATION include/Tropic
   FILES_MATCHING PATTERN "*.h"
 )
 
@@ -252,7 +256,9 @@ IF(NOT HEADLESS_BUILD)
   ###############################################################################
   # Install the binaries
   ###############################################################################
-  INSTALL(TARGETS TestTrajectory TestSimpleTrajectory RUNTIME DESTINATION bin/$ENV{MAKEFILE_PLATFORM} LIBRARY DESTINATION lib/$ENV{MAKEFILE_PLATFORM})
+  INSTALL(TARGETS TestTrajectory TestSimpleTrajectory 
+          RUNTIME DESTINATION bin
+          LIBRARY DESTINATION lib)
 
 ENDIF(NOT HEADLESS_BUILD)
 
