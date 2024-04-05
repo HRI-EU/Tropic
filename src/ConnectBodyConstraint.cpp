@@ -91,37 +91,42 @@ ConnectBodyConstraint::~ConnectBodyConstraint()
 double ConnectBodyConstraint::compute(double dt)
 {
   attachTime -= dt;
-  //RLOG(0, "attachTime is %f", attachTime);
 
   if ((attachTime<0.0) && (attachTime>=-dt))
   {
-    RLOG(5, "Appending \"%s\" to \"%s\"", childName.c_str(), parentName.c_str());
-
     RcsBody* child = RcsGraph_getBodyByName(graph, childName.c_str());
-    RCHECK_MSG(child, "%s", childName.c_str());
 
-    // In case there is no parent, we connect the body to -1
-    RcsBody* parent = RcsGraph_getBodyByName(graph, parentName.c_str());
-
-    int parentId = parent ? parent->id : -1;
-
-    HTr tmp;
-    HTr_copy(&tmp, &child->A_BI);
-
-    // In case an attachment transform has been set, we assume it to be
-    // represented in the child's frame of reference. We therefore first
-    // transform it into world coordinates and then call the attach body
-    // function.
-    if (!VecNd_isZero((double*)&attachToTrf, 12))
+    if (!child)
     {
-      //HTr_copy(&child->A_BI, &attachToTrf);
-      HTr_transform(&child->A_BI, &parent->A_BI, &attachToTrf);
+      RLOG(1, "Can't find child %s to connect to parent %s",
+           childName.c_str(), parentName.c_str());
+    }
+    else
+    {
+      RLOG(0, "Appending \"%s\" to \"%s\"", childName.c_str(), parentName.c_str());
+      // In case there is no parent, we connect the body to -1
+      RcsBody* parent = RcsGraph_getBodyByName(graph, parentName.c_str());
+
+      HTr tmp;
+      HTr_copy(&tmp, &child->A_BI);
+
+      // In case an attachment transform has been set, we assume it to be
+      // represented in the child's frame of reference. We therefore first
+      // transform it into world coordinates and then call the attach body
+      // function.
+      if (!VecNd_isZero((double*)&attachToTrf, 12))
+      {
+        //HTr_copy(&child->A_BI, &attachToTrf);
+        const HTr* A_PI = parent ? &parent->A_BI : HTr_identity();
+        HTr_transform(&child->A_BI, A_PI, &attachToTrf);
+      }
+
+      bool success = RcsBody_attachToBodyId(graph, child->id, parent ? parent->id : -1);
+      RCHECK(success);   // False for child->id == -1
+      this->active = false;
+      HTr_copy(&child->A_BI, &tmp);
     }
 
-    bool success = RcsBody_attachToBodyId(graph, child->id, parentId);
-    RCHECK(success);
-    this->active = false;
-    HTr_copy(&child->A_BI, &tmp);
   }
 
   return GraphConstraint::compute(dt);
