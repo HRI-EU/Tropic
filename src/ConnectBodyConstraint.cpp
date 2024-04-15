@@ -103,7 +103,7 @@ double ConnectBodyConstraint::compute(double dt)
     }
     else
     {
-      RLOG(0, "Appending \"%s\" to \"%s\"", childName.c_str(), parentName.c_str());
+      RLOG(5, "Appending \"%s\" to \"%s\"", childName.c_str(), parentName.c_str());
       // In case there is no parent, we connect the body to -1
       RcsBody* parent = RcsGraph_getBodyByName(graph, parentName.c_str());
 
