@@ -157,6 +157,7 @@ src/GraphConstraint.cpp
 src/ConnectBodyConstraint.cpp
 src/JointWeightConstraint.cpp
 src/LiftObject.cpp
+src/CollisionModelConstraint.cpp
 )
 
 ADD_LIBRARY(Tropic ${TROPIC_SRCS})
