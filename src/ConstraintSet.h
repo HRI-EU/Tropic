@@ -276,6 +276,10 @@ public:
    */
   virtual void fromXML(xmlNode* node);
 
+  /*! \brief Initializes the class from a string containing the XML content.
+   */
+  void fromXML(const std::string& xmlString);
+
   /*! \brief Writes the class's xml descrition into the ostream.
    */
   virtual void toXML(std::ostream& out, size_t indent = 0) const;

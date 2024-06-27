@@ -683,6 +683,17 @@ std::string ConstraintSet::getTypeName() const
 /*******************************************************************************
  *
  ******************************************************************************/
+void ConstraintSet::fromXML(const std::string& xmlString)
+{
+  xmlDocPtr doc = NULL;
+  xmlNodePtr node = parseXMLMemory(xmlString.c_str(), xmlString.length()+1, &doc);;
+  fromXML(node);
+  xmlFreeDoc(doc);
+}
+
+/*******************************************************************************
+ *
+ ******************************************************************************/
 void ConstraintSet::fromXML(xmlNode* node)
 {
   if (isXMLNodeName(node, "ConstraintSet") == false)
