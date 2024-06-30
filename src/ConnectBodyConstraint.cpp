@@ -60,6 +60,7 @@ ConnectBodyConstraint::ConnectBodyConstraint(xmlNode* node) :
   GraphConstraint(), attachTime(0.0), active(true)
 {
   setClassName("ConnectBodyConstraint");
+  HTr_setZero(&this->attachToTrf);
   fromXML(node);
 }
 
@@ -104,6 +105,7 @@ double ConnectBodyConstraint::compute(double dt)
     else
     {
       RLOG(5, "Appending \"%s\" to \"%s\"", childName.c_str(), parentName.c_str());
+
       // In case there is no parent, we connect the body to -1
       RcsBody* parent = RcsGraph_getBodyByName(graph, parentName.c_str());
 

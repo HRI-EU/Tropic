@@ -278,7 +278,7 @@ public:
 
   /*! \brief Initializes the class from a string containing the XML content.
    */
-  void fromXML(const std::string& xmlString);
+  virtual void fromXML(const std::string& xmlString);
 
   /*! \brief Writes the class's xml descrition into the ostream.
    */

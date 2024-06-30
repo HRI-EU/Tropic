@@ -686,8 +686,10 @@ std::string ConstraintSet::getTypeName() const
 void ConstraintSet::fromXML(const std::string& xmlString)
 {
   xmlDocPtr doc = NULL;
+  RLOG_CPP(0, "Parsing: '" << xmlString << "'");
   xmlNodePtr node = parseXMLMemory(xmlString.c_str(), xmlString.length()+1, &doc);;
-  fromXML(node);
+  RCHECK(node);
+  add(ConstraintFactory::create(node));
   xmlFreeDoc(doc);
 }
 
@@ -762,6 +764,11 @@ bool ConstraintSet::toXML(std::string fileName) const
  ******************************************************************************/
 std::string ConstraintSet::getIdsForXML() const
 {
+  if (constraint.empty())
+  {
+    return std::string();
+  }
+
   std::string str = "id=\"";
   for (size_t i=0; i< constraint.size(); ++i)
   {

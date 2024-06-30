@@ -39,12 +39,33 @@
 #include <Rcs_macros.h>
 #include <Rcs_parser.h>
 #include <Rcs_stlParser.h>
+#include <Rcs_utilsCPP.h>
 
 #include <algorithm>
 
 
 namespace tropic
 {
+REGISTER_CONSTRAINT(CollisionModelConstraint);
+
+CollisionModelConstraint::CollisionModelConstraint() :
+  GraphConstraint(),
+  toggleTime(0.0),
+  switchesOn(true),
+  active(true)
+{
+  setClassName("CollisionModelConstraint");
+}
+
+CollisionModelConstraint::CollisionModelConstraint(xmlNode* node) :
+  GraphConstraint(),
+  toggleTime(0.0),
+  switchesOn(true),
+  active(true)
+{
+  setClassName("CollisionModelConstraint");
+  fromXML(node);
+}
 
 CollisionModelConstraint::CollisionModelConstraint(double t, const std::string& bdyName,
                                                    bool switchOn) :
@@ -174,9 +195,12 @@ void CollisionModelConstraint::fromXML(xmlNode* node)
   bdyNames = Rcs::getXMLNodePropertyVecSTLString(node, "colliders");
   bool success = bdyNames.empty() ? false: true;
   success = getXMLNodePropertyDouble(node, "t", &toggleTime) && success;
-  success = getXMLNodePropertyBoolN(node, "switchesOn", &switchesOn, 32) && success;
+  success = getXMLNodePropertyBoolString(node, "switchesOn", &switchesOn) && success;
 
   active = (toggleTime>0.0) ? true : false;
+
+  NLOG_CPP(0, "Colliders: '" << Rcs::String_concatenate(bdyNames, "' ")
+           << " t=" << toggleTime << " switchesOn=" << switchesOn);
 
   node = node->children;
 
@@ -200,7 +224,7 @@ void CollisionModelConstraint::toXML(std::ostream& outStream, size_t indent) con
   outStream << "colliders=\"";
   for (size_t i=0; i<bdyNames.size(); ++i)
   {
-    outStream << bdyNames[i] << " ";
+    outStream << bdyNames[i];
 
     if (i!=bdyNames.size()-1)
     {

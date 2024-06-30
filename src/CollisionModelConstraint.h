@@ -43,6 +43,8 @@ class CollisionModelConstraint : public GraphConstraint
 {
 public:
 
+  CollisionModelConstraint();
+  CollisionModelConstraint(xmlNode* node);
   CollisionModelConstraint(double t, const std::string& bdyName, bool switchOn);
   CollisionModelConstraint(double t, std::vector<std::string> names, bool switchOn);
   CollisionModelConstraint(const CollisionModelConstraint& other);
