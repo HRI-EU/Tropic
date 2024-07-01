@@ -34,6 +34,13 @@ SET(BST_INSTALL_CATEGORY Libraries)
 
 
 ################################################################################
+#
+# Default options
+#
+################################################################################
+OPTION(TROPIC_COPY_OR_LINK_CONFIG_DIRS "Copy or link configuration file directories" ON)
+
+################################################################################
 # Check if project is stand-alone or inside tree with dependencies
 ################################################################################
 SET(STANDALONE_PROJECT OFF)
@@ -268,33 +275,35 @@ ENDIF(NOT HEADLESS_BUILD)
 # Copy config directory
 # Deep copy of the config directory for windows
 ################################################################################
-SET(CFG_FROM ${CMAKE_CURRENT_SOURCE_DIR}/config)
-SET(CFG_TO ${PROJECT_BINARY_DIR}/config/xml/Tropic)
+IF (TROPIC_COPY_OR_LINK_CONFIG_DIRS)
+  SET(CFG_FROM ${CMAKE_CURRENT_SOURCE_DIR}/config)
+  SET(CFG_TO ${PROJECT_BINARY_DIR}/config/xml/Tropic)
 
-IF (WIN32 AND (NOT IS_DIRECTORY "${CFG_TO}") AND (EXISTS "${CFG_TO}"))
-  MESSAGE(STATUS "Removing non-directory ${CONFIG_DST_DIR}")
-  FILE(REMOVE ${CONFIG_DST_DIR})
-ENDIF()
-
-IF(NOT EXISTS "${CFG_TO}")
-
-  IF (NOT EXISTS ${PROJECT_BINARY_DIR}/config/xml)
-    FILE(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/config/xml)
+  IF (WIN32 AND (NOT IS_DIRECTORY "${CFG_TO}") AND (EXISTS "${CFG_TO}"))
+    MESSAGE(STATUS "Removing non-directory ${CONFIG_DST_DIR}")
+    FILE(REMOVE ${CONFIG_DST_DIR})
   ENDIF()
+
+  IF(NOT EXISTS "${CFG_TO}")
+
+    IF (NOT EXISTS ${PROJECT_BINARY_DIR}/config/xml)
+      FILE(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/config/xml)
+    ENDIF()
   
-  IF(UNIX)
-    SET(CONFIGDIR_COPY_COMMAND create_symlink)
-    MESSAGE(STATUS "Linking config directory from ${CFG_FROM} to ${CFG_TO}")
-  ELSE()
-    SET(CONFIGDIR_COPY_COMMAND copy_directory)
-    MESSAGE(STATUS "Copying config directory from ${CFG_FROM} to ${CFG_TO}")
-  ENDIF()
+    IF(UNIX)
+      SET(CONFIGDIR_COPY_COMMAND create_symlink)
+      MESSAGE(STATUS "Linking config directory from ${CFG_FROM} to ${CFG_TO}")
+    ELSE()
+      SET(CONFIGDIR_COPY_COMMAND copy_directory)
+      MESSAGE(STATUS "Copying config directory from ${CFG_FROM} to ${CFG_TO}")
+    ENDIF()
 
-  EXECUTE_PROCESS (COMMAND
-   ${CMAKE_COMMAND} -E ${CONFIGDIR_COPY_COMMAND} ${CFG_FROM} ${CFG_TO})
-ELSE()
-  MESSAGE(STATUS "Config directory ${CFG_TO} already exists - skipping")
-ENDIF()
+    EXECUTE_PROCESS (COMMAND
+     ${CMAKE_COMMAND} -E ${CONFIGDIR_COPY_COMMAND} ${CFG_FROM} ${CFG_TO})
+  ELSE()
+    MESSAGE(STATUS "Config directory ${CFG_TO} already exists - skipping")
+  ENDIF()
+ENDIF (TROPIC_COPY_OR_LINK_CONFIG_DIRS)
 
 ################################################################################
 # Target for Doxygen documentation
