@@ -63,7 +63,7 @@ public:
 
   virtual bool inUse() const;
 
-  virtual void apply(std::vector<TrajectoryND*>& trajectory,
+  virtual bool apply(std::vector<TrajectoryND*>& trajectory,
                      std::map<std::string, Trajectory1D*>& tMap,
                      bool permissive);
 

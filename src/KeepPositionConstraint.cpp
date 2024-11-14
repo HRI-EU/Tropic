@@ -196,11 +196,12 @@ bool KeepPositionConstraint::inUse() const
   return this->active;
 }
 
-void KeepPositionConstraint::apply(std::vector<TrajectoryND*>& trajectory,
+bool KeepPositionConstraint::apply(std::vector<TrajectoryND*>& trajectory,
                                    std::map<std::string, Trajectory1D*>& tMap,
                                    bool permissive)
 {
-  permissive = false;
+  bool success = true;
+  //permissive = false;
   size_t found = 0;
   double minHorizon = std::numeric_limits<double>::max();
 
@@ -225,22 +226,31 @@ void KeepPositionConstraint::apply(std::vector<TrajectoryND*>& trajectory,
   RLOG(0, "Horizon is %f, trajectory can be computed up to time point %f",
        horizon, minHorizon);
 
-  if (!permissive)
+  if (minHorizon < horizon)
   {
-    if (minHorizon < horizon)
+    success = false;
+
+    if (!permissive)
     {
       RFATAL("Horizon is %f, but trajectory can only be computed up to time point %f",
              horizon, minHorizon);
     }
+  }
 
-    if (found != 1)
+  if (found != 1)
+  {
+    success = false;
+
+    if (!permissive)
     {
       RFATAL("Found %zu trajectories with name \"%s\" - expected 1",
              found, trjName.c_str());
     }
   }
 
-  ConstraintSet::apply(trajectory, tMap, permissive);
+  success &= ConstraintSet::apply(trajectory, tMap, permissive);
+
+  return success;
 }
 
 }   // namespace tropic

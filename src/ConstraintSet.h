@@ -195,8 +195,11 @@ public:
    *         trajectories are searched in the passed vector of trajectories.
    *         This allows the set to be created independent of any trajectory
    *         class, and to be passed / copied etc.
+   *
+   *  \return true for success, false for one or several errors. In the later
+   *          case, the trajectory might not completely be applied.
    */
-  virtual void apply(std::vector<TrajectoryND*>& trajectory,
+  virtual bool apply(std::vector<TrajectoryND*>& trajectory,
                      bool permissive=false);
 
   /*! \brief Recursively traverses all sets and adds all constraints to the
@@ -204,8 +207,11 @@ public:
    *         trajectory is done by name, and the trajectories are searched
    *         in the passed name - trajectory map. This function is called from
    *         apply(std::vector<TrajectoryND*>& trajectory).
+   *
+   *  \return true for success, false for one or several errors. In the later
+   *          case, the trajectory might not completely be applied.
    */
-  virtual void apply(std::vector<TrajectoryND*>& trajectory,
+  virtual bool apply(std::vector<TrajectoryND*>& trajectory,
                      std::map<std::string, Trajectory1D*>& tMap,
                      bool permissive);
 

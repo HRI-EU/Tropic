@@ -199,7 +199,13 @@ bool TrajectoryControllerBase::addAndApply(std::shared_ptr<ConstraintSet> cSet,
   }
 
   rootSet.add(cSet);
-  cSet->apply(getTrajectoriesRef(), permissive);
+  bool success = cSet->apply(getTrajectoriesRef(), permissive);
+
+  if (!success)
+  {
+    RLOG(1, "Failed to apply constraint set");
+    return false;
+  }
 
   std::vector<GraphConstraint*> graphSets;
   //RLOG(0, "Starting to collect ...");

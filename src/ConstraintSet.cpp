@@ -499,7 +499,7 @@ bool ConstraintSet::dxdPos(MatNd* grad, const std::shared_ptr<Constraint1D> c,
 /*******************************************************************************
  *
  ******************************************************************************/
-void ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
+bool ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
                           bool permissive)
 {
   std::map<std::string,Trajectory1D*> tMap;
@@ -516,16 +516,18 @@ void ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
 
   }
 
-  apply(trajectory, tMap, permissive);
+  return apply(trajectory, tMap, permissive);
 }
 
 /*******************************************************************************
  *
  ******************************************************************************/
-void ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
+bool ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
                           std::map<std::string,Trajectory1D*>& tMap,
                           bool permissive)
 {
+  bool success = true;
+
   for (size_t i=0; i<constraint.size(); ++i)
   {
     std::map<std::string, Trajectory1D*>::iterator it;
@@ -534,6 +536,8 @@ void ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
     // We failed
     if (it == tMap.end())
     {
+      success = false;
+
       if (!permissive)
       {
         RLOG_CPP(1, "Trajectory map has " << tMap.size() << " entries");
@@ -556,9 +560,10 @@ void ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
 
   for (size_t i = 0; i< children.size(); ++i)
   {
-    children[i]->apply(trajectory, tMap, permissive);
+    success &= children[i]->apply(trajectory, tMap, permissive);
   }
 
+  return success;
 }
 
 /*******************************************************************************

@@ -192,10 +192,11 @@ void EulerConstraint::setTrajectoryName(const std::string& name)
   oriTrjName = name;
 }
 
-void EulerConstraint::apply(std::vector<TrajectoryND*>& trajectory,
+bool EulerConstraint::apply(std::vector<TrajectoryND*>& trajectory,
                             std::map<std::string, Trajectory1D*>& tMap,
                             bool permissive)
 {
+  bool success = true;
   RCHECK(numConstraints(false) == 4);
 
   // First, we store the reference for the orientation trajectory, since
@@ -261,13 +262,18 @@ void EulerConstraint::apply(std::vector<TrajectoryND*>& trajectory,
     }
 
   }   // if (this->oriTrj)
+  else
+  {
+    success = false;
+  }
 
   // Continue recursion
   for (size_t i = 0; i< children.size(); ++i)
   {
-    children[i]->apply(trajectory, tMap, permissive);
+    success &= children[i]->apply(trajectory, tMap, permissive);
   }
 
+  return success;
 }
 
 // The big question: Do we need to check this at any point in time? Otherwise,

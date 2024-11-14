@@ -117,11 +117,13 @@ bool ActivationSet::isEqual(const ConstraintSet& other) const
   return ConstraintSet::isEqual(other);
 }
 
-void ActivationSet::apply(std::vector<TrajectoryND*>& trajectory,
+bool ActivationSet::apply(std::vector<TrajectoryND*>& trajectory,
                           std::map<std::string, Trajectory1D*>& tMap,
                           bool permissive)
 {
-  ConstraintSet::apply(trajectory, tMap, permissive);
+  bool success = true;
+
+  success &= ConstraintSet::apply(trajectory, tMap, permissive);
 
   std::vector<int> idxToDelete;
 
@@ -131,7 +133,6 @@ void ActivationSet::apply(std::vector<TrajectoryND*>& trajectory,
 
     for (size_t j=0; j<trajectory.size(); ++j)
     {
-      //RLOG(0, "Comparing %s - %s", trajectory[j]->getName().c_str(), aVec[i]->trajName.c_str());
       if (trajectory[j]->getName()==aVec[i].trajNameND)
       {
         trajND = trajectory[j];
@@ -160,6 +161,10 @@ void ActivationSet::apply(std::vector<TrajectoryND*>& trajectory,
         idxToDelete.push_back(i);
       }
     }
+    else
+    {
+      success = false;
+    }
   }
 
   // idxToDelete is sorted from large to small, so we can erase the entries in
@@ -169,6 +174,7 @@ void ActivationSet::apply(std::vector<TrajectoryND*>& trajectory,
     aVec.erase(aVec.begin()+idxToDelete[i]);
   }
 
+  return success;
 }
 
 void ActivationSet::clear()
