@@ -88,7 +88,7 @@ public:
 
   EulerConstraint(const EulerConstraint& other);
 
-  virtual EulerConstraint* clone() const;
+  virtual EulerConstraint* clone() const  override;
 
   virtual ~EulerConstraint();
 
@@ -105,7 +105,7 @@ public:
    *         respect to the previous quaternion. In case it is not, the
    *         constraint quaternion is flipped.
    */
-  double compute(double dt);
+  double compute(double dt) override;
 
   void getQuaternion(double quat[4]) const;
 
@@ -119,8 +119,8 @@ protected:
   void setQuaternion(const double quat[4]);
   bool makeShortestPath(double qCurr[4]);
   void getWorldQuaternion(double quat[4]);
-  virtual void fromXML(xmlNode* node);
-  virtual void toXML(std::ostream& out, size_t indent = 0) const;
+  virtual void fromXML(xmlNode* node) override;
+  virtual void toXML(std::ostream& out, size_t indent = 0) const override;
 
   const HTr* A_BI;
   double A_PB[3][3];   // Relative rotation from (B)ody to (P)revious

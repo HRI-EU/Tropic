@@ -94,6 +94,18 @@ IF(UNIX)
   # SET(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -Wall -pedantic -fPIC -Wno-long-long -Wno-variadic-macros -std=c99")
   # SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -fPIC -Wno-format -Wno-long-long -Wno-variadic-macros")
   # ADD_DEFINITIONS(-D__linux__)
+  SET(CMAKE_CXX_STANDARD 11)
+  SET(CMAKE_CXX_STANDARD_REQUIRED ON)
+  
+  IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Suppress the "implicit conversion loses integer precision" warning
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-conversion")
+    #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-conversion")
+    add_compile_options(-Wno-conversion)
+    add_compile_options(-Wno-unused-function)
+    add_compile_options(-Wno-overloaded-virtual)
+    add_compile_options(-Wno-unused-but-set-variable)
+ ENDIF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
   # Flag -rdynamic needed for backtrace()
   IF("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -256,7 +268,7 @@ IF(NOT HEADLESS_BUILD)
   
   ADD_EXECUTABLE(ExampleRunnerTropic examples/ExampleRunner.cpp)
 
-  IF (UNIX)
+  IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     TARGET_LINK_LIBRARIES(ExampleRunnerTropic -Wl,--no-as-needed RcsExamples TropicExamples -Wl,--as-needed)
   ELSE()
     TARGET_LINK_LIBRARIES(ExampleRunnerTropic RcsExamples TropicExamples)

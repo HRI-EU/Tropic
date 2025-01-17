@@ -54,13 +54,13 @@ public:
   ActivationSet(const ActivationSet& other);
   ActivationSet(xmlNode* node);
   virtual ~ActivationSet();
-  virtual ActivationSet* clone() const;
+  virtual ActivationSet* clone() const override;
 
   virtual bool apply(std::vector<TrajectoryND*>& trajectory,
                      std::map<std::string, Trajectory1D*>& tMap,
                      bool permissive) override;
 
-  virtual void clear();
+  virtual void clear() override;
 
   virtual void addActivation(std::shared_ptr<ActivationPoint> aPt,
                              std::string trajNameND);
@@ -68,14 +68,14 @@ public:
   virtual void addActivation(double time, bool switchOn, double horizon,
                              std::string trajNameND);
 
-  virtual void fromXML(xmlNode* node);
-  virtual bool toXML(std::string fileName) const;
-  virtual void toXML(std::ostream& outStream, size_t indent) const;
-  virtual bool isEqual(const ConstraintSet& other) const;
-  virtual double compute(double dt);
-  virtual double getEndTime() const;
-  virtual bool inUse() const;
-  virtual double getStartTimeRecurse() const;
+  virtual void fromXML(xmlNode* node) override;
+  virtual bool toXML(std::string fileName) const override;
+  virtual void toXML(std::ostream& outStream, size_t indent) const override;
+  virtual bool isEqual(const ConstraintSet& other) const override;
+  virtual double compute(double dt) override;
+  virtual double getEndTime() const override;
+  virtual bool inUse() const override;
+  virtual double getStartTimeRecurse() const override;
 
 private:
 

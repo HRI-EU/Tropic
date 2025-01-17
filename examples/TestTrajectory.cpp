@@ -240,7 +240,7 @@ static void testIK2()
     }
 
 
-    sprintf(hudText, "IK calculation: %.1f us\ndof: %d nJ: %d "
+    snprintf(hudText, 2056, "IK calculation: %.1f us\ndof: %d nJ: %d "
             "nqr: %d nx: %d\nJL-cost: %.6f"
             "\nlambda:%g alpha: %g constraints: %d",
             1.0e6*dt_calc, controller.getGraph()->dof,
@@ -1116,7 +1116,7 @@ static void testExplore()
     // HUD
     /////////////////////////////////////////////////////////////////
     RelGrip tt(traj, deltaPhi);
-    sprintf(hudText, "Time: %.3f\ndt_traj: %.1f msec\nConstraints: %d   "
+    snprintf(hudText, 4096, "Time: %.3f\ndt_traj: %.1f msec\nConstraints: %d   "
             "Blending: %.3f\nState: %d %d %d", t, 1000.0*dt_traj,
             (int) traj->getNumberOfConstraints(), traj->computeBlending(),
             tt.getState(0), tt.getState(1), tt.getState(2));
@@ -1702,7 +1702,7 @@ static void testInteractive()
     //////////////////////////////////////////////////////////////////
     // HUD
     //////////////////////////////////////////////////////////////////
-    sprintf(hudText, "Time: %.3f calculation: %.2f msec\n"
+    snprintf(hudText, 1024, "Time: %.3f calculation: %.2f msec\n"
             "dt: %.1f msec %s\nConstraints: %d (%d %d)\n"
             "Sets: %d\n"
             "Motion end: %.3f", time, t_calc*1000.0, freeze ? 0.0 : 1000.0*dt,
@@ -2331,7 +2331,7 @@ static void testIK()
     }
 
 
-    sprintf(hudText, "IK calculation: %.1f us\ndof: %d nJ: %d "
+    snprintf(hudText, 2056, "IK calculation: %.1f us\ndof: %d nJ: %d "
             "nqr: %d nx: %d\nJL-cost: %.6f dJL-cost: %.6f %s %s"
             "\nalgo: %d lambda:%g alpha: %g\n"
             "Manipulability index: %.6f\n"
@@ -2892,7 +2892,7 @@ static void testDynamicActivation(int argc, char** argv)
     //////////////////////////////////////////////////////////////
     // HUD
     /////////////////////////////////////////////////////////////////
-    sprintf(hudText, "Time: %.3f  end-time: %.3f  blending: %.3f  filt: %.3f",
+    snprintf(hudText, 4096, "Time: %.3f  end-time: %.3f  blending: %.3f  filt: %.3f",
             time, endTime, blending, qFilt);
 
     if (hud.valid())

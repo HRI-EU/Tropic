@@ -533,7 +533,7 @@ void ExampleTrajectoryIK::step()
   MatNd F_effort3 = MatNd_fromPtr(3, 1, F_effort->ele);
   const RcsBody* effortBdy = RCSBODY_BY_ID(controller->getGraph(), effortBdyId);
 
-  sprintf(hudText, "IK calculation: %.1f us\ndof: %d nJ: %d "
+  snprintf(hudText, 2056, "IK calculation: %.1f us\ndof: %d nJ: %d "
           "nqr: %d nx: %d\nJL-cost: %.6f dJL-cost: %.6f %s %s"
           "\nalgo: %d lambda:%g alpha: %g\n"
           "Manipulability index: %.6f\n"
