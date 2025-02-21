@@ -549,6 +549,10 @@ bool ConstraintSet::apply(std::vector<TrajectoryND*>& trajectory,
         RFATAL("Couldn't find trajectory \"%s\"",
                constraint[i].trajName1D.c_str());
       }
+      else
+      {
+        RLOG_CPP(5, "Couldn't find trajectory " << constraint[i].trajName1D);
+      }
     }
     else
     {

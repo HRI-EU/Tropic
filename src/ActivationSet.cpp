@@ -163,6 +163,8 @@ bool ActivationSet::apply(std::vector<TrajectoryND*>& trajectory,
     }
     else
     {
+      RLOG(5, "Can't apply ActivationSet for \"%s\"",
+           aVec[i].trajNameND.c_str());
       success = false;
     }
   }
