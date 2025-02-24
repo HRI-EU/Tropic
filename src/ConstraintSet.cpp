@@ -695,7 +695,6 @@ std::string ConstraintSet::getTypeName() const
 void ConstraintSet::fromXML(const std::string& xmlString)
 {
   xmlDocPtr doc = NULL;
-  RLOG_CPP(0, "Parsing: '" << xmlString << "'");
   xmlNodePtr node = parseXMLMemory(xmlString.c_str(), xmlString.length()+1, &doc);;
   RCHECK(node);
   add(ConstraintFactory::create(node));
