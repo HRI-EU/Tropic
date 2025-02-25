@@ -33,11 +33,6 @@
 #include "GraphConstraint.h"
 #include "ConstraintFactory.h"
 
-#include <Rcs_macros.h>
-#include <Rcs_parser.h>
-#include <Rcs_stlParser.h>
-#include <Rcs_utils.h>
-
 #include <string>
 
 

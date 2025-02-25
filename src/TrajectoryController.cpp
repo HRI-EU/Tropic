@@ -208,7 +208,6 @@ bool TrajectoryControllerBase::addAndApply(std::shared_ptr<ConstraintSet> cSet,
   }
 
   std::vector<GraphConstraint*> graphSets;
-  //RLOG(0, "Starting to collect ...");
   rootSet.findSetsOfType<GraphConstraint>(graphSets);
 
   // The graph sets may modify the graph. This is only permitted if the class
@@ -216,13 +215,14 @@ bool TrajectoryControllerBase::addAndApply(std::shared_ptr<ConstraintSet> cSet,
   // here.
   if (!graphSets.empty())
   {
-    RCHECK(getInternalController());
-    RCHECK(getInternalController()->getGraph());
+    if (!getInternalController() || !getInternalController()->getGraph())
+    {
+      RLOG(1, "Cannot apply GraphConstraint - controller or graph missing");
+      return false;
+    }
 
-    //RLOG(0, "Starting to print ...");
     for (size_t i=0; i<graphSets.size(); ++i)
     {
-      //RLOG_CPP(0, "Set " << i << " is of class " << graphSets[i]->getClassName());
       graphSets[i]->setGraph(getInternalController()->getGraph());
     }
   }
