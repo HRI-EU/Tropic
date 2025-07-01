@@ -149,7 +149,7 @@ double CollisionModelConstraint::compute(double dt)
 
           // If the wireframe flag has been toggled, the wireframe mode will be
           // changed for all shapes with a contact flag. Meshes are excluded.
-          if (wfToggle)
+          if (wfToggle && enableWireframeToggle)
           {
             for (unsigned int j=0; j<BODY->nShapes; ++j)
             {
@@ -267,5 +267,11 @@ void CollisionModelConstraint::toXML(std::ostream& outStream, size_t indent) con
 
 }
 
+void CollisionModelConstraint::setEnableWireframeToggle(bool enable)
+{
+  enableWireframeToggle = enable;
+}
+
+bool CollisionModelConstraint::enableWireframeToggle = false;
 
 }   // namespace tropic

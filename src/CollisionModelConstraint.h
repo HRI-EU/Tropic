@@ -56,6 +56,7 @@ public:
   double getEndTime() const;
   void fromXML(xmlNode* node);
   void toXML(std::ostream& out, size_t indent = 0) const;
+  static void setEnableWireframeToggle(bool enable);
 
 protected:
 
@@ -63,6 +64,7 @@ protected:
   double toggleTime;
   bool switchesOn;
   bool active;
+  static bool enableWireframeToggle;
 };
 
 
