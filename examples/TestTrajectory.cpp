@@ -241,13 +241,13 @@ static void testIK2()
 
 
     snprintf(hudText, 2056, "IK calculation: %.1f us\ndof: %d nJ: %d "
-            "nqr: %d nx: %d\nJL-cost: %.6f"
-            "\nlambda:%g alpha: %g constraints: %d",
-            1.0e6*dt_calc, controller.getGraph()->dof,
-            controller.getGraph()->nJ, ikSolver->getInternalDof(),
-            (int) controller.getActiveTaskDim(a_des),
-            jlCost, lambda, alpha,
-            (int) tc->getNumberOfSetConstraints());
+             "nqr: %d nx: %d\nJL-cost: %.6f"
+             "\nlambda:%g alpha: %g constraints: %d",
+             1.0e6*dt_calc, controller.getGraph()->dof,
+             controller.getGraph()->nJ, ikSolver->getInternalDof(),
+             (int) controller.getActiveTaskDim(a_des),
+             jlCost, lambda, alpha,
+             (int) tc->getNumberOfSetConstraints());
 
     if (hud != NULL)
     {
@@ -1117,9 +1117,9 @@ static void testExplore()
     /////////////////////////////////////////////////////////////////
     RelGrip tt(traj, deltaPhi);
     snprintf(hudText, 4096, "Time: %.3f\ndt_traj: %.1f msec\nConstraints: %d   "
-            "Blending: %.3f\nState: %d %d %d", t, 1000.0*dt_traj,
-            (int) traj->getNumberOfConstraints(), traj->computeBlending(),
-            tt.getState(0), tt.getState(1), tt.getState(2));
+             "Blending: %.3f\nState: %d %d %d", t, 1000.0*dt_traj,
+             (int) traj->getNumberOfConstraints(), traj->computeBlending(),
+             tt.getState(0), tt.getState(1), tt.getState(2));
 
     if (hud != NULL)
     {
@@ -1252,12 +1252,12 @@ bool testScale()
 
   if (argP.hasArgument("-h"))
   {
-      RMSG("This test creates twice the same via point sequence, but with "
-          "different dt. In the first iteration, dt is twice as large as in "
-          "the second one, therefore leading to a slower dynamics. We expect "
-          "that the maximum velocities scale linearly with the dt, and "
-          "therefore the ratio of the dt must be 0.5.");
-      return success;
+    RMSG("This test creates twice the same via point sequence, but with "
+         "different dt. In the first iteration, dt is twice as large as in "
+         "the second one, therefore leading to a slower dynamics. We expect "
+         "that the maximum velocities scale linearly with the dt, and "
+         "therefore the ratio of the dt must be 0.5.");
+    return success;
   }
 
   MatNd* plotMe = NULL;
@@ -1309,8 +1309,8 @@ bool testScale()
 
   MatNd_transposeSelf(plotMe);
   MatNd_gnuplot("Scaling test", plotMe);
-  RLOG(0, "Max vel 1: %f   max vel 2: %f   ratio: %f", 
-      maxVel[0], maxVel[1], maxVel[0] / maxVel[1]);
+  RLOG(0, "Max vel 1: %f   max vel 2: %f   ratio: %f",
+       maxVel[0], maxVel[1], maxVel[0] / maxVel[1]);
   MatNd_destroy(plotMe);
 
   return success;
@@ -1703,15 +1703,15 @@ static void testInteractive()
     // HUD
     //////////////////////////////////////////////////////////////////
     snprintf(hudText, 1024, "Time: %.3f calculation: %.2f msec\n"
-            "dt: %.1f msec %s\nConstraints: %d (%d %d)\n"
-            "Sets: %d\n"
-            "Motion end: %.3f", time, t_calc*1000.0, freeze ? 0.0 : 1000.0*dt,
-            freeze ? "(frozen)" : "",
-            (int) tc->getNumberOfSetConstraints(),
-            (int) tc->getNumberOfConstraints(),
-            (int) tropic::Constraint1D::getNumConstraints(),
-            (int) tc->getNumberOfSets(),
-            motionEndTime);
+             "dt: %.1f msec %s\nConstraints: %d (%d %d)\n"
+             "Sets: %d\n"
+             "Motion end: %.3f", time, t_calc*1000.0, freeze ? 0.0 : 1000.0*dt,
+             freeze ? "(frozen)" : "",
+             (int) tc->getNumberOfSetConstraints(),
+             (int) tc->getNumberOfConstraints(),
+             (int) tropic::Constraint1D::getNumConstraints(),
+             (int) tc->getNumberOfSets(),
+             motionEndTime);
 
     hud->setText(hudText);
 
@@ -1896,9 +1896,9 @@ static void testIK()
     v->add(kc);
     v->add(dragger);
 
-    if (controller.getCollisionMdl() != NULL)
+    if (controller.getNarrowPhase() != NULL)
     {
-      cn = new Rcs::VertexArrayNode(controller.getCollisionMdl()->cp,
+      cn = new Rcs::VertexArrayNode(controller.getNarrowPhase()->cp,
                                     osg::PrimitiveSet::LINES, "RED");
       cn->toggle();
       v->add(cn);
@@ -2332,24 +2332,24 @@ static void testIK()
 
 
     snprintf(hudText, 2056, "IK calculation: %.1f us\ndof: %d nJ: %d "
-            "nqr: %d nx: %d\nJL-cost: %.6f dJL-cost: %.6f %s %s"
-            "\nalgo: %d lambda:%g alpha: %g\n"
-            "Manipulability index: %.6f\n"
-            "Static effort: %.6f\n"
-            "Robot pose %s   Constraints: %d\nend time: %.3f",
-            1.0e6*dt_calc, controller.getGraph()->dof,
-            controller.getGraph()->nJ, ikSolver->getInternalDof(),
-            (int) controller.getActiveTaskDim(a_des),
-            jlCost, dJlCost,
-            determinant==0.0?"SINGULAR":"",
-            ((dJlCost > 1.0e-8) && (MatNd_getNorm(dx_des) == 0.0)) ?
-            "COST INCREASE" : "",
-            algo, lambda, alpha,
-            controller.computeManipulabilityCost(a_des),
-            RcsGraph_staticEffort(controller.getGraph(),
-                                  effortBdy, &F_effort3, NULL, NULL),
-            poseOK ? "VALID" : "VIOLATES LIMITS",
-            (int) tc->getNumberOfSetConstraints(), endTime);
+             "nqr: %d nx: %d\nJL-cost: %.6f dJL-cost: %.6f %s %s"
+             "\nalgo: %d lambda:%g alpha: %g\n"
+             "Manipulability index: %.6f\n"
+             "Static effort: %.6f\n"
+             "Robot pose %s   Constraints: %d\nend time: %.3f",
+             1.0e6*dt_calc, controller.getGraph()->dof,
+             controller.getGraph()->nJ, ikSolver->getInternalDof(),
+             (int) controller.getActiveTaskDim(a_des),
+             jlCost, dJlCost,
+             determinant==0.0?"SINGULAR":"",
+             ((dJlCost > 1.0e-8) && (MatNd_getNorm(dx_des) == 0.0)) ?
+             "COST INCREASE" : "",
+             algo, lambda, alpha,
+             controller.computeManipulabilityCost(a_des),
+             RcsGraph_staticEffort(controller.getGraph(),
+                                   effortBdy, &F_effort3, NULL, NULL),
+             poseOK ? "VALID" : "VIOLATES LIMITS",
+             (int) tc->getNumberOfSetConstraints(), endTime);
 
     if (hud != NULL)
     {
@@ -2893,7 +2893,7 @@ static void testDynamicActivation(int argc, char** argv)
     // HUD
     /////////////////////////////////////////////////////////////////
     snprintf(hudText, 4096, "Time: %.3f  end-time: %.3f  blending: %.3f  filt: %.3f",
-            time, endTime, blending, qFilt);
+             time, endTime, blending, qFilt);
 
     if (hud.valid())
     {

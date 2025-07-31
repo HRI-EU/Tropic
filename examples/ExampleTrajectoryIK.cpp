@@ -318,9 +318,9 @@ bool ExampleTrajectoryIK::initGraphics()
   viewer->add(kc);
   viewer->add(dragger);
 
-  if (controller->getCollisionMdl() != NULL)
+  if (controller->getNarrowPhase())
   {
-    cn = new Rcs::VertexArrayNode(controller->getCollisionMdl()->cp,
+    cn = new Rcs::VertexArrayNode(controller->getNarrowPhase()->cp,
                                   osg::PrimitiveSet::LINES, "RED");
     cn->toggle();
     viewer->add(cn);
@@ -534,24 +534,24 @@ void ExampleTrajectoryIK::step()
   const RcsBody* effortBdy = RCSBODY_BY_ID(controller->getGraph(), effortBdyId);
 
   snprintf(hudText, 2056, "IK calculation: %.1f us\ndof: %d nJ: %d "
-          "nqr: %d nx: %d\nJL-cost: %.6f dJL-cost: %.6f %s %s"
-          "\nalgo: %d lambda:%g alpha: %g\n"
-          "Manipulability index: %.6f\n"
-          "Static effort: %.6f\n"
-          "Robot pose %s   Constraints: %d\nend time: %.3f",
-          1.0e6*dt_calc, controller->getGraph()->dof,
-          controller->getGraph()->nJ, ikSolver->getInternalDof(),
-          (int) controller->getActiveTaskDim(a_des),
-          jlCost, dJlCost,
-          determinant==0.0?"SINGULAR":"",
-          ((dJlCost > 1.0e-8) && (MatNd_getNorm(dx_des) == 0.0)) ?
-          "COST INCREASE" : "",
-          algo, lambda, alpha,
-          controller->computeManipulabilityCost(a_des),
-          RcsGraph_staticEffort(controller->getGraph(),
-                                effortBdy, &F_effort3, NULL, NULL),
-          poseOK ? "VALID" : "VIOLATES LIMITS",
-          (int) tc->getNumberOfSetConstraints(), endTime);
+           "nqr: %d nx: %d\nJL-cost: %.6f dJL-cost: %.6f %s %s"
+           "\nalgo: %d lambda:%g alpha: %g\n"
+           "Manipulability index: %.6f\n"
+           "Static effort: %.6f\n"
+           "Robot pose %s   Constraints: %d\nend time: %.3f",
+           1.0e6*dt_calc, controller->getGraph()->dof,
+           controller->getGraph()->nJ, ikSolver->getInternalDof(),
+           (int) controller->getActiveTaskDim(a_des),
+           jlCost, dJlCost,
+           determinant==0.0?"SINGULAR":"",
+           ((dJlCost > 1.0e-8) && (MatNd_getNorm(dx_des) == 0.0)) ?
+           "COST INCREASE" : "",
+           algo, lambda, alpha,
+           controller->computeManipulabilityCost(a_des),
+           RcsGraph_staticEffort(controller->getGraph(),
+                                 effortBdy, &F_effort3, NULL, NULL),
+           poseOK ? "VALID" : "VIOLATES LIMITS",
+           (int) tc->getNumberOfSetConstraints(), endTime);
 
   if (hud != NULL)
   {
