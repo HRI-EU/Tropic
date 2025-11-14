@@ -232,22 +232,6 @@ INSTALL(
 TROPIC_ADD_EXPORT_LIBRARY(Tropic)
 
 ###############################################################################
-# copy the .dll file to the same folder as the executable
-###############################################################################
-IF (WIN32)
-ADD_CUSTOM_COMMAND(
-    TARGET Tropic POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-    ${LIBRARY_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/Tropic.dll
-    ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/Tropic.dll)
-  ADD_CUSTOM_COMMAND(
-      TARGET TropicExamples POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy
-      ${LIBRARY_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/TropicExamples.dll
-      ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_BUILD_TYPE}/TropicExamples.dll)
-ENDIF()
-
-###############################################################################
 # Executables
 ###############################################################################
 IF(NOT HEADLESS_BUILD)
